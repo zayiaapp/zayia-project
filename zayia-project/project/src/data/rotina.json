@@ -1,0 +1,1089 @@
+{
+  "label": "Rotina & Organização",
+  "icon": "📋",
+  "color": "from-green-400 to-green-600",
+  "facil": [
+    {
+      "id": "rotina_facil_001",
+      "title": "Arrume sua cama assim que acordar",
+      "description": "Levantou, estica o lençol, ajeita os travesseiros — leva 2 minutos.",
+      "points": 10,
+      "duration": 2,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_002",
+      "title": "Organize sua bolsa/mochila antes de sair",
+      "description": "Tire recibos velhos, separe documentos, deixe só o essencial.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_003",
+      "title": "Escreva 3 tarefas principais para hoje",
+      "description": "Pagar conta de luz, responder e-mails, lavar roupa.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_004",
+      "title": "Separe suas roupas para amanhã antes de dormir",
+      "description": "Colocar a roupa já dobrada ou pendurada em uma cadeira.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_005",
+      "title": "Faça uma lista de compras para a semana",
+      "description": "Escrever arroz, feijão, frutas, pão, leite — só o necessário.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_006",
+      "title": "Tire 10 minutos para organizar sua mesa de trabalho",
+      "description": "Jogue papéis fora, alinhe canetas, limpe o espaço.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_007",
+      "title": "Defina um horário fixo para acordar amanhã",
+      "description": "Colocar o despertador para 7h30 e cumprir.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_008",
+      "title": "Coloque um alarme para lembrar de beber água 3x ao dia",
+      "description": "Configurar no celular às 10h, 14h e 18h.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_009",
+      "title": "Separe 15 minutos para lavar a louça acumulada",
+      "description": "Escolha um horário fixo: depois do almoço ou do jantar.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_010",
+      "title": "Escreva sua prioridade nº1 da semana",
+      "description": "Fazer apresentação do trabalho.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_011",
+      "title": "Organize os aplicativos da tela inicial do celular",
+      "description": "Colocar redes sociais em uma pasta e deixar calendário à frente.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_012",
+      "title": "Programe um lembrete para pagar contas",
+      "description": "Colocar no celular: 'Aluguel — dia 5'.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_013",
+      "title": "Crie um espaço fixo para chaves/carteira",
+      "description": "Deixar sempre em um pote ou prateleira perto da porta.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_014",
+      "title": "Planeje 1 refeição caseira para amanhã",
+      "description": "Decidir: 'Amanhã faço arroz, frango e salada'.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_015",
+      "title": "Escreva 3 coisas que precisa resolver nesta semana",
+      "description": "Marcar médico, comprar presente, atualizar currículo.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_016",
+      "title": "Tire 15 minutos para separar roupas para doação",
+      "description": "Escolher 2 ou 3 peças que não usa há meses.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_017",
+      "title": "Faça um checklist para sua rotina matinal",
+      "description": "Acordar, beber água, alongar, tomar banho, café.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_018",
+      "title": "Crie uma lista de coisas que sempre esquece de levar",
+      "description": "Chave, guarda-chuva, garrafa d'água.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_019",
+      "title": "Use 10 minutos para limpar a geladeira",
+      "description": "Tirar embalagens vencidas ou restos de comida.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_020",
+      "title": "Defina um horário fixo para dormir hoje",
+      "description": "Deitar às 23h, sem celular.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_021",
+      "title": "Organize os arquivos da área de trabalho do computador",
+      "description": "Criar pastas como 'Trabalho', 'Estudos', 'Pessoal'.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_022",
+      "title": "Anote seus compromissos da semana em um calendário",
+      "description": "Usar agenda física ou Google Agenda.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_023",
+      "title": "Coloque uma garrafa de água na sua mesa de trabalho",
+      "description": "Uma garrafinha de 500ml para ir reabastecendo.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_024",
+      "title": "Separe 15 minutos para varrer o chão da casa",
+      "description": "Sala + cozinha já resolvem.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_025",
+      "title": "Escreva sua meta principal para este mês",
+      "description": "Economizar R$ 200.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_026",
+      "title": "Crie uma lista de compras online no mercado",
+      "description": "Usar app do mercado para montar carrinho.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_027",
+      "title": "Deixe sua garrafa de água pronta antes de dormir",
+      "description": "Encher a garrafa e deixar na mesa de cabeceira.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_028",
+      "title": "Coloque um alarme para começar a se preparar para dormir",
+      "description": "22h30 = hora de desligar TV e celular.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_029",
+      "title": "Escreva 5 coisas que precisa organizar em casa",
+      "description": "Armário, sapatos, papéis, estante, despensa.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_030",
+      "title": "Tire 15 minutos para dobrar roupas que estão fora do lugar",
+      "description": "Guardar o que está sobre a cama ou cadeira.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_031",
+      "title": "Escreva 3 tarefas para amanhã antes de dormir",
+      "description": "Ir ao mercado, ligar para cliente, lavar banheiro.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_032",
+      "title": "Separe 10 minutos para organizar o guarda-roupa",
+      "description": "Dobrar camisetas que estão bagunçadas.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_033",
+      "title": "Defina um horário fixo para responder mensagens",
+      "description": "12h e 18h, ao invés de o dia inteiro.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_034",
+      "title": "Escolha 1 gaveta da casa para organizar hoje",
+      "description": "Gaveta de meias ou de utensílios de cozinha.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_035",
+      "title": "Crie uma lista de compras só de itens de limpeza",
+      "description": "Sabão em pó, detergente, esponja.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_036",
+      "title": "Separe 15 minutos para arrumar os sapatos",
+      "description": "Guardar em pares e alinhar no armário.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_037",
+      "title": "Use uma sacola para recolher lixo acumulado em casa",
+      "description": "Papeizinhos soltos, embalagens, copos descartáveis.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_038",
+      "title": "Programe 1 lembrete fixo para alongar no meio do dia",
+      "description": "Colocar alarme 15h: 'Alongar'.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_039",
+      "title": "Organize seus aplicativos de finanças",
+      "description": "Deixar Nubank, PicPay, banco oficial juntos.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_040",
+      "title": "Escreva 1 meta pequena para a semana",
+      "description": "Ler 10 páginas de um livro.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_041",
+      "title": "Escolha 1 canto da casa para limpar hoje",
+      "description": "O cantinho do sofá ou da geladeira.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_042",
+      "title": "Deixe um copo de água na cabeceira antes de dormir",
+      "description": "Copo cheio para beber ao acordar.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_043",
+      "title": "Crie um checklist de itens antes de sair de casa",
+      "description": "Chaves, celular, máscara, carteira.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_044",
+      "title": "Organize seu e-mail apagando spam",
+      "description": "Excluir 20 mensagens inúteis.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_045",
+      "title": "Escolha uma refeição para cozinhar em maior quantidade",
+      "description": "Fazer arroz extra para usar 2 dias.",
+      "points": 10,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_046",
+      "title": "Separe 10 minutos para organizar a estante de livros",
+      "description": "Alinhar, tirar poeira, separar o que não lê.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_047",
+      "title": "Escreva uma meta para este domingo",
+      "description": "Lavar roupas acumuladas.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_048",
+      "title": "Separe roupas de trabalho da semana em cabides",
+      "description": "Colocar 5 conjuntos já prontos.",
+      "points": 10,
+      "duration": 20,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_049",
+      "title": "Escolha 1 hábito que quer acompanhar",
+      "description": "Marcar 'bebi 2L de água' no papel todos os dias.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_050",
+      "title": "Escreva uma lista de 5 coisas que precisa comprar no mês",
+      "description": "Sabonete, shampoo, café, arroz, leite.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_051",
+      "title": "Crie um espaço fixo para mochila/bolsa",
+      "description": "Deixar sempre na cadeira perto da porta.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_052",
+      "title": "Deixe a cozinha limpa antes de dormir",
+      "description": "Guardar pratos secos, passar pano no fogão.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_053",
+      "title": "Organize as fotos do celular",
+      "description": "Excluir 30 prints desnecessários.",
+      "points": 10,
+      "duration": 15,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_054",
+      "title": "Coloque 1 lembrete para trocar lençol semanalmente",
+      "description": "Todo sábado de manhã.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_055",
+      "title": "Escreva 3 compromissos do mês no calendário",
+      "description": "Reunião dia 10, médico dia 15, aniversário dia 28.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_056",
+      "title": "Separe 10 minutos para limpar a pia do banheiro",
+      "description": "Passar pano e jogar fora embalagens vazias.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_057",
+      "title": "Crie um checklist de 'fim do dia'",
+      "description": "Apagar luz, fechar janelas, organizar mesa.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_058",
+      "title": "Defina um horário para desligar o celular à noite",
+      "description": "Colocar em modo avião às 23h.",
+      "points": 10,
+      "duration": 5,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_059",
+      "title": "Arrume as cadeiras/sofá da sala antes de dormir",
+      "description": "Colocar almofadas no lugar, cobertor dobrado.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    },
+    {
+      "id": "rotina_facil_060",
+      "title": "Escreva 3 pequenas vitórias do dia",
+      "description": "Lavei a louça, caminhei 10min, respondi e-mails.",
+      "points": 10,
+      "duration": 10,
+      "category": "rotina",
+      "difficulty": "facil"
+    }
+  ],
+  "dificil": [
+    {
+      "id": "rotina_dificil_001",
+      "title": "Organize um planejamento semanal completo",
+      "description": "Use agenda ou Google Calendar para marcar horários de trabalho, estudo, treino e descanso.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_002",
+      "title": "Faça um declutter de 20 itens que você não usa mais",
+      "description": "Separe roupas, papéis ou utensílios para doar ou descartar.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_003",
+      "title": "Crie uma rotina matinal com 3 hábitos fixos",
+      "description": "Beber água, arrumar a cama e escrever 1 meta do dia.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_004",
+      "title": "Planeje todas as refeições da semana",
+      "description": "Segunda arroz + frango, terça macarrão + legumes…",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_005",
+      "title": "Estabeleça horários fixos para sono e despertar",
+      "description": "Dormir 23h, acordar 7h, todos os dias.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_006",
+      "title": "Organize um espaço inteiro da casa",
+      "description": "Arrumar cozinha completa ou quarto inteiro.",
+      "points": 25,
+      "duration": 120,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_007",
+      "title": "Faça um planejamento financeiro da semana",
+      "description": "Anotar entradas, saídas e limites de gasto diário.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_008",
+      "title": "Crie uma rotina de limpeza semanal",
+      "description": "Segunda banheiro, terça sala, quarta cozinha.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_009",
+      "title": "Tire 1 hora para organizar documentos",
+      "description": "Separar contas pagas, RG, certidões em pastas.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_010",
+      "title": "Elimine 1 hábito que rouba seu tempo",
+      "description": "Definir 'sem redes sociais antes das 10h'.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_011",
+      "title": "Estabeleça um sistema de prioridades (Eisenhower)",
+      "description": "Divida tarefas entre urgente, importante, delegável e descartável.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_012",
+      "title": "Faça um 'dia zero' de organização",
+      "description": "Reservar 3h para arrumar casa inteira e redefinir rotina.",
+      "points": 25,
+      "duration": 180,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_013",
+      "title": "Organize seus arquivos digitais",
+      "description": "Criar pastas 'trabalho', 'estudos', 'fotos'.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_014",
+      "title": "Planeje sua semana de estudos/trabalho com blocos de foco",
+      "description": "2h seguidas de foco + 15min de pausa.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_015",
+      "title": "Organize suas assinaturas digitais",
+      "description": "Cancelar apps que não usa (Netflix, apps de academia, etc.).",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_016",
+      "title": "Faça um cronograma mensal de metas",
+      "description": "Meta de ler 1 livro, treinar 12x, poupar R$200.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_017",
+      "title": "Organize uma lista de 10 contatos importantes",
+      "description": "Mentores, colegas de trabalho, amigos próximos.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_018",
+      "title": "Faça um meal prep para 3 dias",
+      "description": "Cozinhar arroz, frango e legumes para vários dias.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_019",
+      "title": "Crie um ritual de fechamento do dia",
+      "description": "Revisar metas, organizar mochila, planejar amanhã.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_020",
+      "title": "Defina metas trimestrais",
+      "description": "Q1: perder 3kg; Q2: concluir curso online; Q3: guardar R$1.500.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_021",
+      "title": "Estabeleça um 'dia sem pendências'",
+      "description": "Resolver tudo que está atrasado (contas, compromissos, respostas).",
+      "points": 25,
+      "duration": 240,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_022",
+      "title": "Crie um calendário de compromissos familiares",
+      "description": "Reuniões, consultas médicas, atividades dos filhos.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_023",
+      "title": "Organize um sistema de backup digital",
+      "description": "Google Drive, HD externo ou nuvem.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_024",
+      "title": "Programe lembretes semanais no celular",
+      "description": "Toda segunda às 9h: revisar metas.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_025",
+      "title": "Faça uma faxina pesada em 1 cômodo",
+      "description": "Limpar armários, puxar móveis, passar pano.",
+      "points": 25,
+      "duration": 120,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_026",
+      "title": "Organize sua lista de senhas e logins",
+      "description": "Usar app como 1Password ou planilha protegida.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_027",
+      "title": "Crie 3 rotinas de autocuidado fixas na semana",
+      "description": "Máscara facial quarta, caminhada sexta, leitura domingo.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_028",
+      "title": "Estruture um cronograma de estudos",
+      "description": "Segunda leitura, quarta exercícios, sexta revisão.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_029",
+      "title": "Faça um inventário de coisas que você possui",
+      "description": "Roupas, eletrônicos, livros.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_030",
+      "title": "Tire 2h para revisar todo seu mês",
+      "description": "Metas alcançadas, gastos, pendências.",
+      "points": 25,
+      "duration": 120,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_031",
+      "title": "Defina um 'dia de foco profundo'",
+      "description": "4h sem distrações, celular desligado.",
+      "points": 25,
+      "duration": 240,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_032",
+      "title": "Organize sua rotina de sono completa",
+      "description": "Criar ritual noturno (chá, luz baixa, leitura).",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_033",
+      "title": "Monte um quadro de visão do mês",
+      "description": "Usar cartolina ou app como Trello/Notion.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_034",
+      "title": "Elimine 30 minutos de redes sociais por dia",
+      "description": "Reduzir de 2h para 1h30/dia.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_035",
+      "title": "Estabeleça 1 ritual semanal em família",
+      "description": "Jantar especial todo domingo à noite.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_036",
+      "title": "Organize as finanças do mês no Excel",
+      "description": "Criar colunas de entrada, saída e saldo.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_037",
+      "title": "Reestruture seu quarto para descanso",
+      "description": "Tirar TV, usar cortina blackout, cama arrumada.",
+      "points": 25,
+      "duration": 120,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_038",
+      "title": "Elimine ou reduza álcool/café por 1 semana",
+      "description": "Trocar café da tarde por chá.",
+      "points": 25,
+      "duration": 10080,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_039",
+      "title": "Planeje sua rotina de exercícios no mês",
+      "description": "Segunda caminhada, quarta funcional, sexta yoga.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_040",
+      "title": "Defina um objetivo grande para 30 dias",
+      "description": "Escrever 20 páginas de um projeto ou treinar 12 vezes.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_041",
+      "title": "Faça um 'reset digital' de 1 dia",
+      "description": "Passar 24h sem redes sociais.",
+      "points": 25,
+      "duration": 1440,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_042",
+      "title": "Organize sua rotina alimentar no app",
+      "description": "Usar MyFitnessPal para registrar refeições.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_043",
+      "title": "Monte uma lista de 10 prioridades anuais",
+      "description": "Saúde, carreira, família, espiritualidade.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_044",
+      "title": "Reduza em 30% o tempo gasto em TV/streaming",
+      "description": "De 10h semanais para 7h.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_045",
+      "title": "Estruture um cronograma de tarefas domésticas compartilhadas",
+      "description": "Segunda lavar roupa, terça aspirar, quarta banheiro.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_046",
+      "title": "Organize sua rotina matinal em blocos de tempo",
+      "description": "7h–7h30 alongar, 7h30–8h ler, 8h–8h30 arrumar casa.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_047",
+      "title": "Elimine 1 dívida pequena",
+      "description": "Pagar boleto atrasado ou empréstimo curto.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_048",
+      "title": "Planeje suas metas anuais detalhadas",
+      "description": "Ler 12 livros, guardar 5 mil, treinar 150x no ano.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_049",
+      "title": "Faça um planejamento semanal de 2h de estudo/trabalho profundo",
+      "description": "Definir quartas à noite como 'sessão de foco'.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_050",
+      "title": "Tire 1 dia para limpar e organizar cozinha inteira",
+      "description": "Lavar armários, panelas, talheres.",
+      "points": 25,
+      "duration": 240,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_051",
+      "title": "Estabeleça uma rotina noturna completa",
+      "description": "Tomar banho, chá, leitura, luz apagada 23h.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_052",
+      "title": "Elimine 50 itens que não usa mais",
+      "description": "Roupas, bolsas, utensílios.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_053",
+      "title": "Faça um quadro de hábitos",
+      "description": "Colar na parede e marcar X a cada dia concluído.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_054",
+      "title": "Planeje um fim de semana produtivo",
+      "description": "Sábado arrumação, domingo lazer ativo.",
+      "points": 25,
+      "duration": 45,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_055",
+      "title": "Organize uma rotina de aprendizado contínuo",
+      "description": "Segunda podcasts, quarta livros, sexta curso online.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_056",
+      "title": "Reduza sua lista de tarefas pela metade",
+      "description": "Cortar 5 de 10 coisas que não são prioridade.",
+      "points": 25,
+      "duration": 30,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_057",
+      "title": "Crie um ritual matinal sem celular",
+      "description": "Primeira hora do dia sem WhatsApp ou Instagram.",
+      "points": 25,
+      "duration": 60,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_058",
+      "title": "Organize sua rotina financeira para guardar 10% por mês",
+      "description": "R$200 guardados de um salário de R$2.000.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_059",
+      "title": "Planeje um projeto pessoal",
+      "description": "Reformar quarto, escrever e-book, criar canal.",
+      "points": 25,
+      "duration": 120,
+      "category": "rotina",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "rotina_dificil_060",
+      "title": "Faça um balanço de toda sua rotina do mês",
+      "description": "Revisar o que funcionou, o que atrapalhou, e escrever ajustes.",
+      "points": 25,
+      "duration": 90,
+      "category": "rotina",
+      "difficulty": "dificil"
+    }
+  ]
+}

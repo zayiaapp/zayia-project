@@ -1,0 +1,1089 @@
+{
+  "label": "Mindfulness & Emoções",
+  "icon": "🧘‍♀️",
+  "color": "from-indigo-400 to-purple-600",
+  "facil": [
+    {
+      "id": "mindfulness_facil_001",
+      "title": "Respire fundo 3 vezes ao acordar",
+      "description": "Sente na cama, feche os olhos e faça 3 respirações lentas.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_002",
+      "title": "Anote 1 emoção que sentiu hoje",
+      "description": "Me senti ansiosa antes da reunião.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_003",
+      "title": "Agradeça por 1 coisa simples",
+      "description": "Sou grata pelo café da manhã.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_004",
+      "title": "Observe o céu por 1 minuto",
+      "description": "Olhe para o sol, nuvens ou estrelas sem celular.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_005",
+      "title": "Faça uma pausa de 5 minutos no meio do dia",
+      "description": "Levante-se, alongue e respire.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_006",
+      "title": "Escreva 1 frase positiva sobre si mesma",
+      "description": "Eu tenho força para recomeçar.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_007",
+      "title": "Beba um copo d'água prestando atenção no sabor",
+      "description": "Sinta a temperatura e refrescância.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_008",
+      "title": "Sorria para si mesma no espelho",
+      "description": "Mesmo se parecer estranho, mantenha por alguns segundos.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_009",
+      "title": "Escute 1 música prestando atenção só na letra",
+      "description": "Escolha uma calma e ouça sem distrações.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_010",
+      "title": "Caminhe por 5 minutos prestando atenção nos passos",
+      "description": "Conte cada passo e sinta o chão.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_011",
+      "title": "Faça uma refeição em silêncio",
+      "description": "Sem celular, apenas saboreando cada garfada.",
+      "points": 10,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_012",
+      "title": "Coloque a mão no coração e sinta os batimentos",
+      "description": "Respire fundo e note o ritmo.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_013",
+      "title": "Escreva 1 coisa que te deu alegria hoje",
+      "description": "Conversa com minha amiga.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_014",
+      "title": "Respire profundamente por 1 minuto",
+      "description": "Use a contagem 4 segundos inspirando, 4 expirando.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_015",
+      "title": "Abrace a si mesma por 10 segundos",
+      "description": "Cruze os braços e segure firme.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_016",
+      "title": "Faça um banho consciente",
+      "description": "Perceba a água, temperatura e cheiro do sabonete.",
+      "points": 10,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_017",
+      "title": "Observe sua respiração antes de dormir",
+      "description": "Conte 10 respirações lentas.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_018",
+      "title": "Descreva em 1 frase como você está se sentindo agora",
+      "description": "Me sinto cansada, mas tranquila.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_019",
+      "title": "Olhe ao redor e identifique 3 coisas que gosta",
+      "description": "Meu livro favorito, minha planta, minha caneca.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_020",
+      "title": "Escreva 1 preocupação no papel e guarde",
+      "description": "Anote 'entrega do trabalho' e dobre o papel.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_021",
+      "title": "Escute uma música prestando atenção só nos instrumentos",
+      "description": "Tente identificar bateria, violão, piano.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_022",
+      "title": "Descreva a si mesma em 1 palavra positiva",
+      "description": "Resiliente.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_023",
+      "title": "Observe suas mãos por 30 segundos",
+      "description": "Note linhas, textura e calor.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_024",
+      "title": "Respire fundo e conte até 5 ao inspirar e expirar",
+      "description": "Inspire 5, expire 5, por 1 minuto.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_025",
+      "title": "Olhe uma foto que te traz boas lembranças",
+      "description": "Viagem, família, amigos.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_026",
+      "title": "Escreva 1 vitória, por menor que seja, do seu dia",
+      "description": "Lavei a louça mesmo cansada.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_027",
+      "title": "Escute o som ambiente por 1 minuto",
+      "description": "Pássaros, vento, carros, silêncio.",
+      "points": 10,
+      "duration": 1,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_028",
+      "title": "Sinta a textura de um objeto nas mãos",
+      "description": "Uma xícara, uma caneta, uma roupa.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_029",
+      "title": "Feche os olhos e imagine um lugar tranquilo",
+      "description": "Praia, floresta, quarto confortável.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_030",
+      "title": "Repita para si mesma: 'estou segura agora'",
+      "description": "Faça em voz baixa ou só mentalmente.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_031",
+      "title": "Escreva 3 coisas que deram certo no seu dia",
+      "description": "Hoje consegui terminar um relatório, cozinhei algo gostoso e caminhei 15 minutos.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_032",
+      "title": "Faça 5 minutos de alongamento consciente",
+      "description": "Alongue os braços acima da cabeça, respire fundo e conte cada movimento.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_033",
+      "title": "Descreva em uma frase como você se sente agora",
+      "description": "Estou ansiosa, mas também animada.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_034",
+      "title": "Tire 10 minutos para ouvir uma música que acalme você",
+      "description": "Playlist de lo-fi ou instrumental relaxante.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_035",
+      "title": "Observe algo bonito ao seu redor",
+      "description": "Uma planta, o céu no fim da tarde ou um sorriso de alguém.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_036",
+      "title": "Faça respiração 4-4-4",
+      "description": "4 seg inspirando, 4 seg segurando, 4 seg soltando. Repita por 5 ciclos.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_037",
+      "title": "Diga em voz alta uma frase de incentivo para si mesma",
+      "description": "Eu sou capaz de terminar o que começo.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_038",
+      "title": "Beba um copo de água devagar, prestando atenção em cada gole",
+      "description": "Segure o copo, sinta a temperatura e a textura ao beber.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_039",
+      "title": "Faça uma pausa de 5 minutos para observar sua respiração",
+      "description": "Sente-se em silêncio e apenas perceba o ar entrando e saindo.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_040",
+      "title": "Escreva 1 medo atual e uma ação pequena que poderia aliviar",
+      "description": "Medo: atrasar contas. Ação: revisar planilha hoje.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_041",
+      "title": "Feche os olhos e imagine um lugar seguro por 3 minutos",
+      "description": "Uma praia tranquila, um quarto iluminado, ou um campo verde.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_042",
+      "title": "Anote no papel uma preocupação e depois rasgue",
+      "description": "Escrever 'não consigo dar conta de tudo' e destruir o papel.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_043",
+      "title": "Faça 10 respirações profundas antes de dormir",
+      "description": "Inspire fundo, segure por 2 segundos e solte devagar.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_044",
+      "title": "Preste atenção em um som específico ao seu redor",
+      "description": "O barulho de passarinhos, de carros ou de um ventilador.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_045",
+      "title": "Escreva 2 coisas que você já superou",
+      "description": "Já superei uma demissão e já superei uma crise de autoestima.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_046",
+      "title": "Durante uma refeição, mastigue devagar, sentindo o sabor",
+      "description": "Comer uma maçã observando textura e gosto.",
+      "points": 10,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_047",
+      "title": "Agradeça por algo simples do seu dia",
+      "description": "Agradeço por ter tomado um banho quente.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_048",
+      "title": "Fique 2 minutos olhando para o céu",
+      "description": "Pode ser de manhã, à tarde ou à noite.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_049",
+      "title": "Escreva uma lista de 5 pequenas alegrias da sua vida",
+      "description": "Tomar café fresco, rir com uma amiga, ouvir música.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_050",
+      "title": "Faça um mini-journal: anote 'O que eu senti hoje?'",
+      "description": "Senti nervosismo antes da reunião, mas depois fiquei aliviada.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_051",
+      "title": "Observe suas mãos por 2 minutos, notando cada detalhe",
+      "description": "Linhas, unhas, textura da pele.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_052",
+      "title": "Leia uma frase inspiradora lentamente, refletindo nela",
+      "description": "Um passo de cada vez ainda é progresso.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_053",
+      "title": "Tire 5 minutos para respirar com olhos fechados em silêncio",
+      "description": "Sentar no sofá e apenas focar na respiração.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_054",
+      "title": "Faça um elogio verdadeiro a si mesma em frente ao espelho",
+      "description": "Gosto do jeito que persisto mesmo cansada.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_055",
+      "title": "Identifique um pensamento negativo e substitua por um positivo",
+      "description": "Não vou conseguir → Vou tentar passo a passo.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_056",
+      "title": "Dedique 10 minutos a um hobby que relaxe você",
+      "description": "Desenhar, pintar unhas, ouvir música.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_057",
+      "title": "Escreva uma meta pequena para amanhã",
+      "description": "Amanhã vou organizar minha mesa.",
+      "points": 10,
+      "duration": 5,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_058",
+      "title": "Observe o que sente ao colocar os pés no chão ao acordar",
+      "description": "Perceber temperatura, textura e apoio.",
+      "points": 10,
+      "duration": 2,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_059",
+      "title": "Fique 3 minutos prestando atenção no ritmo da sua respiração",
+      "description": "Inspire contando 1, 2, 3 e expire contando 1, 2, 3.",
+      "points": 10,
+      "duration": 3,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    },
+    {
+      "id": "mindfulness_facil_060",
+      "title": "Faça algo devagar de propósito",
+      "description": "Lavar uma xícara com calma, percebendo cada movimento.",
+      "points": 10,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "facil"
+    }
+  ],
+  "dificil": [
+    {
+      "id": "mindfulness_dificil_001",
+      "title": "Faça 10 minutos de meditação guiada",
+      "description": "Use o YouTube ou um app de meditação e siga o áudio até o fim.",
+      "points": 25,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_002",
+      "title": "Escreva 1 página sobre como se sente hoje",
+      "description": "Estou ansiosa porque tenho medo de falhar, mas quero melhorar.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_003",
+      "title": "Fique 1 hora sem celular antes de dormir",
+      "description": "Troque por um livro ou música calma.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_004",
+      "title": "Liste 5 coisas que você gosta em si mesma",
+      "description": "Sou determinada, sou criativa, gosto do meu sorriso.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_005",
+      "title": "Faça uma caminhada de 20 minutos prestando atenção no ambiente",
+      "description": "Note árvores, sons e cheiros ao redor.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_006",
+      "title": "Escreva 3 medos que sente e como poderia enfrentá-los",
+      "description": "Medo de falar em público → posso treinar com amigos.",
+      "points": 25,
+      "duration": 25,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_007",
+      "title": "Pratique silêncio total por 15 minutos",
+      "description": "Desligue TV, celular e apenas sente-se em um lugar.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_008",
+      "title": "Faça uma lista de 10 coisas pelas quais é grata",
+      "description": "Saúde, família, amigos, comida, casa.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_009",
+      "title": "Escreva uma carta para si mesma do futuro",
+      "description": "Parabéns por ter conquistado mais confiança, você não desistiu.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_010",
+      "title": "Passe 30 minutos ao ar livre, sem música ou celular",
+      "description": "Vá a uma praça, jardim ou varanda e apenas observe.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_011",
+      "title": "Anote 3 situações recentes que te trouxeram estresse e como reagiu",
+      "description": "Trânsito → respirei fundo e segui.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_012",
+      "title": "Faça uma refeição inteira prestando atenção em cada mordida",
+      "description": "Mastigue devagar, sem TV, sem celular.",
+      "points": 25,
+      "duration": 45,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_013",
+      "title": "Escreva 5 frases positivas e leia em voz alta",
+      "description": "Eu tenho força. Eu mereço recomeçar. Eu não sou definida pelos meus erros.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_014",
+      "title": "Identifique um hábito que te atrapalha e registre por 3 dias",
+      "description": "Mexer no celular na cama → anotar sempre que acontecer.",
+      "points": 25,
+      "duration": 4320,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_015",
+      "title": "Passe 20 minutos cuidando de algo físico para acalmar a mente",
+      "description": "Organizar gaveta, arrumar a cama, regar plantas.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_016",
+      "title": "Faça 15 minutos de respiração profunda contínua",
+      "description": "Inspire 4 segundos, segure 2, solte 6 segundos.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_017",
+      "title": "Liste 3 momentos da infância que te trazem felicidade",
+      "description": "Brincar na rua, aniversário de 7 anos, viagem com primos.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_018",
+      "title": "Passe 1 dia sem reclamar",
+      "description": "Quando sentir vontade de reclamar, respire e substitua por outra fala.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_019",
+      "title": "Faça um diário da noite registrando seu humor antes de dormir",
+      "description": "Me sinto cansada, mas realizada.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_020",
+      "title": "Fique 30 minutos sem estímulos artificiais",
+      "description": "Nada de celular, TV, rádio. Apenas estar presente.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_021",
+      "title": "Descreva uma situação que te fez sofrer e o que aprendeu",
+      "description": "Término de namoro → aprendi a valorizar mais a mim mesma.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_022",
+      "title": "Escreva 5 coisas que gostaria de perdoar em si mesma",
+      "description": "Não ter cuidado da saúde, procrastinar projetos.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_023",
+      "title": "Passe 20 minutos observando sua respiração deitada",
+      "description": "Coloque uma mão no abdômen e sinta subir e descer.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_024",
+      "title": "Anote 3 gatilhos que te deixam ansiosa e como pode se preparar",
+      "description": "Mensagem sem resposta → lembrar que a pessoa pode estar ocupada.",
+      "points": 25,
+      "duration": 25,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_025",
+      "title": "Descreva em detalhes 1 sonho que você tem",
+      "description": "Quero abrir meu próprio negócio, atendendo mulheres como eu.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_026",
+      "title": "Passe 15 minutos em contato com a natureza",
+      "description": "Sentir o vento, tocar uma planta, caminhar descalça na grama.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_027",
+      "title": "Escreva uma lista de pessoas que te fazem bem",
+      "description": "Minha amiga Joana, minha irmã, minha avó.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_028",
+      "title": "Tire 15 minutos para desenhar ou rabiscar sem julgamento",
+      "description": "Pegue papel e lápis e apenas deixe fluir.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_029",
+      "title": "Registre 3 momentos do dia que trouxeram calma",
+      "description": "O café da manhã, o banho quente, a música no ônibus.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_030",
+      "title": "Passe 1 hora fazendo algo que te dá paz",
+      "description": "Ler, pintar, escrever, caminhar, tomar banho relaxante.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_031",
+      "title": "Passe 1 hora inteira sem celular, apenas observando o ambiente",
+      "description": "Ficar no quarto ou sala, reparar nos sons, cores, cheiros.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_032",
+      "title": "Escreva uma carta para alguém que você precisa perdoar",
+      "description": "Eu guardo mágoas de você por… mas hoje escolho soltar. (Não precisa enviar)",
+      "points": 25,
+      "duration": 45,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_033",
+      "title": "Fique 24h sem reclamar de nada, apenas observando seus pensamentos",
+      "description": "Quando sentir vontade de reclamar, troque por 'vou resolver isso'.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_034",
+      "title": "Faça uma caminhada de 20 minutos em silêncio, sem música ou celular",
+      "description": "Andar no quarteirão observando cada detalhe ao redor.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_035",
+      "title": "Escolha um hábito ruim e fique 1 dia sem praticá-lo",
+      "description": "Não checar redes sociais durante refeições.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_036",
+      "title": "Pratique 10 minutos de meditação guiada",
+      "description": "Usar um vídeo no YouTube de 'meditação para ansiedade'.",
+      "points": 25,
+      "duration": 10,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_037",
+      "title": "Escreva 1 página sobre um momento de dor que já superou",
+      "description": "Quando perdi meu emprego, achei que não daria conta, mas aprendi…",
+      "points": 25,
+      "duration": 45,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_038",
+      "title": "Passe 1 dia inteiro sem redes sociais",
+      "description": "Desinstalar o Instagram por 24h.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_039",
+      "title": "Escolha uma situação que evita e enfrente-a hoje",
+      "description": "Ligar para resolver uma conta atrasada.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_040",
+      "title": "Faça um exercício de 20 minutos de respiração profunda",
+      "description": "Sentar no chão, inspirar 4 seg, expirar 6 seg, repetir 20 min.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_041",
+      "title": "Converse com alguém sobre como você realmente está se sentindo",
+      "description": "Hoje estou me sentindo sobrecarregada, precisava falar isso.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_042",
+      "title": "Anote todos os pensamentos negativos de um dia",
+      "description": "Escrever sempre que pensar 'não consigo' ou 'sou insuficiente'.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_043",
+      "title": "Pratique 30 minutos de yoga ou alongamento consciente",
+      "description": "Acompanhar uma aula no YouTube.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_044",
+      "title": "Escreva 5 frases de afirmação para repetir toda manhã por 7 dias",
+      "description": "Sou capaz. Estou avançando. Sou resiliente.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_045",
+      "title": "Passe 1 hora fazendo algo totalmente sozinho e em silêncio",
+      "description": "Ler um livro em um parque sem celular.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_046",
+      "title": "Faça uma lista de pessoas que te apoiam e envie gratidão a uma delas",
+      "description": "Mandar mensagem 'obrigada por sempre me ouvir'.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_047",
+      "title": "Passe 2h sem multitarefa, focando em apenas 1 coisa",
+      "description": "Se está cozinhando, só cozinhe. Se está estudando, só estude.",
+      "points": 25,
+      "duration": 120,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_048",
+      "title": "Escreva 10 coisas que você já conquistou na vida",
+      "description": "Consegui meu diploma, aprendi a dirigir, saí de um relacionamento ruim.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_049",
+      "title": "Faça 20 minutos de journaling profundo sobre seus maiores medos",
+      "description": "Tenho medo de falhar no trabalho porque penso que não sou boa o bastante.",
+      "points": 25,
+      "duration": 20,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_050",
+      "title": "Passe a tarde sem música, TV ou celular, apenas em silêncio",
+      "description": "Ficar em casa arrumando o quarto sem nenhuma distração.",
+      "points": 25,
+      "duration": 240,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_051",
+      "title": "Escolha uma emoção difícil e escreva sobre ela",
+      "description": "Ontem senti raiva porque fui ignorada, isso me fez sentir pequena.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_052",
+      "title": "Faça 15 minutos de meditação caminhando",
+      "description": "Andar devagar, percebendo cada passo, sem destino específico.",
+      "points": 25,
+      "duration": 15,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_053",
+      "title": "Tire 1 hora para escrever sobre o que você valoriza na vida",
+      "description": "Família, liberdade, aprendizado, fé.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_054",
+      "title": "Fique 1 dia sem consumir notícias ou redes sociais",
+      "description": "Nada de jornal, TV ou feed — apenas sua rotina.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_055",
+      "title": "Faça uma refeição inteira em silêncio, prestando atenção total",
+      "description": "Comer arroz e feijão observando sabor, textura e cheiro.",
+      "points": 25,
+      "duration": 45,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_056",
+      "title": "Escreva 3 coisas que você evita enfrentar e escolha 1 para agir hoje",
+      "description": "Falar com minha chefe sobre aumento.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_057",
+      "title": "Faça uma caminhada observando 10 coisas diferentes no ambiente",
+      "description": "Contar árvores, placas, pessoas diferentes.",
+      "points": 25,
+      "duration": 30,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_058",
+      "title": "Tire 1h para planejar uma mudança positiva no próximo mês",
+      "description": "Vou dormir 1h mais cedo todos os dias.",
+      "points": 25,
+      "duration": 60,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_059",
+      "title": "Escreva uma carta para você mesma daqui 5 anos",
+      "description": "Espero que você esteja feliz com suas escolhas.",
+      "points": 25,
+      "duration": 45,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "mindfulness_dificil_060",
+      "title": "Faça um detox digital total por 1 dia inteiro",
+      "description": "Desligar celular e computador por 24h.",
+      "points": 25,
+      "duration": 1440,
+      "category": "mindfulness",
+      "difficulty": "dificil"
+    }
+  ]
+}

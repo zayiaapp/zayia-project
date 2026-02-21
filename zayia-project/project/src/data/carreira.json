@@ -1,0 +1,1089 @@
+{
+  "label": "Carreira e Desenvolvimento Profissional",
+  "icon": "💼",
+  "color": "from-blue-400 to-blue-600",
+  "facil": [
+    {
+      "id": "carreira_facil_001",
+      "title": "Defina uma meta da semana",
+      "description": "Quero terminar um relatório até sexta-feira.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_002",
+      "title": "Organize sua mesa ou ambiente de trabalho",
+      "description": "Jogar papéis fora, alinhar o notebook e deixar só uma caneta e caderno.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_003",
+      "title": "Escreva uma mini-vitória recente",
+      "description": "Consegui enviar o e-mail importante ontem mesmo cansada.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_004",
+      "title": "Dedique 20 minutos ao aprendizado",
+      "description": "Ler um artigo sobre produtividade no celular enquanto toma café.",
+      "points": 10,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_005",
+      "title": "Planeje o dia de amanhã antes de dormir",
+      "description": "Anotar '8h responder e-mails / 10h reunião / 14h relatório.'",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_006",
+      "title": "Faça uma pausa de 5 minutos consciente",
+      "description": "Levantar da cadeira, beber água e respirar fundo 3 vezes.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_007",
+      "title": "Revise sua lista de tarefas",
+      "description": "Riscar o que já foi feito e manter só 3 prioridades no topo.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_008",
+      "title": "Envie uma mensagem de agradecimento",
+      "description": "Mandar um 'valeu pela ajuda' para um colega de trabalho.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_009",
+      "title": "Crie uma frase de motivação pessoal",
+      "description": "Eu consigo terminar o que começo. Escrever no post-it e colar no monitor.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_010",
+      "title": "Desconecte 15 minutos das redes sociais",
+      "description": "Deixar o celular na gaveta enquanto trabalha.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_011",
+      "title": "Revise sua agenda semanal",
+      "description": "Olhar compromissos de segunda a sexta e ajustar horários.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_012",
+      "title": "Leia 5 páginas de um livro sobre carreira",
+      "description": "Abrir um livro de desenvolvimento pessoal e ler durante o almoço.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_013",
+      "title": "Elimine 1 distração do ambiente",
+      "description": "Tirar notificações do WhatsApp Web no computador.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_014",
+      "title": "Identifique sua maior prioridade do dia",
+      "description": "Escrever em uma folha: 'Prioridade nº1 → Enviar proposta ao cliente.'",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_015",
+      "title": "Marque um bloco de foco de 30 minutos",
+      "description": "Colocar alarme, fechar abas extras e só trabalhar no relatório.",
+      "points": 10,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_016",
+      "title": "Reflita sobre uma habilidade que quer melhorar",
+      "description": "Quero me comunicar melhor em reuniões.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_017",
+      "title": "Escute um podcast de 10 minutos sobre produtividade",
+      "description": "Ouvir no Spotify no caminho para o trabalho.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_018",
+      "title": "Anote 3 coisas que você já faz bem no trabalho",
+      "description": "Sou organizada, cumpro prazos e escrevo bem.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_019",
+      "title": "Refaça sua lista de tarefas deixando só o essencial",
+      "description": "De 10 tarefas, manter apenas 3 mais urgentes.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_020",
+      "title": "Escolha 1 tarefa que pode delegar",
+      "description": "Pedir para alguém da equipe enviar o e-mail padrão.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_021",
+      "title": "Defina um horário fixo para iniciar o trabalho",
+      "description": "Sempre começo às 8h, independente de tudo.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_022",
+      "title": "Faça um resumo de 3 linhas da sua semana até agora",
+      "description": "Consegui terminar o relatório, mas atrasei e-mails. Preciso focar amanhã.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_023",
+      "title": "Experimente trabalhar em pé por 15 minutos",
+      "description": "Usar uma bancada alta ou apoiar o notebook em cima de uma caixa.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_024",
+      "title": "Escreva 1 ideia de melhoria para sua rotina",
+      "description": "Vou responder e-mails só no começo do dia.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_025",
+      "title": "Faça uma caminhada curta de 10 minutos",
+      "description": "Descer até a padaria e voltar, sem celular.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_026",
+      "title": "Estabeleça um horário para encerrar o trabalho hoje",
+      "description": "Hoje desligo tudo às 19h.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_027",
+      "title": "Revise seus e-mails não lidos e delete os inúteis",
+      "description": "Excluir promoções antigas e deixar só os importantes.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_028",
+      "title": "Escreva 1 frase sobre sua carreira ideal",
+      "description": "Quero ser reconhecida como referência na minha área.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_029",
+      "title": "Ajuste 1 coisa no seu ambiente para ficar mais agradável",
+      "description": "Colocar uma planta ou trocar o fundo de tela do computador.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_030",
+      "title": "Escolha uma tarefa pequena e termine agora mesmo",
+      "description": "Responder uma mensagem pendente ou organizar uma pasta.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_031",
+      "title": "Escreva 1 coisa que gostaria de aprender no trabalho",
+      "description": "Quero aprender a usar melhor o Excel.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_032",
+      "title": "Revise um documento antigo que você produziu",
+      "description": "Reabrir um relatório de 3 meses atrás e ver o que pode melhorar.",
+      "points": 10,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_033",
+      "title": "Estabeleça um intervalo de almoço fixo",
+      "description": "Todo dia vou parar das 12h às 13h.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_034",
+      "title": "Faça um checklist para amanhã",
+      "description": "Anotar: '1. Reunião, 2. Revisar planilha, 3. Enviar relatório.'",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_035",
+      "title": "Anote 3 pessoas que podem te ajudar a evoluir",
+      "description": "Minha chefe, um colega de outra área, um amigo que já empreende.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_036",
+      "title": "Leia uma notícia sobre sua área profissional",
+      "description": "Procurar no Google 'tendências de marketing 2025'.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_037",
+      "title": "Escreva um agradecimento a si mesma",
+      "description": "Obrigada por não desistir mesmo cansada ontem.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_038",
+      "title": "Reorganize 1 pasta digital",
+      "description": "Arrumar os arquivos da área de trabalho em uma pasta 'Trabalho'.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_039",
+      "title": "Escolha 1 habilidade pequena para praticar hoje",
+      "description": "Vou escrever e-mails mais curtos e objetivos.",
+      "points": 10,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_040",
+      "title": "Tome água antes de começar a trabalhar",
+      "description": "Encher uma garrafinha e deixar na mesa.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_041",
+      "title": "Desligue notificações por 1 hora",
+      "description": "Colocar celular no modo foco e silenciar WhatsApp Web.",
+      "points": 10,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_042",
+      "title": "Revise seus gastos com trabalho essa semana",
+      "description": "Conferir quanto gastou em transporte e café.",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_043",
+      "title": "Escreva 1 frase sobre como quer se sentir no trabalho",
+      "description": "Quero me sentir mais confiante em reuniões.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_044",
+      "title": "Revise sua assinatura de e-mail",
+      "description": "Conferir se telefone e cargo estão atualizados.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_045",
+      "title": "Tire 1 dúvida com alguém da sua equipe",
+      "description": "Mandar mensagem: 'Fulana, essa planilha precisa ter gráficos?'",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_046",
+      "title": "Estabeleça uma meta simples de produtividade",
+      "description": "Hoje vou terminar pelo menos 2 relatórios.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_047",
+      "title": "Anote 1 ponto positivo do seu dia de trabalho",
+      "description": "Consegui focar bem durante a manhã.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_048",
+      "title": "Tire 10 minutos para organizar sua agenda digital",
+      "description": "Criar lembretes no Google Agenda para reuniões da semana.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_049",
+      "title": "Escreva um elogio para alguém do trabalho",
+      "description": "Seu relatório ficou muito bem estruturado, parabéns.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_050",
+      "title": "Escolha uma música que te ajude a focar",
+      "description": "Colocar uma playlist instrumental no Spotify.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_051",
+      "title": "Anote 1 coisa que poderia parar de fazer para ganhar tempo",
+      "description": "Parar de checar e-mail de 10 em 10 minutos.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_052",
+      "title": "Diga não a uma tarefa que não é prioridade",
+      "description": "Posso ajudar depois, mas agora preciso terminar meu relatório.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_053",
+      "title": "Escreva sua prioridade nº1 do mês",
+      "description": "Concluir o curso de especialização.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_054",
+      "title": "Separe 15 minutos para revisar aprendizados da semana",
+      "description": "Anotar em um caderno: 'O que aprendi sobre gestão de tempo.'",
+      "points": 10,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_055",
+      "title": "Revise sua postura na mesa de trabalho",
+      "description": "Ajustar cadeira e manter pés firmes no chão.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_056",
+      "title": "Escolha 1 tarefa que vem adiando e faça 5 minutos",
+      "description": "Abrir o relatório e preencher apenas o título e o cabeçalho.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_057",
+      "title": "Escreva 1 conquista do mês passado",
+      "description": "Fechei um contrato novo.",
+      "points": 10,
+      "duration": 5,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_058",
+      "title": "Reduza sua lista de tarefas pela metade",
+      "description": "De 8 itens, deixar apenas 4 para hoje.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_059",
+      "title": "Reserve 10 minutos para organizar papéis físicos",
+      "description": "Jogar fora notas antigas e guardar documentos importantes em pastas.",
+      "points": 10,
+      "duration": 10,
+      "category": "carreira",
+      "difficulty": "facil"
+    },
+    {
+      "id": "carreira_facil_060",
+      "title": "Faça uma pausa consciente para alongar o corpo",
+      "description": "Esticar braços, girar ombros, alongar as pernas por 3 minutos.",
+      "points": 10,
+      "duration": 3,
+      "category": "carreira",
+      "difficulty": "facil"
+    }
+  ],
+  "dificil": [
+    {
+      "id": "carreira_dificil_001",
+      "title": "Monte um plano de metas para os próximos 3 meses",
+      "description": "Escrever 3 metas grandes (ex.: concluir curso, conquistar promoção, melhorar inglês).",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_002",
+      "title": "Peça feedback direto para alguém superior no trabalho",
+      "description": "Chefe, o que você acha que posso melhorar nos meus relatórios?",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_003",
+      "title": "Faça uma apresentação de 5 minutos sobre um tema da sua área",
+      "description": "Preparar slides simples e explicar 'Tendências de marketing digital em 2025'.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_004",
+      "title": "Estabeleça uma rotina fixa para início do dia de trabalho",
+      "description": "Todo dia às 9h, revisar agenda + listar 3 prioridades.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_005",
+      "title": "Resolva uma tarefa que está atrasada há mais de 2 semanas",
+      "description": "Finalizar relatório que vem adiando.",
+      "points": 25,
+      "duration": 120,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_006",
+      "title": "Leia 1 capítulo de um livro sobre desenvolvimento profissional",
+      "description": "Livro 'Trabalhe 4 Horas por Semana' → Capítulo 1.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_007",
+      "title": "Identifique um ponto fraco e escreva 3 ações para melhorar",
+      "description": "Fraqueza = 'dificuldade em falar em público'; ações = treinar, curso, gravar vídeo.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_008",
+      "title": "Estruture um projeto paralelo que pode gerar renda extra",
+      "description": "Criar plano inicial de vender artesanato no Instagram.",
+      "points": 25,
+      "duration": 90,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_009",
+      "title": "Defina uma meta de aprendizado para o próximo mês",
+      "description": "Vou aprender o básico de Power BI.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_010",
+      "title": "Participe de um evento online da sua área",
+      "description": "Webinar gratuito sobre liderança.",
+      "points": 25,
+      "duration": 90,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_011",
+      "title": "Redija uma lista com 5 contatos que você deve se reaproximar",
+      "description": "Ex-colega de faculdade, chefe antigo, amigo da pós.",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_012",
+      "title": "Escreva sua visão de carreira em 5 anos",
+      "description": "Quero ser coordenadora de equipe e ganhar X por mês.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_013",
+      "title": "Apresente 1 ideia de melhoria no seu trabalho atual",
+      "description": "Criar um checklist para evitar erros no envio de relatórios.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_014",
+      "title": "Envie um e-mail profissional pedindo orientação",
+      "description": "Olá, admiro sua trajetória, poderia me indicar materiais de estudo?",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_015",
+      "title": "Estabeleça uma rotina de estudo semanal",
+      "description": "Toda terça, 20h, 30min de curso online. Coloque no calendário.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_016",
+      "title": "Identifique 1 hábito que atrapalha produtividade e substitua",
+      "description": "Trocar checar WhatsApp a cada 10min → por revisar só de 2 em 2 horas.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_017",
+      "title": "Escreva uma carta para você mesma do futuro sobre carreira",
+      "description": "Querida eu de 2030, espero que esteja liderando sua própria empresa.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_018",
+      "title": "Peça para alguém revisar um trabalho seu",
+      "description": "Mostrar uma apresentação para colega antes de enviar e anotar pontos de melhoria.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_019",
+      "title": "Estabeleça uma meta ousada de 1 ano",
+      "description": "Quero dobrar minha renda até agosto de 2026.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_020",
+      "title": "Crie uma rotina de foco profundo (Deep Work) de 1h",
+      "description": "Deixar celular fora do quarto e fechar redes sociais sem distrações.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_021",
+      "title": "Escreva 3 coisas que te fariam sair do emprego atual",
+      "description": "Falta de crescimento, salário estagnado, ambiente tóxico.",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_022",
+      "title": "Prepare-se para aplicar para uma nova vaga",
+      "description": "Atualizar currículo e LinkedIn (mesmo que não vá agora).",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_023",
+      "title": "Identifique habilidade valorizada no mercado e comece a praticar",
+      "description": "Aprender Canva para design básico.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_024",
+      "title": "Resolva um problema do trabalho antes que alguém cobre",
+      "description": "Consertar erro em relatório sem esperar o chefe perceber.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_025",
+      "title": "Participe de uma comunidade profissional online",
+      "description": "Entrar em grupo de LinkedIn de mulheres empreendedoras.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_026",
+      "title": "Grave um vídeo de 2 minutos apresentando suas habilidades",
+      "description": "Gravar no celular: 'Sou [nome], trabalho com X e quero Y.'",
+      "points": 25,
+      "duration": 15,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_027",
+      "title": "Escreva um plano de ação para sair da procrastinação",
+      "description": "Criar regra: 'Sempre começar pelo mais difícil do dia.'",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_028",
+      "title": "Aprenda uma nova ferramenta digital útil para sua carreira",
+      "description": "Criar conta no Trello e organizar projetos.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_029",
+      "title": "Defina 1 desafio de networking para o mês",
+      "description": "Conversar com pelo menos 3 pessoas novas no LinkedIn.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_030",
+      "title": "Crie uma pasta Portfólio e adicione seus melhores trabalhos",
+      "description": "Colocar 2 relatórios, 1 apresentação e 1 artigo publicado.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_031",
+      "title": "Crie uma lista das 10 empresas que gostaria de trabalhar",
+      "description": "Fazer uma lista no Google Docs com nome, área e por que admira cada empresa.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_032",
+      "title": "Escreva uma carta de apresentação para vaga dos sonhos",
+      "description": "Sou dedicada, organizada e quero contribuir em X com Y...",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_033",
+      "title": "Monte um cronograma de estudos para os próximos 30 dias",
+      "description": "Segunda e quarta → inglês; sexta → Excel.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_034",
+      "title": "Revise finanças e calcule quanto precisaria para viver 6 meses",
+      "description": "Somar aluguel, contas e alimentação em uma planilha.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_035",
+      "title": "Escreva um e-mail oferecendo seus serviços como freelancer",
+      "description": "Olá, vi que sua empresa usa redes sociais, posso ajudar com conteúdo profissional.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_036",
+      "title": "Identifique seu maior medo profissional e escreva como enfrentá-lo",
+      "description": "Medo de falar em público → praticar gravação de vídeos curtos em casa.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_037",
+      "title": "Crie uma rotina matinal de produtividade",
+      "description": "15 min leitura + 15 min planejamento do dia + 10 min alongamento.",
+      "points": 25,
+      "duration": 40,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_038",
+      "title": "Estabeleça uma meta de leitura de 1 livro por mês",
+      "description": "'Mindset' de Carol Dweck relacionado à carreira.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_039",
+      "title": "Escreva um mini-artigo no LinkedIn sobre sua área",
+      "description": "Texto de 200 palavras sobre como melhorar a produtividade no home office.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_040",
+      "title": "Participe de um curso online gratuito na sua área",
+      "description": "Inscrever-se no Coursera, Udemy ou Sebrae.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_041",
+      "title": "Faça uma autoavaliação das suas últimas 3 entregas",
+      "description": "Escrever o que foi bom e o que poderia ter sido melhor no trabalho.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_042",
+      "title": "Converse com alguém que já está no cargo que você deseja",
+      "description": "Mandar mensagem no LinkedIn pedindo dicas.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_043",
+      "title": "Estabeleça uma meta de networking semanal",
+      "description": "Adicionar 1 novo contato profissional por semana.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_044",
+      "title": "Crie uma apresentação pessoal em PowerPoint ou Canva",
+      "description": "3 slides com quem você é, habilidades e sonhos profissionais.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_045",
+      "title": "Faça uma análise SWOT da sua carreira",
+      "description": "Força: disciplina; Fraqueza: falar em público; Oportunidade: curso online; Ameaça: mercado competitivo.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_046",
+      "title": "Escreva um pitch de 1 minuto sobre você",
+      "description": "Sou [nome], trabalho com [área] há 3 anos e ajudo empresas a [resultado].",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_047",
+      "title": "Crie uma rotina semanal de revisão de objetivos",
+      "description": "Todo domingo à noite revisar lista de metas e ajustar.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_048",
+      "title": "Organize seus arquivos digitais em pastas",
+      "description": "Pasta 'Trabalho 2025' com subpastas: relatórios, apresentações, planilhas.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_049",
+      "title": "Liste 3 pessoas que podem ser suas mentoras informais",
+      "description": "Colega de empresa, professora da faculdade, amiga que empreende.",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_050",
+      "title": "Escreva um artigo de 1 página sobre o futuro da sua área",
+      "description": "Como a inteligência artificial vai impactar o marketing digital.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_051",
+      "title": "Simule uma entrevista de emprego e grave suas respostas",
+      "description": "Perguntas clássicas: 'Fale sobre você' e 'Quais são seus pontos fortes e fracos?'",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_052",
+      "title": "Crie uma meta de networking de médio prazo (6 meses)",
+      "description": "Participar de 2 eventos presenciais da minha área até dezembro.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_053",
+      "title": "Identifique habilidade digital emergente e comece a aprender",
+      "description": "Data visualization, copywriting, IA.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_054",
+      "title": "Defina uma meta de renda extra e planeje como alcançar",
+      "description": "Conseguir 1 cliente de design que me pague R$500 por mês.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_055",
+      "title": "Peça para alguém te avaliar como colega de trabalho",
+      "description": "Perguntar: 'Você acha que colaboro bem em equipe?'",
+      "points": 25,
+      "duration": 20,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_056",
+      "title": "Escreva lista de 5 conquistas profissionais que te orgulham",
+      "description": "Concluí curso técnico, recebi elogio do chefe, entreguei projeto antes do prazo.",
+      "points": 25,
+      "duration": 30,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_057",
+      "title": "Crie plano de estudo de 3 meses para evoluir em 1 habilidade",
+      "description": "Inglês: aulas online + prática semanal de conversação.",
+      "points": 25,
+      "duration": 60,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_058",
+      "title": "Faça uma revisão crítica do seu LinkedIn",
+      "description": "Atualizar foto, descrição e experiências.",
+      "points": 25,
+      "duration": 45,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_059",
+      "title": "Elabore um portfólio digital (mesmo que inicial)",
+      "description": "Criar PDF ou site com 3 trabalhos já realizados.",
+      "points": 25,
+      "duration": 90,
+      "category": "carreira",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "carreira_dificil_060",
+      "title": "Defina meta de longo prazo (10 anos) e passos iniciais",
+      "description": "Quero abrir minha empresa → Passos: estudar gestão, juntar dinheiro, começar pequeno.",
+      "points": 25,
+      "duration": 90,
+      "category": "carreira",
+      "difficulty": "dificil"
+    }
+  ]
+}
