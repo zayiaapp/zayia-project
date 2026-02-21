@@ -1,0 +1,1089 @@
+{
+  "label": "Digital Detox",
+  "icon": "📱",
+  "color": "from-cyan-400 to-blue-600",
+  "facil": [
+    {
+      "id": "digital_detox_facil_001",
+      "title": "30 minutos sem celular antes de dormir",
+      "description": "Deixe o celular carregando em outro cômodo e leia uma página de um livro.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_002",
+      "title": "Tome café da manhã sem olhar telas",
+      "description": "Sente-se à mesa e foque apenas na comida.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_003",
+      "title": "Desative notificações por 1 hora",
+      "description": "Vá nas configurações e desligue WhatsApp/Instagram por esse tempo.",
+      "points": 10,
+      "duration": 60,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_004",
+      "title": "Coloque o celular fora do quarto enquanto arruma a casa",
+      "description": "Deixe carregando na sala enquanto organiza seu quarto.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_005",
+      "title": "Faça uma refeição sem o celular à mesa",
+      "description": "Almoço sem rolar o feed.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_006",
+      "title": "Estabeleça 15 minutos de leitura offline",
+      "description": "Leia uma revista, livro físico ou um caderno de anotações.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_007",
+      "title": "Caminhe 10 minutos sem levar o celular",
+      "description": "Saia para respirar ar fresco, só você.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_008",
+      "title": "Tire uma foto mental em vez de usar câmera",
+      "description": "Ao ver algo bonito, só observe e descreva na mente.",
+      "points": 10,
+      "duration": 5,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_009",
+      "title": "Silencie grupos do WhatsApp por 8h",
+      "description": "Escolha um grupo agitado e silencie.",
+      "points": 10,
+      "duration": 480,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_010",
+      "title": "Deixe o celular na bolsa por 30 minutos em casa",
+      "description": "Sente-se com a família e esqueça que ele existe.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_011",
+      "title": "Faça alongamento sem música ou tela",
+      "description": "5 minutos apenas respirando.",
+      "points": 10,
+      "duration": 5,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_012",
+      "title": "Arrume sua mesa sem celular por perto",
+      "description": "Guarde o aparelho na gaveta e só organize o espaço.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_013",
+      "title": "Faça 10 respirações profundas sem distrações",
+      "description": "Sente-se e respire contando até 10.",
+      "points": 10,
+      "duration": 5,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_014",
+      "title": "Escreva num papel algo que sente, ao invés de postar",
+      "description": "Anote: 'Hoje me sinto cansada, mas aliviada.'",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_015",
+      "title": "Assista ao pôr do sol sem tirar foto",
+      "description": "Apenas olhe e guarde a cena na mente.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_016",
+      "title": "Coloque o celular no modo avião durante o banho",
+      "description": "Banho sem música nem notificações.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_017",
+      "title": "Converse 10 minutos cara a cara sem celular à mesa",
+      "description": "Café com amiga olhando nos olhos.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_018",
+      "title": "Faça lista de tarefas em papel",
+      "description": "Use um caderno e escreva o que vai fazer.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_019",
+      "title": "Durma 1 noite com o celular fora do quarto",
+      "description": "Deixe na cozinha e use despertador simples.",
+      "points": 10,
+      "duration": 480,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_020",
+      "title": "Não abra redes sociais pela manhã",
+      "description": "Nas 2 primeiras horas do dia, nada de Instagram.",
+      "points": 10,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_021",
+      "title": "Faça uma refeição ouvindo só seu corpo",
+      "description": "Sem TV, música ou celular, só mastigue e sinta.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_022",
+      "title": "Use papel para anotar ideias que surgirem",
+      "description": "Em vez de abrir o bloco de notas no celular.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_023",
+      "title": "Coloque limite de 15 min para uma rede social",
+      "description": "Configure no próprio app.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_024",
+      "title": "Ouça música sem abrir redes sociais junto",
+      "description": "Escolha uma playlist e deixe só a música.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_025",
+      "title": "Deixe o celular em outra sala por 20 min",
+      "description": "Faça algo manual nesse tempo (lavar louça, dobrar roupa).",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_026",
+      "title": "Passe 30 min sem fone de ouvido",
+      "description": "Caminhe ouvindo os sons do ambiente.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_027",
+      "title": "Passe 10 min observando a rua sem celular",
+      "description": "Sente-se na varanda só olhando o movimento.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_028",
+      "title": "Faça 1 atividade de lazer offline",
+      "description": "Jogar baralho, montar quebra-cabeça.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_029",
+      "title": "Escolha 1 app e não abra hoje",
+      "description": "Hoje não vou abrir o Instagram.",
+      "points": 10,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_030",
+      "title": "Arrume seu armário sem celular por perto",
+      "description": "Guarde as roupas sem música ou chamadas.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_031",
+      "title": "Passe 15 min sem celular enquanto toma sol",
+      "description": "Deite-se na varanda ou quintal e só relaxe.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_032",
+      "title": "Deixe o celular na mochila durante um deslocamento curto",
+      "description": "Vá ao mercado ou padaria sem olhar o aparelho.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_033",
+      "title": "Leia uma receita em papel e cozinhe sem celular",
+      "description": "Anote a receita antes de começar.",
+      "points": 10,
+      "duration": 45,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_034",
+      "title": "Faça alongamento matinal sem música",
+      "description": "Acorde e alongue só prestando atenção no corpo.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_035",
+      "title": "Escreva num diário 3 frases do seu dia",
+      "description": "Hoje acordei cedo, me senti cansada, mas cumpri uma meta.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_036",
+      "title": "Passe 20 min ouvindo sons naturais",
+      "description": "Abra a janela e ouça pássaros, vento, carros.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_037",
+      "title": "Deixe o celular em casa num passeio de 15 min",
+      "description": "Vá caminhar no quarteirão sem levar nada.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_038",
+      "title": "Assista um episódio de série sem olhar o celular junto",
+      "description": "Escolha um episódio e foque apenas nele.",
+      "points": 10,
+      "duration": 45,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_039",
+      "title": "Arrume a cama sem usar música ou celular",
+      "description": "Só dobre o lençol prestando atenção.",
+      "points": 10,
+      "duration": 5,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_040",
+      "title": "Ouça rádio ou música de aparelho físico em vez do celular",
+      "description": "Ligue a TV no canal de música ou use caixinha.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_041",
+      "title": "Faça uma lista de desejos em papel",
+      "description": "Escreva 5 coisas que quer conquistar.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_042",
+      "title": "Deixe o celular fora do banheiro",
+      "description": "Vá tomar banho ou escovar os dentes sem levar.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_043",
+      "title": "Passe 15 min cuidando de plantas ou animais sem celular",
+      "description": "Regue, brinque, observe.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_044",
+      "title": "Faça uma pausa de 10 min olhando o céu",
+      "description": "Sente-se e só observe as nuvens.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_045",
+      "title": "Leia um capítulo de livro físico sem interrupção",
+      "description": "Escolha um livro e leia até o fim do capítulo.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_046",
+      "title": "Faça um desenho ou rabisque no papel",
+      "description": "Desenhe qualquer coisa, sem objetivo.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_047",
+      "title": "Escute 3 músicas inteiras sem mexer no celular",
+      "description": "Escolha a playlist e deixe rolar.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_048",
+      "title": "Passe 15 min em silêncio total",
+      "description": "Desligue TV, celular, rádio e só fique quieta.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_049",
+      "title": "Brinque com uma criança sem celular por perto",
+      "description": "Jogue bola, monte Lego, sem interrupção.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_050",
+      "title": "Passe 30 min limpando a cozinha sem celular",
+      "description": "Só faça a tarefa manualmente.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_051",
+      "title": "Escreva 3 gratidões em papel antes de dormir",
+      "description": "Sou grata por meu corpo, pela comida, pelo dia.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_052",
+      "title": "Ouça música sem procurar outra ao mesmo tempo",
+      "description": "Escolha uma playlist e não troque até acabar.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_053",
+      "title": "Passe 20 min no quintal ou varanda sem celular",
+      "description": "Apenas observe o ambiente.",
+      "points": 10,
+      "duration": 20,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_054",
+      "title": "Arrume uma gaveta inteira sem celular",
+      "description": "Guarde roupas, papéis ou objetos.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_055",
+      "title": "Faça uma refeição inteira sem TV nem celular",
+      "description": "Almoço só com a comida e silêncio.",
+      "points": 10,
+      "duration": 30,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_056",
+      "title": "Passe 15 min deitada sem estímulos digitais",
+      "description": "Feche os olhos e só respire.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_057",
+      "title": "Converse 5 min com alguém sem olhar o celular",
+      "description": "Pergunte como foi o dia da pessoa.",
+      "points": 10,
+      "duration": 5,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_058",
+      "title": "Escreva 1 carta curta em papel para alguém",
+      "description": "Obrigada por sempre estar comigo.",
+      "points": 10,
+      "duration": 15,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_059",
+      "title": "Passe 10 min olhando fotos físicas antigas",
+      "description": "Abra o álbum de família e observe.",
+      "points": 10,
+      "duration": 10,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    },
+    {
+      "id": "digital_detox_facil_060",
+      "title": "Desative notificações sonoras do celular por 24h",
+      "description": "Desligue os sons de WhatsApp e Instagram.",
+      "points": 10,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "facil"
+    }
+  ],
+  "dificil": [
+    {
+      "id": "digital_detox_dificil_001",
+      "title": "Passe 2 horas à noite sem celular antes de dormir",
+      "description": "Troque esse tempo por leitura ou banho relaxante.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_002",
+      "title": "Fique 1 manhã inteira sem redes sociais",
+      "description": "Só use o celular para ligações urgentes.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_003",
+      "title": "Retire o celular da cabeceira e deixe em outro cômodo à noite",
+      "description": "Coloque-o na sala e use despertador físico.",
+      "points": 25,
+      "duration": 480,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_004",
+      "title": "Faça uma refeição especial sem nenhum aparelho eletrônico",
+      "description": "Jantar em família sem TV, música ou celular.",
+      "points": 25,
+      "duration": 60,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_005",
+      "title": "Fique 4 horas em um domingo sem celular",
+      "description": "Faça caminhada, limpe a casa ou cozinhe nesse tempo.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_006",
+      "title": "Delete um app de distração por 24h",
+      "description": "Instagram, TikTok ou qualquer outro que mais consome.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_007",
+      "title": "Passe o dia inteiro sem usar fones de ouvido",
+      "description": "Vá ao trabalho ou à rua sem música.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_008",
+      "title": "Faça um passeio offline de 1 hora",
+      "description": "Caminhar no parque sem levar o celular.",
+      "points": 25,
+      "duration": 60,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_009",
+      "title": "Desative todas as notificações por 24h",
+      "description": "WhatsApp, Instagram, e-mail, tudo silencioso.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_010",
+      "title": "Passe 1 tarde inteira sem celular",
+      "description": "14h às 18h focada em outras atividades.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_011",
+      "title": "Escolha 1 aplicativo e desinstale por 7 dias",
+      "description": "Excluir o Instagram e ficar uma semana sem usar.",
+      "points": 25,
+      "duration": 10080,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_012",
+      "title": "Faça uma manhã digital zero no sábado",
+      "description": "Até o almoço, nada de celular ou TV.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_013",
+      "title": "Deixe o celular carregando em outro cômodo por 1 dia inteiro",
+      "description": "Só vá até ele quando realmente precisar.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_014",
+      "title": "Passe 3 horas fazendo algo manual",
+      "description": "Pintar, cozinhar, organizar armário, sem celular.",
+      "points": 25,
+      "duration": 180,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_015",
+      "title": "Fique 24h sem acessar redes sociais",
+      "description": "Permita apenas WhatsApp para trabalho urgente.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_016",
+      "title": "Assista 1 filme inteiro sem tocar no celular",
+      "description": "Desligue notificações e foque no filme.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_017",
+      "title": "Faça um detox de 48h de um aplicativo específico",
+      "description": "2 dias sem TikTok.",
+      "points": 25,
+      "duration": 2880,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_018",
+      "title": "Passe 1 manhã inteira no domingo sem celular",
+      "description": "Aproveite café da manhã, arrume a casa, saia para andar.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_019",
+      "title": "Passe 2 horas arrumando armários sem celular",
+      "description": "Música desligada, só você e a arrumação.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_020",
+      "title": "Faça uma caminhada de 40 min sem levar o celular",
+      "description": "Vá ao parque ou pelas ruas do bairro.",
+      "points": 25,
+      "duration": 40,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_021",
+      "title": "Fique 12h sem abrir mensagens de WhatsApp",
+      "description": "Avise alguém próximo e só veja depois.",
+      "points": 25,
+      "duration": 720,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_022",
+      "title": "Passe 1 manhã sem ligar a TV",
+      "description": "Acorde, arrume-se, mas nada de tela ligada.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_023",
+      "title": "Passe 1 noite sem usar celular depois do trabalho",
+      "description": "Das 19h até dormir, sem tocar no aparelho.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_024",
+      "title": "Fique 24h sem assistir vídeos curtos",
+      "description": "Nada de Reels, Shorts ou TikTok.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_025",
+      "title": "Guarde o celular em uma caixa por 6h",
+      "description": "Escolha o período da tarde e se desconecte.",
+      "points": 25,
+      "duration": 360,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_026",
+      "title": "Fique 2h seguidas em silêncio, sem telas",
+      "description": "Faça meditação, leitura, ou só relaxe.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_027",
+      "title": "Passe 24h sem abrir o Instagram",
+      "description": "Delete o app e reinstale no dia seguinte.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_028",
+      "title": "Faça um sábado minimalista sem celular até 15h",
+      "description": "Só pegue o celular depois do almoço.",
+      "points": 25,
+      "duration": 420,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_029",
+      "title": "Passe 5h sem tocar no celular em um domingo",
+      "description": "Escolha das 10h às 15h.",
+      "points": 25,
+      "duration": 300,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_030",
+      "title": "Fique 1 manhã de trabalho só com papel e caneta",
+      "description": "Anote tarefas, mas nada de celular ou computador.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_031",
+      "title": "Passe um domingo inteiro sem abrir redes sociais",
+      "description": "Use o celular apenas para ligações ou emergências.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_032",
+      "title": "Deixe o celular no modo avião por 3h seguidas",
+      "description": "Faça isso à tarde enquanto lê ou organiza a casa.",
+      "points": 25,
+      "duration": 180,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_033",
+      "title": "Passe 24h sem assistir nada em streaming",
+      "description": "Nada de Netflix, YouTube, etc. Troque por leitura ou conversa.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_034",
+      "title": "Não use celular durante as refeições por 2 dias seguidos",
+      "description": "Café da manhã e jantar totalmente offline.",
+      "points": 25,
+      "duration": 2880,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_035",
+      "title": "Desinstale temporariamente seu aplicativo de mensagens mais usado",
+      "description": "WhatsApp ou Telegram, por 24h.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_036",
+      "title": "Passe 1 dia sem usar o Google/consultar nada na internet",
+      "description": "Se surgir dúvida, anote para pesquisar no dia seguinte.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_037",
+      "title": "Fique 24h sem tirar fotos ou gravar vídeos",
+      "description": "Curta o momento sem registrar nada.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_038",
+      "title": "Viva 1 dia inteiro sem música digital",
+      "description": "Nada de Spotify, YouTube; se quiser, ouça rádio.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_039",
+      "title": "Faça uma noite inteira de domingo sem nenhuma tela",
+      "description": "Jogue, leia, ou faça artesanato.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_040",
+      "title": "Programe um dia offline por completo",
+      "description": "Desligue o celular às 8h e religue só no dia seguinte.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_041",
+      "title": "Passe 12h sem abrir e-mail",
+      "description": "Escolha o sábado e esqueça a caixa de entrada.",
+      "points": 25,
+      "duration": 720,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_042",
+      "title": "Bloqueie todas as notificações por 48h",
+      "description": "Ative apenas chamadas de emergência.",
+      "points": 25,
+      "duration": 2880,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_043",
+      "title": "Use celular apenas para ligações por 1 dia",
+      "description": "Nada de redes, vídeos, mensagens.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_044",
+      "title": "Passe 24h sem abrir nenhuma notícia online",
+      "description": "Se quiser se informar, use jornal impresso.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_045",
+      "title": "Passe 1 noite sem usar qualquer tela antes de dormir",
+      "description": "19h até a hora de dormir, só atividades offline.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_046",
+      "title": "Fique 2h sem qualquer aparelho eletrônico em casa",
+      "description": "Desligue celular, TV, notebook e apenas relaxe.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_047",
+      "title": "Fique 24h sem acessar TikTok",
+      "description": "Delete o app e reinstale no dia seguinte.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_048",
+      "title": "Faça um jantar à luz de velas sem celular",
+      "description": "Aproveite a refeição e a companhia.",
+      "points": 25,
+      "duration": 60,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_049",
+      "title": "Programe 1 tarde inteira de atividades offline",
+      "description": "Pintar, caminhar, cozinhar sem telas.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_050",
+      "title": "Passe 6h sem tocar no celular no sábado",
+      "description": "Deixe em uma caixa trancada.",
+      "points": 25,
+      "duration": 360,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_051",
+      "title": "Passe 1 manhã inteira sem usar computador",
+      "description": "Foque em atividades práticas.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_052",
+      "title": "Faça 2h de leitura em papel sem celular por perto",
+      "description": "Coloque o celular em outro cômodo.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_053",
+      "title": "Passe 24h sem abrir YouTube",
+      "description": "Anote vídeos que gostaria de ver e assista no dia seguinte.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_054",
+      "title": "Durma 1 noite com o celular desligado",
+      "description": "Use despertador físico.",
+      "points": 25,
+      "duration": 480,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_055",
+      "title": "Passe 3h de domingo totalmente offline",
+      "description": "Sem celular, sem TV, apenas atividades relaxantes.",
+      "points": 25,
+      "duration": 180,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_056",
+      "title": "Faça uma manhã de silêncio digital",
+      "description": "Acorde, tome café e organize a casa sem telas.",
+      "points": 25,
+      "duration": 240,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_057",
+      "title": "Fique 48h sem acessar Instagram",
+      "description": "Delete o app por 2 dias.",
+      "points": 25,
+      "duration": 2880,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_058",
+      "title": "Passe 1 dia inteiro sem abrir grupos de WhatsApp",
+      "description": "Responda apenas mensagens individuais urgentes.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_059",
+      "title": "Faça 2h de escrita manual sem celular por perto",
+      "description": "Escreva sobre planos, metas ou diário pessoal.",
+      "points": 25,
+      "duration": 120,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "digital_detox_dificil_060",
+      "title": "Passe 24h sem usar celular para entretenimento",
+      "description": "Nada de vídeos, jogos ou música, apenas utilidades básicas.",
+      "points": 25,
+      "duration": 1440,
+      "category": "digital_detox",
+      "difficulty": "dificil"
+    }
+  ]
+}

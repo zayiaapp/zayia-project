@@ -1,0 +1,1089 @@
+{
+  "label": "Relacionamentos & Comunicação",
+  "icon": "💬",
+  "color": "from-rose-400 to-pink-600",
+  "facil": [
+    {
+      "id": "relacionamentos_facil_001",
+      "title": "Envie uma mensagem de carinho para alguém que você gosta",
+      "description": "Oi, lembrei de você hoje, só queria dizer que te admiro muito.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_002",
+      "title": "Faça um elogio sincero para alguém pessoalmente ou por mensagem",
+      "description": "A forma como você organiza as coisas me inspira.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_003",
+      "title": "Pergunte como alguém está de verdade e escute a resposta",
+      "description": "E aí, como você tem se sentido essa semana? (sem apressar).",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_004",
+      "title": "Compartilhe uma lembrança boa com um amigo ou familiar",
+      "description": "Mandar foto antiga no WhatsApp com: 'Lembra desse dia? Foi demais.'",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_005",
+      "title": "Diga 'obrigada' olhando nos olhos para alguém hoje",
+      "description": "Ao atendente do mercado, ao colega de trabalho, ao marido/esposa.",
+      "points": 10,
+      "duration": 2,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_006",
+      "title": "Marque um café virtual ou presencial com uma amiga",
+      "description": "Enviar áudio: 'Bora um café essa semana? Tô com saudade.'",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_007",
+      "title": "Responda mensagens atrasadas que você tem ignorado",
+      "description": "Abrir o WhatsApp e responder ao menos 3 conversas pendentes.",
+      "points": 10,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_008",
+      "title": "Escreva uma carta curta para alguém importante (pode ser por mensagem)",
+      "description": "Quero que saiba que você é essencial na minha vida.",
+      "points": 10,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_009",
+      "title": "Compartilhe algo que aprendeu com alguém próximo",
+      "description": "Vi um vídeo hoje que explica produtividade, vou te mandar.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_010",
+      "title": "Escute alguém sem interromper por 5 minutos",
+      "description": "Durante o almoço, deixar a pessoa falar sem opinar.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_011",
+      "title": "Diga 'eu gosto de você' para uma pessoa próxima",
+      "description": "Só queria que você soubesse: eu gosto muito de você.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_012",
+      "title": "Mande um áudio sorrindo para alguém (o sorriso muda o tom da voz)",
+      "description": "30 segundos de áudio feliz para uma amiga.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_013",
+      "title": "Pergunte algo pessoal que demonstre interesse real",
+      "description": "O que você mais gostava de fazer na infância?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_014",
+      "title": "Ofereça ajuda prática para alguém hoje",
+      "description": "Quer que eu olhe esse texto pra você antes de enviar?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_015",
+      "title": "Elogie a roupa ou cabelo de alguém hoje",
+      "description": "Essa cor ficou perfeita em você.",
+      "points": 10,
+      "duration": 2,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_016",
+      "title": "Compartilhe uma música que tenha significado com um amigo",
+      "description": "Mandar no Spotify: 'Essa música me lembrou de nós.'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_017",
+      "title": "Mande uma foto simples do seu dia para alguém",
+      "description": "Foto do café com mensagem: 'Olha meu momento agora. E o seu?'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_018",
+      "title": "Pergunte a opinião de alguém em uma decisão pequena",
+      "description": "Tô em dúvida entre esse look ou esse, qual você acha melhor?",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_019",
+      "title": "Escreva algo positivo em rede social marcando alguém",
+      "description": "Postar story: 'Gratidão a essa amiga incrível!'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_020",
+      "title": "Faça contato com alguém que não fala há meses",
+      "description": "Oi, sumida! Como você tá? Senti saudades.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_021",
+      "title": "Diga algo que admira em um familiar",
+      "description": "Pai, sempre admirei sua disciplina com o trabalho.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_022",
+      "title": "Envie uma mensagem de bom dia/boa noite para alguém especial",
+      "description": "Boa noite, dorme bem, amanhã é um novo dia.",
+      "points": 10,
+      "duration": 3,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_023",
+      "title": "Ofereça um abraço sincero a alguém hoje",
+      "description": "Precisa de um abraço? e dar de coração.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_024",
+      "title": "Pergunte como foi o dia de alguém sem pressa",
+      "description": "Me conta, como foi seu dia?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_025",
+      "title": "Compartilhe um sonho ou meta com alguém próximo",
+      "description": "Meu sonho é fazer tal curso ano que vem, sabia?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_026",
+      "title": "Faça uma ligação curta para alguém em vez de só mensagem",
+      "description": "2 min dizendo: 'Só liguei pra ouvir sua voz.'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_027",
+      "title": "Agradeça por algo específico a alguém",
+      "description": "Obrigada por sempre me ouvir quando preciso.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_028",
+      "title": "Convide alguém para caminhar junto",
+      "description": "Tô indo andar 20 min, bora comigo?",
+      "points": 10,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_029",
+      "title": "Mostre interesse pelo hobby de alguém",
+      "description": "Vi que você tá pintando, mostra sua arte pra mim depois?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_030",
+      "title": "Compartilhe uma frase inspiradora com alguém hoje",
+      "description": "Mandar no WhatsApp: 'Vi isso e lembrei de você: A disciplina é a ponte entre sonhos e conquistas.'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_031",
+      "title": "Mande um meme engraçado para alegrar alguém",
+      "description": "Print de um meme com 'isso é muito você 😂'.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_032",
+      "title": "Pergunte a alguém sobre um sonho futuro",
+      "description": "Se pudesse realizar qualquer coisa agora, o que seria?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_033",
+      "title": "Compartilhe um elogio que recebeu recentemente com alguém",
+      "description": "Ontem me disseram que sou dedicada, fiquei feliz. E você, já recebeu algo assim?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_034",
+      "title": "Reforce a confiança em alguém",
+      "description": "Eu sei que você consegue passar nessa prova, você é muito capaz.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_035",
+      "title": "Escreva uma lembrança boa de infância e compartilhe",
+      "description": "Quando eu era pequena, adorava brincar de pega-pega com os vizinhos.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_036",
+      "title": "Faça uma pergunta divertida para quebrar o gelo",
+      "description": "Se você fosse um personagem de filme, qual seria?",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_037",
+      "title": "Compartilhe uma foto antiga com alguém importante",
+      "description": "Enviar foto antiga de vocês e escrever 'Olha isso kkk'.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_038",
+      "title": "Pergunte qual foi o melhor momento do dia de alguém",
+      "description": "Qual foi a melhor coisa que aconteceu com você hoje?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_039",
+      "title": "Escreva algo que aprendeu com essa pessoa",
+      "description": "Com você aprendi a ser mais paciente, obrigada.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_040",
+      "title": "Ofereça companhia em algo simples",
+      "description": "Vou ao mercado daqui a pouco, quer ir junto?",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_041",
+      "title": "Compartilhe uma indicação de livro, série ou filme",
+      "description": "Acho que você vai gostar desse filme, me lembrou de você.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_042",
+      "title": "Mande uma mensagem inesperada de incentivo",
+      "description": "Sei que hoje vai ser puxado, mas tô torcendo por você.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_043",
+      "title": "Pergunte sobre uma conquista recente",
+      "description": "E aí, como tá indo aquele projeto que você começou?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_044",
+      "title": "Convide alguém para cozinhar junto",
+      "description": "Bora fazer uma janta juntas amanhã?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_045",
+      "title": "Elogie a personalidade de alguém",
+      "description": "Você é uma das pessoas mais criativas que conheço.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_046",
+      "title": "Compartilhe um áudio de risada sincera",
+      "description": "Gravar 5 seg de gargalhada e mandar no WhatsApp.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_047",
+      "title": "Pergunte sobre um hobby que a pessoa gosta",
+      "description": "E aí, como estão seus treinos de dança?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_048",
+      "title": "Mostre gratidão pelo tempo de alguém",
+      "description": "Obrigada por sempre separar um tempinho pra mim.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_049",
+      "title": "Convide alguém para assistir algo junto online",
+      "description": "Vamos ver aquele filme no Prime juntos, cada uma na sua casa?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_050",
+      "title": "Mande uma frase motivacional de manhã",
+      "description": "Bom dia! Lembre-se: cada passo conta, mesmo os pequenos.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_051",
+      "title": "Pergunte algo sobre a família de alguém",
+      "description": "Como estão seus pais? Faz tempo que não vejo eles.",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_052",
+      "title": "Compartilhe algo que fez você rir hoje",
+      "description": "Olha esse vídeo kkkkk",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_053",
+      "title": "Comente em algo positivo nas redes sociais da pessoa",
+      "description": "Que foto linda, tá radiante!",
+      "points": 10,
+      "duration": 3,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_054",
+      "title": "Escreva uma pequena nota de incentivo (pode ser no papel ou mensagem)",
+      "description": "Você vai longe, acredita em si mesma.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_055",
+      "title": "Convide alguém para uma caminhada curta",
+      "description": "Tô indo dar uma volta de 15 min, bora?",
+      "points": 10,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_056",
+      "title": "Mande uma música que te lembre dessa pessoa",
+      "description": "Link do Spotify + 'Essa música é sua cara.'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_057",
+      "title": "Agradeça a amizade ou parceria",
+      "description": "Sua amizade é uma das coisas mais importantes da minha vida.",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_058",
+      "title": "Pergunte a alguém qual foi o maior desafio da semana",
+      "description": "Qual foi a parte mais difícil da sua semana até agora?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_059",
+      "title": "Ofereça algo simples de presente",
+      "description": "Mandar uma foto sua com: 'Isso aqui é pra você sorrir.'",
+      "points": 10,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    },
+    {
+      "id": "relacionamentos_facil_060",
+      "title": "Compartilhe uma meta sua com essa pessoa",
+      "description": "Quero organizar minhas finanças até o fim do mês, segura minha mão nisso?",
+      "points": 10,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "facil"
+    }
+  ],
+  "dificil": [
+    {
+      "id": "relacionamentos_dificil_001",
+      "title": "Ligue para alguém que você não fala faz tempo",
+      "description": "Ligar para uma amiga de infância e dizer 'Oi, lembrei de você e quis saber como tá a vida.'",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_002",
+      "title": "Peça desculpas para alguém que você magoou",
+      "description": "Mandar mensagem: 'Eu errei naquele dia, me desculpa, eu tava mal e não soube lidar.'",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_003",
+      "title": "Converse pessoalmente sobre algo que você vem evitando",
+      "description": "Chamar alguém pra falar: 'Preciso abrir o coração, isso tem me incomodado.'",
+      "points": 25,
+      "duration": 45,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_004",
+      "title": "Organize um encontro presencial com 2 ou 3 amigos",
+      "description": "Marcar um café da tarde num lugar próximo.",
+      "points": 25,
+      "duration": 120,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_005",
+      "title": "Dê um feedback construtivo para alguém",
+      "description": "Acho sua ideia boa, mas talvez se você organizar assim vai ficar ainda melhor.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_006",
+      "title": "Convide alguém para um passeio fora da rotina",
+      "description": "Chamar pra ir no parque ou museu juntos.",
+      "points": 25,
+      "duration": 180,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_007",
+      "title": "Fale em voz alta um elogio sincero",
+      "description": "Você é uma pessoa muito resiliente, admiro isso em você.",
+      "points": 25,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_008",
+      "title": "Escreva uma carta de gratidão a alguém",
+      "description": "Escrever no papel e entregar ou mandar foto da carta escrita à mão.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_009",
+      "title": "Ajude alguém com uma tarefa difícil",
+      "description": "Se oferecer pra revisar um currículo ou ajudar em mudança.",
+      "points": 25,
+      "duration": 60,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_010",
+      "title": "Faça uma ligação só para ouvir a outra pessoa",
+      "description": "Ligar e falar: 'Hoje eu só quero te ouvir, como você tá de verdade?'",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_011",
+      "title": "Abra vulnerabilidade com alguém próximo",
+      "description": "Dizer: 'Tenho me sentido insegura, e precisava compartilhar com você.'",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_012",
+      "title": "Surpreenda alguém com um gesto de carinho",
+      "description": "Deixar um bilhete positivo escondido na bolsa da amiga.",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_013",
+      "title": "Pergunte a alguém qual é o maior sonho dela",
+      "description": "Se tudo fosse possível, qual sonho você realizaria?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_014",
+      "title": "Ofereça ajuda prática sem ser chamada",
+      "description": "Vi que você tá sobrecarregada, posso te ajudar a organizar isso?",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_015",
+      "title": "Reforce a presença: esteja 100% atenta em uma conversa",
+      "description": "Guardar o celular e olhar nos olhos durante toda a conversa.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_016",
+      "title": "Diga a alguém que você ama",
+      "description": "Mandar áudio no WhatsApp: 'Só queria dizer que eu te amo e você é essencial na minha vida.'",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_017",
+      "title": "Marque um encontro surpresa com alguém especial",
+      "description": "Convidar sem revelar muito: 'Se arruma, vou te buscar.'",
+      "points": 25,
+      "duration": 120,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_018",
+      "title": "Fale sobre algo que admira muito em alguém",
+      "description": "Admiro sua força de continuar mesmo nas dificuldades, me inspira.",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_019",
+      "title": "Convide alguém para praticar atividade física com você",
+      "description": "Bora caminhar 20 minutos juntas amanhã cedo?",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_020",
+      "title": "Converse com alguém que você tem dificuldade de se abrir",
+      "description": "Falar com colega de trabalho com quem quase não interage.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_021",
+      "title": "Apresente duas pessoas que não se conhecem",
+      "description": "Juntar uma amiga que procura estágio com outra que trabalha na área.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_022",
+      "title": "Pergunte sobre os valores de vida de alguém",
+      "description": "Quais são os princípios que você não abre mão?",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_023",
+      "title": "Compartilhe uma vulnerabilidade sua em rede social",
+      "description": "Escrever: 'Hoje não tô tão bem, mas sigo aprendendo a respeitar meus limites.'",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_024",
+      "title": "Prepare uma refeição e convide alguém para comer com você",
+      "description": "Cozinhar algo simples e chamar uma amiga pra jantar.",
+      "points": 25,
+      "duration": 90,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_025",
+      "title": "Deixe um elogio público nas redes de alguém",
+      "description": "Comentar: 'Você é incrível, orgulho de te ver conquistando isso!'",
+      "points": 25,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_026",
+      "title": "Pergunte a alguém como ela gostaria de ser apoiada",
+      "description": "Quando você tá mal, prefere que eu escute ou que eu dê conselhos?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_027",
+      "title": "Compartilhe uma história de superação sua",
+      "description": "Já passei por isso também, e foi assim que consegui superar.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_028",
+      "title": "Respeite o silêncio numa conversa difícil",
+      "description": "Não tentar preencher, apenas dar espaço pra pessoa falar.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_029",
+      "title": "Pergunte a opinião de alguém sobre uma decisão sua",
+      "description": "Tô pensando em mudar de área, o que você acha?",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_030",
+      "title": "Convide alguém para fazer uma atividade cultural",
+      "description": "Ir juntas a uma peça de teatro ou exposição.",
+      "points": 25,
+      "duration": 180,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_031",
+      "title": "Diga não para algo que não quer fazer",
+      "description": "Recusar um convite dizendo: 'Obrigada, mas hoje vou priorizar meu descanso.'",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_032",
+      "title": "Conte para alguém sobre um medo seu",
+      "description": "Tenho medo de fracassar nesse projeto e às vezes isso me trava.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_033",
+      "title": "Converse com alguém que você costuma evitar",
+      "description": "Puxar papo com uma colega que você tem atrito.",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_034",
+      "title": "Ofereça ajuda para uma vizinha que você mal conhece",
+      "description": "Quer que eu compre algo pra você no mercado?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_035",
+      "title": "Expresse gratidão em público",
+      "description": "Em uma reunião, dizer: 'Quero agradecer a fulana por sempre me apoiar.'",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_036",
+      "title": "Marque um almoço com alguém da família",
+      "description": "Convidar uma tia ou prima que você não vê faz meses.",
+      "points": 25,
+      "duration": 90,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_037",
+      "title": "Abra um espaço de conversa difícil com seu parceiro/parceira",
+      "description": "A gente precisa falar sobre como dividir melhor as tarefas de casa.",
+      "points": 25,
+      "duration": 45,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_038",
+      "title": "Reconheça uma falha sua em voz alta",
+      "description": "Eu errei em não ter avisado antes, peço desculpas.",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_039",
+      "title": "Apoie alguém em um momento ruim sem tentar consertar",
+      "description": "Ouvir amiga chorando sem dar solução, só dizer: 'Tô aqui pra você.'",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_040",
+      "title": "Compartilhe algo inspirador em grupo de WhatsApp",
+      "description": "Mandar: 'Essa frase me ajudou hoje: A disciplina é a ponte entre sonhos e conquistas.'",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_041",
+      "title": "Marque um café com alguém que admira",
+      "description": "Convidar uma colega de profissão para trocar ideias.",
+      "points": 25,
+      "duration": 90,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_042",
+      "title": "Converse sem celular por 1 hora",
+      "description": "Sair para andar com alguém e deixar o celular em casa.",
+      "points": 25,
+      "duration": 60,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_043",
+      "title": "Reconheça o esforço de alguém que ninguém nota",
+      "description": "Elogiar a atendente do mercado: 'Obrigada por sempre ser atenciosa.'",
+      "points": 25,
+      "duration": 5,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_044",
+      "title": "Se abra sobre uma decisão difícil que tomou",
+      "description": "Contar: 'Decidi encerrar um ciclo, e isso foi bem pesado pra mim.'",
+      "points": 25,
+      "duration": 25,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_045",
+      "title": "Convide alguém para planejar algo a longo prazo",
+      "description": "Propor viagem ou curso juntas.",
+      "points": 25,
+      "duration": 60,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_046",
+      "title": "Expresse sua vulnerabilidade em família",
+      "description": "Dizer num almoço: 'Ando cansada, preciso de apoio de vocês.'",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_047",
+      "title": "Abrace alguém por mais tempo que o normal",
+      "description": "Dar um abraço de 10 segundos numa amiga ou no filho.",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_048",
+      "title": "Pergunte como alguém realmente está",
+      "description": "Mas de verdade, como você tem se sentido por dentro?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_049",
+      "title": "Escreva uma lista de qualidades de uma pessoa e entregue",
+      "description": "Você é generosa, criativa, engraçada e sempre presente.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_050",
+      "title": "Conte sobre uma derrota sua",
+      "description": "Tentei abrir um negócio e não deu certo, mas aprendi muito.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_051",
+      "title": "Ofereça ajuda para um desconhecido na rua",
+      "description": "Carregar uma sacola pesada ou dar informação.",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_052",
+      "title": "Chame alguém que você só fala online para se ver ao vivo",
+      "description": "A gente só se fala pelo Insta, bora marcar de verdade?",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_053",
+      "title": "Conte uma memória boa com alguém e reviva junto",
+      "description": "Lembra daquela viagem que a gente deu risada o tempo todo?",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_054",
+      "title": "Pergunte como pode ser uma amiga melhor",
+      "description": "Tem algo que eu poderia fazer mais por você?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_055",
+      "title": "Reconheça o talento de alguém publicamente",
+      "description": "Compartilhar no stories: 'Essa mulher é incrível no que faz!'",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_056",
+      "title": "Converse sobre limites em um relacionamento",
+      "description": "Preciso de um tempo só pra mim no fim de semana, tudo bem?",
+      "points": 25,
+      "duration": 30,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_057",
+      "title": "Ofereça um presente simbólico inesperado",
+      "description": "Dar uma flor, um livro usado, um chocolate.",
+      "points": 25,
+      "duration": 20,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_058",
+      "title": "Seja vulnerável ao pedir ajuda",
+      "description": "Tô sobrecarregada, você pode me dar uma força essa semana?",
+      "points": 25,
+      "duration": 15,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_059",
+      "title": "Marque um tempo só para ouvir seu filho/parceiro/amiga",
+      "description": "Perguntar: 'Me conta como foi seu dia, quero ouvir cada detalhe.'",
+      "points": 25,
+      "duration": 45,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    },
+    {
+      "id": "relacionamentos_dificil_060",
+      "title": "Faça um elogio profundo que não seja físico",
+      "description": "Admiro sua força de nunca desistir, mesmo quando parece impossível.",
+      "points": 25,
+      "duration": 10,
+      "category": "relacionamentos",
+      "difficulty": "dificil"
+    }
+  ]
+}
