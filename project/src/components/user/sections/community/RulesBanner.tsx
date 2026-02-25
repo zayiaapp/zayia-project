@@ -12,10 +12,10 @@ export function RulesBanner({ isAdmin, onViewRules }: RulesBannerProps) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="text-2xl flex-shrink-0">📋</div>
           <div className="min-w-0">
-            <h3 className="text-white font-bold text-base md:text-lg">
+            <h3 className="text-white font-bold text-base md:text-lg drop-shadow-md">
               LEIA AS REGRAS DA COMUNIDADE
             </h3>
-            <p className="text-purple-100 text-xs md:text-sm">
+            <p className="text-white text-xs md:text-sm drop-shadow-md">
               Conheça nossos valores e convivência
             </p>
           </div>
@@ -25,7 +25,7 @@ export function RulesBanner({ isAdmin, onViewRules }: RulesBannerProps) {
           {isAdmin && (
             <button
               onClick={onViewRules}
-              className="px-3 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition text-xs md:text-sm flex items-center gap-1 whitespace-nowrap"
+              className="px-3 py-2 bg-white text-zayia-purple rounded-lg hover:bg-gray-100 transition text-xs md:text-sm flex items-center gap-1 whitespace-nowrap font-semibold"
               title="Editar regras"
             >
               <Edit2 size={16} />

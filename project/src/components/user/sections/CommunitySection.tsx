@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { CommunityDataMock, CommunityMessage } from '../../../lib/community-data-mock'
-import { MessageCircle, BookOpen } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { Toast } from '../../ui/Toast'
 import { MessageWithHover } from './community/Message'
@@ -327,14 +327,6 @@ export function CommunitySection() {
               </span>
             </button>
           )}
-
-          <button
-            onClick={() => setRulesOpen(true)}
-            className="px-4 py-2 bg-zayia-purple text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
-          >
-            <BookOpen size={18} />
-            Regras
-          </button>
         </div>
       </div>
 
