@@ -12,10 +12,10 @@ export function RulesBanner({ isAdmin, onViewRules }: RulesBannerProps) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="text-2xl flex-shrink-0">📋</div>
           <div className="min-w-0">
-            <h3 className="text-white font-bold text-base md:text-lg drop-shadow-md">
+            <h3 className="text-gray-900 font-bold text-base md:text-lg">
               LEIA AS REGRAS DA COMUNIDADE
             </h3>
-            <p className="text-white text-xs md:text-sm drop-shadow-md">
+            <p className="text-gray-800 text-xs md:text-sm">
               Conheça nossos valores e convivência
             </p>
           </div>
