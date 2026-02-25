@@ -27,6 +27,7 @@ interface MessageProps {
   onAddReaction: (messageId: string, emoji: string) => void
   onRemoveReaction: (messageId: string, emoji: string) => void
   onDelete: (messageId: string) => void
+  onQuickBan: (messageId: string) => void
   onClickUser: (userId: string, userName: string) => void
 }
 
@@ -38,9 +39,41 @@ export function Message({
   onAddReaction,
   onRemoveReaction,
   onDelete,
+  onQuickBan,
   onClickUser
 }: MessageProps) {
   const avatar = message.userProfile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.userProfile.fullName}`
+  const timeAgo = formatTimeAgo(message.createdAt)
+
+  // Render deleted message placeholder
+  if (message.deletedByAdmin) {
+    return (
+      <div className="border-b border-gray-100 pb-4 mb-4 last:border-b-0">
+        <div className="flex items-start gap-3">
+          <img
+            src={avatar}
+            alt={message.userProfile.fullName}
+            className="w-10 h-10 rounded-full object-cover opacity-50"
+          />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-600">{message.userProfile.fullName}</span>
+              <span className="text-xs text-gray-400">{timeAgo}</span>
+            </div>
+
+            {/* Deleted message placeholder */}
+            <div className="bg-gray-100 rounded-lg p-3 mt-2 border border-gray-200">
+              <p className="text-gray-500 text-sm flex items-center gap-2">
+                <span>📋</span>
+                <span>Mensagem removida por administrador</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Highlight mentions
   const highlightMentions = (text: string) => {
@@ -59,8 +92,6 @@ export function Message({
       return part
     })
   }
-
-  const timeAgo = formatTimeAgo(message.createdAt)
 
   return (
     <div className="border-b border-gray-100 pb-4 mb-4 last:border-b-0">
@@ -85,15 +116,25 @@ export function Message({
               <span className="text-xs text-gray-500">{timeAgo}</span>
             </div>
 
-            {/* Delete button (admin only) */}
+            {/* Admin buttons */}
             {isAdmin && (
-              <button
-                onClick={() => onDelete(message.id)}
-                className="p-1 hover:bg-red-50 rounded text-red-500 hover:text-red-700 transition opacity-0 group-hover:opacity-100"
-                title="Deletar mensagem"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                <button
+                  onClick={() => onQuickBan(message.id)}
+                  className="p-1 hover:bg-orange-50 rounded hover:text-orange-600 transition text-gray-600"
+                  title="Banir usuária"
+                >
+                  ⛔
+                </button>
+
+                <button
+                  onClick={() => onDelete(message.id)}
+                  className="p-1 hover:bg-red-50 rounded text-red-500 hover:text-red-700 transition"
+                  title="Deletar mensagem"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             )}
           </div>
 

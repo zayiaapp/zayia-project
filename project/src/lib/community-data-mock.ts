@@ -144,14 +144,14 @@ export class CommunityDataMock {
   }
 
   /**
-   * Obter todas as mensagens não deletadas
+   * Obter todas as mensagens (incluindo deletadas)
+   * Deletadas são marcadas com deletedByAdmin: true mas ainda incluídas
    */
   static getMessages(limit = 50, offset = 0): CommunityMessage[] {
     const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
     const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
 
     return messages
-      .filter((m: any) => !m.deletedByAdmin)
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(offset, offset + limit)
       .map((msg: any) => ({
@@ -290,7 +290,7 @@ export class CommunityDataMock {
   /**
    * Banir usuária
    */
-  static banUser(userId: string, bannedByAdminId: string, reason: string): CommunityBan {
+  static banUser(userId: string, _bannedByAdminId: string, reason: string): CommunityBan {
     const bans = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.bans) || '[]')
     const activeBans = bans.filter((b: any) => b.userId === userId && b.status === 'active')
 

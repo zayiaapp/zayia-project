@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { CommunityDataMock, CommunityMessage, MessageReaction, CommunityBan } from '../../../lib/community-data-mock'
+import { CommunityDataMock, CommunityMessage } from '../../../lib/community-data-mock'
 import { MessageCircle, BookOpen } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { MessageWithHover } from './community/Message'
@@ -8,6 +8,8 @@ import { MessageInput } from './community/MessageInput'
 import { RulesModal } from './community/RulesModal'
 import { UserBanPanel } from './community/UserBanPanel'
 import { DeleteMessageModal } from './community/DeleteMessageModal'
+import { QuickBanModal } from './community/QuickBanModal'
+import { RulesBanner } from './community/RulesBanner'
 
 export function CommunitySection() {
   const { user, profile } = useAuth()
@@ -17,6 +19,8 @@ export function CommunitySection() {
   const [selectedUserForBan, setSelectedUserForBan] = useState<{ id: string; name: string; email: string; avatar?: string } | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [messageToDelete, setMessageToDelete] = useState<{ id: string; content: string } | null>(null)
+  const [quickBanModalOpen, setQuickBanModalOpen] = useState(false)
+  const [messageForQuickBan, setMessageForQuickBan] = useState<{ id: string; userId: string; userName: string; content: string } | null>(null)
   const [rules, setRules] = useState('')
   const [banStatus, setBanStatus] = useState<{ isBanned: boolean; expiresAt?: string }>({ isBanned: false })
 
@@ -101,7 +105,35 @@ export function CommunitySection() {
     }
   }
 
-  const handleBanUser = (duration: '1_day' | '7_days' | 'permanent', reason: string) => {
+  const handleQuickBan = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId)
+    if (message) {
+      setMessageForQuickBan({
+        id: messageId,
+        userId: message.userId,
+        userName: message.userProfile.fullName,
+        content: message.content
+      })
+      setQuickBanModalOpen(true)
+    }
+  }
+
+  const handleConfirmQuickBan = (_duration: '1_day' | '7_days' | 'permanent', reason: string) => {
+    if (!messageForQuickBan || !user) return
+
+    // Delete message
+    const deleteSuccess = CommunityDataMock.deleteMessage(messageForQuickBan.id, user.id, 'Deletada por quick-ban')
+
+    // Ban user (banNumber is determined by existing bans)
+    if (deleteSuccess) {
+      CommunityDataMock.banUser(messageForQuickBan.userId, user.id, reason)
+      loadCommunityData()
+      setQuickBanModalOpen(false)
+      setMessageForQuickBan(null)
+    }
+  }
+
+  const handleBanUser = (_duration: '1_day' | '7_days' | 'permanent', reason: string) => {
     if (!selectedUserForBan || !user) return
 
     CommunityDataMock.banUser(selectedUserForBan.id, user.id, reason)
@@ -192,6 +224,12 @@ export function CommunitySection() {
       <div className="flex gap-4">
         {/* Messages Section */}
         <div className="flex-1 space-y-4">
+          {/* Rules Banner */}
+          <RulesBanner
+            isAdmin={isAdmin}
+            onViewRules={() => setRulesOpen(true)}
+          />
+
           {/* Rules Modal */}
           <RulesModal
             isOpen={rulesOpen}
@@ -221,6 +259,7 @@ export function CommunitySection() {
                       onAddReaction={handleAddReaction}
                       onRemoveReaction={handleRemoveReaction}
                       onDelete={handleDeleteMessage}
+                      onQuickBan={handleQuickBan}
                       onClickUser={handleClickUser}
                     />
                   )
@@ -261,6 +300,20 @@ export function CommunitySection() {
             setMessageToDelete(null)
           }}
           onConfirm={handleConfirmDelete}
+        />
+      )}
+
+      {/* Quick Ban Modal */}
+      {messageForQuickBan && (
+        <QuickBanModal
+          isOpen={quickBanModalOpen}
+          userName={messageForQuickBan.userName}
+          messageContent={messageForQuickBan.content}
+          onClose={() => {
+            setQuickBanModalOpen(false)
+            setMessageForQuickBan(null)
+          }}
+          onConfirm={handleConfirmQuickBan}
         />
       )}
     </div>
