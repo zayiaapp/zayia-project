@@ -36,7 +36,7 @@ import {
 } from 'lucide-react'
 
 // Import das seções
-import { CommunitySection } from './CommunitySection'
+import { CommunitySection } from '../user/sections/CommunitySection'
 import { ChallengesSection } from './ChallengesSection'
 import { AwardsSection } from './AwardsSection'
 import { RankingSection } from './RankingSection'
