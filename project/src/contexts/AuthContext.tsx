@@ -1,9 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabaseClient, type Profile as SupabaseProfile } from '../lib/supabase-client'
 import { integrationsManager } from '../lib/integrations-manager'
+import { isSupabaseConfigured } from '../lib/supabase'
 
-interface Profile extends SupabaseProfile {
+interface Profile extends Partial<SupabaseProfile> {
   // Extends SupabaseProfile with additional UI-only fields
+  id: string
+  email: string
+  full_name: string
+  role: 'user' | 'ceo'
+  created_at: string
+  updated_at: string
   interests?: string[]
   goals?: string[]
 }
@@ -170,50 +177,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)
-    
+
     try {
-      if (integrationsManager.isSupabaseConfigured()) {
-        // Try real Supabase authentication first
-        // For now, we'll use mock authentication but check against real profiles
-        const profiles = await supabaseClient.getProfiles()
-        const userProfile = profiles.find(p => p.email === email)
-        
-        if (userProfile) {
-          const user = { id: userProfile.id, email: userProfile.email }
-          
-          setUser(user)
-          setProfile(userProfile)
-          
-          // Save to localStorage
-          localStorage.setItem('zayia_user', JSON.stringify(user))
-          localStorage.setItem('zayia_profile', JSON.stringify(userProfile))
-          localStorage.setItem('last_login_time', new Date().toISOString())
-          
-          // Send welcome email if configured
-          if (integrationsManager.isResendConfigured()) {
-            integrationsManager.sendWelcomeEmail(email, userProfile.full_name || 'Usuária')
+      // Only try Supabase if it's properly configured
+      if (isSupabaseConfigured && integrationsManager.isSupabaseConfigured()) {
+        try {
+          // Use Promise.race to add a timeout to Supabase calls
+          const profiles = await Promise.race<SupabaseProfile[]>([
+            supabaseClient.getProfiles(),
+            new Promise<SupabaseProfile[]>((_, reject) =>
+              setTimeout(() => reject(new Error('Supabase connection timeout')), 5000)
+            )
+          ])
+
+          const userProfile = profiles.find((p: SupabaseProfile) => p.email === email)
+
+          if (userProfile) {
+            const user = { id: userProfile.id, email: userProfile.email }
+
+            setUser(user)
+            setProfile(userProfile)
+
+            // Save to localStorage
+            localStorage.setItem('zayia_user', JSON.stringify(user))
+            localStorage.setItem('zayia_profile', JSON.stringify(userProfile))
+            localStorage.setItem('last_login_time', new Date().toISOString())
+
+            // Send welcome email if configured
+            if (integrationsManager.isResendConfigured()) {
+              integrationsManager.sendWelcomeEmail(email, userProfile.full_name || 'Usuária')
+            }
+
+            setLoading(false)
+            return { error: null }
           }
-          
-          setLoading(false)
-          return { error: null }
+        } catch (supabaseError) {
+          console.log('Supabase unavailable, falling back to mock authentication:', supabaseError)
+          // Continue to fallback authentication below
         }
       }
-      
+
       // Fallback to mock authentication
       const mockUser = mockUsers.find(u => u.email === email && u.password === password)
-      
+
       if (mockUser) {
         const user = { id: mockUser.id, email: mockUser.email }
         const profile = mockUser.profile
-        
+
         setUser(user)
         setProfile(profile)
-        
+
         // Save to localStorage
         localStorage.setItem('zayia_user', JSON.stringify(user))
         localStorage.setItem('zayia_profile', JSON.stringify(profile))
         localStorage.setItem('last_login_time', new Date().toISOString())
-        
+
         setLoading(false)
         return { error: null }
       } else {
@@ -229,58 +247,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     setLoading(true)
-    
+
     try {
-      if (integrationsManager.isSupabaseConfigured()) {
-        // Try to create profile in Supabase
-        const newProfile = await supabaseClient.createProfile({
-          email,
-          full_name: fullName,
-          role: 'user',
-          avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-          streak: 0,
-          total_sessions: 0,
-          points: 0,
-          level: 1,
-          completed_challenges: 0,
-          subscription_plan: 'basic',
-          subscription_status: 'active',
-          notifications_enabled: true,
-          community_access: true,
-          mentor_status: 'none'
-        })
-        
-        if (newProfile) {
-          const user = { id: newProfile.id, email: newProfile.email }
-          
-          setUser(user)
-          setProfile(newProfile)
-          
-          // Save to localStorage
-          localStorage.setItem('zayia_user', JSON.stringify(user))
-          localStorage.setItem('zayia_profile', JSON.stringify(newProfile))
-          localStorage.setItem('last_login_time', new Date().toISOString())
-          
-          // Send welcome email if configured
-          if (integrationsManager.isResendConfigured()) {
-            integrationsManager.sendWelcomeEmail(email, fullName)
+      // Only try Supabase if it's properly configured
+      if (isSupabaseConfigured && integrationsManager.isSupabaseConfigured()) {
+        try {
+          // Use Promise.race to add a timeout to Supabase calls
+          const newProfile = await Promise.race<any>([
+            supabaseClient.createProfile({
+              email,
+              full_name: fullName,
+              role: 'user',
+              avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+              streak: 0,
+              total_sessions: 0,
+              points: 0,
+              level: 1,
+              completed_challenges: 0,
+              subscription_plan: 'basic',
+              subscription_status: 'active',
+              notifications_enabled: true,
+              community_access: true,
+              mentor_status: 'none'
+            }),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Supabase connection timeout')), 5000)
+            )
+          ])
+
+          if (newProfile) {
+            const user = { id: newProfile.id, email: newProfile.email }
+
+            setUser(user)
+            setProfile(newProfile)
+
+            // Save to localStorage
+            localStorage.setItem('zayia_user', JSON.stringify(user))
+            localStorage.setItem('zayia_profile', JSON.stringify(newProfile))
+            localStorage.setItem('last_login_time', new Date().toISOString())
+
+            // Send welcome email if configured
+            if (integrationsManager.isResendConfigured()) {
+              integrationsManager.sendWelcomeEmail(email, fullName)
+            }
+
+            setLoading(false)
+            return { error: null }
+          } else {
+            setLoading(false)
+            return { error: { message: 'Erro ao criar conta. Tente novamente.' } }
           }
-          
-          setLoading(false)
-          return { error: null }
-        } else {
-          setLoading(false)
-          return { error: { message: 'Erro ao criar conta. Tente novamente.' } }
+        } catch (supabaseError) {
+          console.log('Supabase unavailable, falling back to mock signup:', supabaseError)
+          // Continue to fallback registration below
         }
       }
-      
+
       // Fallback to mock user creation
       const existingUser = mockUsers.find(u => u.email === email)
       if (existingUser) {
         setLoading(false)
         return { error: { message: 'Este email já está cadastrado' } }
       }
-      
+
       // Create new mock user
       const newUserId = 'user-' + Date.now()
       const newUser = {
@@ -307,20 +336,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           mentor_status: 'none' as const
         }
       }
-      
+
       mockUsers.push(newUser)
-      
+
       const user = { id: newUser.id, email: newUser.email }
       const profile = newUser.profile
-      
+
       setUser(user)
       setProfile(profile)
-      
+
       // Save to localStorage
       localStorage.setItem('zayia_user', JSON.stringify(user))
       localStorage.setItem('zayia_profile', JSON.stringify(profile))
       localStorage.setItem('last_login_time', new Date().toISOString())
-      
+
       setLoading(false)
       return { error: null }
     } catch (error) {

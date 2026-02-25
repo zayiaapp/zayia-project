@@ -323,13 +323,6 @@ export class SupabaseClient {
   // WHATSAPP GROUPS
   async getWhatsAppGroups(): Promise<WhatsAppGroup[]> {
     try {
-      // Check if Supabase is properly configured
-      const config = integrationsManager.getSystemHealth()
-      if (!config.supabase) {
-        console.log('Supabase not configured, returning empty array')
-        return []
-      }
-
       const { data, error } = await supabase
         .from('whatsapp_groups')
         .select('*')
@@ -495,7 +488,7 @@ export class SupabaseClient {
   // TEST CONNECTION
   async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('profiles')
         .select('count')
         .limit(1)

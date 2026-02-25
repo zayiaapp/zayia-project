@@ -82,7 +82,7 @@ export class FirebaseClient {
       }
 
       // Send local notification
-      const notification = new Notification(payload.title, {
+      new Notification(payload.title, {
         body: payload.body,
         icon: payload.icon || '/zayia-icon.png',
         tag: payload.tag || 'zayia-notification',

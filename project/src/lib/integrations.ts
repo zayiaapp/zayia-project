@@ -96,7 +96,7 @@ export class IntegrationsManager {
     return !!(config?.api_key && config?.from_email)
   }
 
-  async sendWelcomeEmail(userEmail: string, userName: string): Promise<boolean> {
+  async sendWelcomeEmail(userEmail: string, _userName: string): Promise<boolean> {
     if (!this.isResendConfigured()) {
       console.error('Resend not configured')
       return false

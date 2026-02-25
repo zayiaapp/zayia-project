@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { 
-  BarChart3, 
-  Calendar, 
-  TrendingUp, 
-  Trophy, 
+import { useState, useEffect } from 'react'
+import {
+  BarChart3,
+  Calendar,
+  TrendingUp,
+  Trophy,
   Target,
   Clock,
-  Filter,
   RefreshCw
 } from 'lucide-react'
 
@@ -270,7 +269,7 @@ export function ChallengesStatsWidget() {
               <div key={index} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-zayia-deep-violet">
-                    {viewMode === 'weekly' ? item.week : item.month}
+                    {viewMode === 'weekly' ? (item as WeeklyData).week : (item as MonthlyData).month}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-zayia-deep-violet">

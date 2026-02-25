@@ -1,18 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { 
-  CreditCard, 
-  Calendar, 
-  DollarSign, 
-  CheckCircle, 
-  AlertTriangle, 
-  Download, 
+import {
+  CreditCard,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  AlertTriangle,
+  Download,
   ExternalLink,
   Crown,
   Star,
   Shield,
-  Zap,
-  Gift,
   Clock,
   Receipt,
   X
@@ -31,7 +29,6 @@ interface Invoice {
 export function SubscriptionSection() {
   const { profile } = useAuth()
   const [showCancelModal, setShowCancelModal] = useState(false)
-  const [showInvoiceDetail, setShowInvoiceDetail] = useState<string | null>(null)
 
   // Mock de faturas para demonstração
   const mockInvoices: Invoice[] = [
