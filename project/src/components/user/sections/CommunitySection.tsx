@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { CommunityDataMock, CommunityMessage } from '../../../lib/community-data-mock'
 import { MessageCircle, BookOpen } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
+import { Toast } from '../../ui/Toast'
 import { MessageWithHover } from './community/Message'
 import { MessageInput } from './community/MessageInput'
 import { RulesModal } from './community/RulesModal'
@@ -23,6 +24,7 @@ export function CommunitySection() {
   const [messageForQuickBan, setMessageForQuickBan] = useState<{ id: string; userId: string; userName: string; content: string } | null>(null)
   const [rules, setRules] = useState('')
   const [banStatus, setBanStatus] = useState<{ isBanned: boolean; expiresAt?: string }>({ isBanned: false })
+  const [banToastMessage, setBanToastMessage] = useState<string | null>(null)
 
   // Verificar se usuária está banida
   useEffect(() => {
@@ -48,6 +50,24 @@ export function CommunitySection() {
 
       const communityRules = CommunityDataMock.getRules()
       setRules(communityRules.content)
+
+      // Verificar ban status a cada reload (para detectar bans em tempo real)
+      if (user?.id) {
+        const currentBanStatus = CommunityDataMock.checkIfUserIsBanned(user.id)
+        setBanStatus(prevStatus => {
+          // Se mudou de não banido para banido, mostrar notificação
+          if (!prevStatus.isBanned && currentBanStatus.isBanned) {
+            const message = currentBanStatus.expiresAt
+              ? `🚫 Você foi banida até ${new Date(currentBanStatus.expiresAt).toLocaleDateString('pt-BR')}`
+              : '🚫 Você foi permanentemente banida da comunidade'
+            setBanToastMessage(message)
+          } else if (prevStatus.isBanned && !currentBanStatus.isBanned) {
+            // Ban expirou
+            setBanToastMessage('✅ Seu ban expirou! Bem-vinda de volta à comunidade!')
+          }
+          return currentBanStatus
+        })
+      }
     } catch (error) {
       console.error('Error loading community data:', error)
     } finally {
@@ -172,8 +192,9 @@ export function CommunitySection() {
   let banMessage = ''
   if (banStatus.isBanned) {
     if (banStatus.expiresAt) {
-      const expiresDate = new Date(banStatus.expiresAt).toLocaleDateString('pt-BR')
-      banMessage = `Você está banida da comunidade até ${expiresDate}`
+      const expiresDate = new Date(banStatus.expiresAt)
+      const daysRemaining = Math.ceil((expiresDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+      banMessage = `Você está banida até ${expiresDate.toLocaleDateString('pt-BR')} (${daysRemaining} dias)`
     } else {
       banMessage = 'Você foi permanentemente banida da comunidade'
     }
@@ -192,6 +213,16 @@ export function CommunitySection() {
 
   return (
     <div className="space-y-4">
+      {/* Ban Toast Notification */}
+      {banToastMessage && (
+        <Toast
+          message={banToastMessage}
+          type={banToastMessage.includes('✅') ? 'success' : 'error'}
+          duration={5000}
+          onClose={() => setBanToastMessage(null)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
