@@ -1,13 +1,10 @@
 import React, { useState } from 'react'
-import { 
-  Target, 
-  Trophy, 
-  TrendingUp, 
-  Users, 
-  BarChart3, 
-  Filter,
-  Eye,
-  Plus,
+import {
+  Target,
+  Trophy,
+  TrendingUp,
+  Users,
+  BarChart3,
   Heart,
   Brain,
   Smartphone,
@@ -16,7 +13,8 @@ import {
   Calendar,
   Briefcase
 } from 'lucide-react'
-import { RelationshipsIcon, DigitalDetoxIcon, HealthIcon } from '../ui/CustomIcons'
+import { CategoriesList, ChallengesListByCategory } from './challenges-section'
+import ChallengesDataMock, { ChallengeCategory } from '../../lib/challenges-data-mock'
 
 // Import dos dados de desafios
 import autoestimaData from '../../data/autoestima.json'
@@ -27,7 +25,7 @@ import relacionamentosData from '../../data/relacionamentos.json'
 import corpoSaudeData from '../../data/corpo_saude.json'
 import carreiraData from '../../data/carreira.json'
 
-interface ChallengeCategory {
+interface LegacyCategory {
   id: string
   label: string
   icon: string
@@ -96,74 +94,113 @@ const mockMetrics = {
   }
 }
 
-export function ChallengesSection() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview')
+// Default metrics fallback
+const defaultMetrics = {
+  totalCompletions: 0,
+  weeklyGrowth: 0,
+  avgDifficulty: 'Médio',
+  topUsers: 0,
+  completionRate: 0,
+  avgTimeSpent: 0,
+}
 
-  const categories: ChallengeCategory[] = [
-    {
-      id: 'autoestima',
-      label: autoestimaData.label,
-      icon: autoestimaData.icon,
-      color: autoestimaData.color,
-      data: autoestimaData,
-      iconComponent: Heart
-    },
-    {
-      id: 'rotina',
-      label: rotinaData.label,
-      icon: rotinaData.icon,
-      color: rotinaData.color,
-      data: rotinaData,
-      iconComponent: Calendar
-    },
-    {
-      id: 'digital_detox',
-      label: digitalDetoxData.label,
-      icon: digitalDetoxData.icon,
-      color: 'from-red-400 to-red-600',
-      data: digitalDetoxData,
-      iconComponent: Smartphone
-    },
-    {
-      id: 'mindfulness',
-      label: mindfulnessData.label,
-      icon: mindfulnessData.icon,
-      color: mindfulnessData.color,
-      data: mindfulnessData,
-      iconComponent: Brain
-    },
-    {
-      id: 'relacionamentos',
-      label: relacionamentosData.label,
-      icon: relacionamentosData.icon,
-      color: 'from-yellow-400 to-yellow-600',
-      data: relacionamentosData,
-      iconComponent: RelationshipsIcon
-    },
-    {
-      id: 'corpo_saude',
-      label: corpoSaudeData.label,
-      icon: corpoSaudeData.icon,
-      color: 'from-teal-400 to-teal-600',
-      data: corpoSaudeData,
-      iconComponent: HealthIcon
-    },
-    {
-      id: 'carreira',
-      label: carreiraData.label,
-      icon: carreiraData.icon,
-      color: carreiraData.color,
-      data: carreiraData,
-      iconComponent: Briefcase
+// Helper function to map icon components
+const getIconComponentForCategory = (categoryId: string): React.ComponentType<any> => {
+  const iconMap: Record<string, React.ComponentType<any>> = {
+    autoestima: Heart,
+    rotina: Calendar,
+    digital_detox: Smartphone,
+    mindfulness: Brain,
+    relacionamentos: MessageCircle,
+    corpo_saude: Dumbbell,
+    carreira: Briefcase,
+  }
+  return iconMap[categoryId] || Heart
+}
+
+// Helper to safely get metrics with fallback
+const getMetrics = (categoryId: string) => {
+  return mockMetrics[categoryId as keyof typeof mockMetrics] || defaultMetrics
+}
+
+export function ChallengesSection() {
+  // Helper: Build categories with data from JSON files
+  // ✅ MUST be defined BEFORE useState that uses it
+  const buildCategoriesWithData = (): LegacyCategory[] => {
+    const mockCategories = ChallengesDataMock.getCategories()
+
+    // Map to old format with data
+    const dataMap: Record<string, any> = {
+      autoestima: autoestimaData,
+      rotina: rotinaData,
+      digital_detox: digitalDetoxData,
+      mindfulness: mindfulnessData,
+      relacionamentos: relacionamentosData,
+      corpo_saude: corpoSaudeData,
+      carreira: carreiraData,
     }
-  ]
+
+    return mockCategories.map(cat => {
+      // Use existing data or create default structure for custom categories
+      const categoryData = dataMap[cat.id] || {
+        label: cat.label,
+        icon: cat.icon,
+        color: cat.color,
+        facil: [],
+        dificil: [],
+      }
+
+      return {
+        id: cat.id,
+        label: cat.label,
+        icon: cat.icon,
+        color: cat.color,
+        data: categoryData,
+        iconComponent: getIconComponentForCategory(cat.id),
+      }
+    })
+  }
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'metrics' | 'gerenciar' | 'challenges'>('metrics')
+  const [selectedCategoryForChallenges, setSelectedCategoryForChallenges] = useState<ChallengeCategory | null>(null)
+
+  // Initialize data on component mount
+  React.useEffect(() => {
+    ChallengesDataMock.initialize()
+  }, [])
+
+  // Reload categories from mock - DYNAMIC STATE
+  const [categories, setCategories] = useState<LegacyCategory[]>(() => {
+    ChallengesDataMock.initialize()
+    return buildCategoriesWithData()
+  })
+
+  // Reload categories from mock
+  const reloadCategoriesFromMock = () => {
+    setCategories(buildCategoriesWithData())
+  }
+
+  // When category is created/edited/deleted
+  const handleCategoryUpdated = () => {
+    reloadCategoriesFromMock()
+  }
+
+  // When switching tabs
+  const handleTabChange = (tab: 'metrics' | 'gerenciar' | 'challenges') => {
+    setActiveTab(tab)
+    // If returning to metrics, reload categories
+    if (tab === 'metrics') {
+      reloadCategoriesFromMock()
+    }
+  }
+
 
   const getTotalMetrics = () => {
     const total = Object.values(mockMetrics).reduce((acc, metric) => ({
       completions: acc.completions + metric.totalCompletions,
       users: acc.users + metric.topUsers,
-      iconComponent: DigitalDetoxIcon
+      avgCompletion: acc.avgCompletion + metric.completionRate
     }), { completions: 0, users: 0, avgCompletion: 0 })
 
     return {
@@ -174,40 +211,9 @@ export function ChallengesSection() {
 
   const totalMetrics = getTotalMetrics()
 
-  const renderCategoryCard = (category: ChallengeCategory) => {
-    console.log('Category ID:', category.id)
-console.log('Category Label:', category.label)
-    
-    // DEBUG: Verificar qual ícone está sendo usado
-    let IconComponent
-    if (category.id === 'autoestima') {
-      IconComponent = Heart
-      console.log('USANDO Heart para autoestima')
-    } else if (category.id === 'rotina') {
-      IconComponent = Calendar
-      console.log('USANDO Calendar para rotina')
-    } else if (category.id === 'digital_detox') {
-      IconComponent = Smartphone
-      console.log('USANDO Smartphone para digital_detox')
-    } else if (category.id === 'mindfulness') {
-      IconComponent = Brain
-      console.log('USANDO Brain para mindfulness')
-    } else if (category.id === 'relacionamentos') {
-      IconComponent = MessageCircle
-      console.log('USANDO MessageCircle para relacionamentos')
-    } else if (category.id === 'corpo_saude') {
-      IconComponent = Dumbbell
-      console.log('USANDO Dumbbell para corpo_saude')
-    } else if (category.id === 'carreira') {
-      IconComponent = Briefcase
-      console.log('USANDO Briefcase para carreira')
-    } else {
-      IconComponent = Heart
-      console.log('USANDO Heart como fallback para:', category.id)
-    }
-    
-    console.log('IconComponent final:', IconComponent)
-    const metrics = mockMetrics[category.id as keyof typeof mockMetrics]
+  const renderCategoryCard = (category: LegacyCategory) => {
+    const IconComponent = category.iconComponent || getIconComponentForCategory(category.id)
+    const metrics = getMetrics(category.id)
     
     return (
       <div 
@@ -281,7 +287,7 @@ console.log('Category Label:', category.label)
     const category = categories.find(c => c.id === selectedCategory)
     if (!category) return null
 
-    const metrics = mockMetrics[selectedCategory as keyof typeof mockMetrics]
+    const metrics = getMetrics(selectedCategory || '')
     const IconComponent = category.iconComponent
 
     return (
@@ -447,12 +453,72 @@ console.log('Category Label:', category.label)
     )
   }
 
+  const handleViewChallenges = (category: ChallengeCategory) => {
+    setSelectedCategoryForChallenges(category)
+    handleTabChange('challenges')
+  }
+
+  const handleBack = () => {
+    setSelectedCategoryForChallenges(null)
+    handleTabChange('metrics')
+  }
+
+  // Show challenges list if selected
+  if (selectedCategoryForChallenges && activeTab === 'challenges') {
+    return (
+      <ChallengesListByCategory
+        category={selectedCategoryForChallenges}
+        onBack={handleBack}
+        categories={ChallengesDataMock.getCategories()}
+      />
+    )
+  }
+
+  // Show categories management
+  if (activeTab === 'gerenciar') {
+    return (
+      <div className="space-y-6">
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-gray-200">
+          <button
+            onClick={() => handleTabChange('metrics')}
+            className="px-4 py-3 text-gray-700 hover:text-purple-600 font-semibold border-b-2 border-transparent hover:border-purple-600 transition"
+          >
+            📊 Métricas
+          </button>
+          <button
+            onClick={() => handleTabChange('gerenciar')}
+            className="px-4 py-3 text-purple-600 font-semibold border-b-2 border-purple-600"
+          >
+            ⚙️ Gerenciar Categorias
+          </button>
+        </div>
+        <CategoriesList onViewChallenges={handleViewChallenges} onCategoryUpdated={handleCategoryUpdated} />
+      </div>
+    )
+  }
+
   if (selectedCategory) {
     return renderDetailedView()
   }
 
   return (
     <div className="space-y-6">
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-gray-200">
+        <button
+          onClick={() => handleTabChange('metrics')}
+          className="px-4 py-3 text-purple-600 font-semibold border-b-2 border-purple-600"
+        >
+          📊 Métricas
+        </button>
+        <button
+          onClick={() => handleTabChange('gerenciar')}
+          className="px-4 py-3 text-gray-700 hover:text-purple-600 font-semibold border-b-2 border-transparent hover:border-purple-600 transition"
+        >
+          ⚙️ Gerenciar Categorias
+        </button>
+      </div>
       {/* Header Principal */}
       <div className="zayia-card p-6">
         <div className="flex items-center justify-between mb-6">
@@ -461,7 +527,7 @@ console.log('Category Label:', category.label)
               📊 Sistema de Desafios ZAYIA
             </h2>
             <p className="text-zayia-violet-gray">
-              Análise completa das 7 categorias de transformação pessoal
+              Análise completa das {categories.length} categorias de transformação pessoal
             </p>
           </div>
         </div>
@@ -489,7 +555,7 @@ console.log('Category Label:', category.label)
           </div>
           <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
             <BarChart3 className="w-8 h-8 text-zayia-orchid mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">7</div>
+            <div className="text-2xl font-bold text-zayia-deep-violet">{categories.length}</div>
             <div className="text-sm text-zayia-violet-gray">Categorias Ativas</div>
           </div>
         </div>
@@ -502,9 +568,9 @@ console.log('Category Label:', category.label)
         </h3>
         <div className="space-y-3">
           {categories
-            .sort((a, b) => mockMetrics[b.id as keyof typeof mockMetrics].totalCompletions - mockMetrics[a.id as keyof typeof mockMetrics].totalCompletions)
+            .sort((a, b) => getMetrics(b.id).totalCompletions - getMetrics(a.id).totalCompletions)
             .map((category, index) => {
-              const metrics = mockMetrics[category.id as keyof typeof mockMetrics]
+              const metrics = getMetrics(category.id)
               const IconComponent = category.iconComponent
               
               return (
