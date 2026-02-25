@@ -7,7 +7,7 @@ interface DailyChallengesViewProps {
   userId: string
   category: ChallengeCategory
   completedChallengeIds: Set<string>
-  onChallengeCompleted: (challengeId: string) => void
+  onChallengeCompleted: (challengeId: string, proofFile?: File) => void
 }
 
 export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
@@ -16,7 +16,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   completedChallengeIds,
   onChallengeCompleted,
 }) => {
-  const [dailyChallenges, setDailyChallenges] = useState<Challenge[]>(() => {
+  const [dailyChallenges] = useState<Challenge[]>(() => {
     const today = new Date().toISOString().split('T')[0]
     return ChallengesDataMock.getDailyChallenges(category.id, today)
   })
@@ -33,9 +33,16 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
     easyChallenges.filter(c => !completedChallengeIds.has(c.id)).length * 10 +
     hardChallenges.filter(c => !completedChallengeIds.has(c.id)).length * 25
 
-  const handleCompleteChallenge = (challengeId: string) => {
+  const handleProofSubmitted = (challengeId: string, proofFile: File) => {
+    // TODO: Upload arquivo para storage (Supabase/Firebase)
+    // TODO: Marcar como validado com timestamp
+
+    // Marcar como completo
     ChallengesDataMock.completeChallenge(challengeId, userId)
-    onChallengeCompleted(challengeId)
+    onChallengeCompleted(challengeId, proofFile)
+
+    // Toast de sucesso
+    console.log(`✅ Desafio ${challengeId} validado com prova: ${proofFile.name}`)
   }
 
   return (
@@ -85,7 +92,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
                       key={challenge.id}
                       challenge={challenge}
                       isCompleted={completedChallengeIds.has(challenge.id)}
-                      onComplete={() => handleCompleteChallenge(challenge.id)}
+                      onComplete={handleProofSubmitted}
                     />
                   ))}
                 </div>
@@ -104,7 +111,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
                       key={challenge.id}
                       challenge={challenge}
                       isCompleted={completedChallengeIds.has(challenge.id)}
-                      onComplete={() => handleCompleteChallenge(challenge.id)}
+                      onComplete={handleProofSubmitted}
                     />
                   ))}
                 </div>
