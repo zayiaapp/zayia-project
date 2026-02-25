@@ -56,13 +56,28 @@ export interface DeletedMessagesLog {
   deletedAt: string
 }
 
+export interface MessageReport {
+  id: string
+  messageId: string
+  messageContent: string
+  messageSenderId: string
+  messageSenderName: string
+  reportedBy: string | null // null se anônimo
+  reportedByName: string | null
+  reason: 'disrespectful' | 'inappropriate' | 'spam' | 'discrimination' | 'privacy' | 'other'
+  description?: string
+  createdAt: string
+  status: 'pending' | 'resolved' | 'archived'
+}
+
 export class CommunityDataMock {
   private static readonly STORAGE_KEYS = {
     messages: 'zayia_community_messages',
     bans: 'zayia_community_bans',
     rules: 'zayia_community_rules',
     deletedLog: 'zayia_community_deleted_log',
-    reactions: 'zayia_community_reactions'
+    reactions: 'zayia_community_reactions',
+    reports: 'zayia_community_reports'
   }
 
   /**
@@ -140,6 +155,10 @@ export class CommunityDataMock {
 
     if (!localStorage.getItem(this.STORAGE_KEYS.reactions)) {
       localStorage.setItem(this.STORAGE_KEYS.reactions, JSON.stringify({}))
+    }
+
+    if (!localStorage.getItem(this.STORAGE_KEYS.reports)) {
+      localStorage.setItem(this.STORAGE_KEYS.reports, JSON.stringify([]))
     }
   }
 
@@ -419,6 +438,87 @@ export class CommunityDataMock {
     return JSON.parse(localStorage.getItem(this.STORAGE_KEYS.deletedLog) || '[]').sort(
       (a: any, b: any) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime()
     )
+  }
+
+  /**
+   * Enviar report de mensagem
+   */
+  static submitReport(
+    messageId: string,
+    message: CommunityMessage,
+    reportedBy: string | null,
+    reportedByName: string | null,
+    reason: 'disrespectful' | 'inappropriate' | 'spam' | 'discrimination' | 'privacy' | 'other',
+    description?: string
+  ): MessageReport {
+    const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
+
+    const newReport: MessageReport = {
+      id: `report-${Date.now()}`,
+      messageId,
+      messageContent: message.content,
+      messageSenderId: message.userId,
+      messageSenderName: message.userProfile.fullName,
+      reportedBy,
+      reportedByName,
+      reason,
+      description,
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    }
+
+    reports.push(newReport)
+    localStorage.setItem(this.STORAGE_KEYS.reports, JSON.stringify(reports))
+
+    return newReport
+  }
+
+  /**
+   * Obter reports (filtrados por status)
+   */
+  static getReports(status?: 'pending' | 'resolved' | 'archived'): MessageReport[] {
+    const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
+
+    if (status) {
+      return reports.filter((r: any) => r.status === status).sort(
+        (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    }
+
+    return reports.sort(
+      (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+  }
+
+  /**
+   * Atualizar status de report
+   */
+  static updateReportStatus(reportId: string, newStatus: 'pending' | 'resolved' | 'archived'): boolean {
+    const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
+    const reportIndex = reports.findIndex((r: any) => r.id === reportId)
+
+    if (reportIndex === -1) return false
+
+    reports[reportIndex].status = newStatus
+    localStorage.setItem(this.STORAGE_KEYS.reports, JSON.stringify(reports))
+
+    return true
+  }
+
+  /**
+   * Obter contagem de reports pendentes
+   */
+  static getPendingReportCount(): number {
+    const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
+    return reports.filter((r: any) => r.status === 'pending').length
+  }
+
+  /**
+   * Obter report por ID
+   */
+  static getReportById(reportId: string): MessageReport | null {
+    const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
+    return reports.find((r: any) => r.id === reportId) || null
   }
 }
 

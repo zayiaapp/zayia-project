@@ -11,6 +11,8 @@ import { UserBanPanel } from './community/UserBanPanel'
 import { DeleteMessageModal } from './community/DeleteMessageModal'
 import { QuickBanModal } from './community/QuickBanModal'
 import { RulesBanner } from './community/RulesBanner'
+import { ReportModal } from './community/ReportModal'
+import { ReportsListModal } from './community/ReportsListModal'
 
 export function CommunitySection() {
   const { user, profile } = useAuth()
@@ -25,6 +27,12 @@ export function CommunitySection() {
   const [rules, setRules] = useState('')
   const [banStatus, setBanStatus] = useState<{ isBanned: boolean; expiresAt?: string }>({ isBanned: false })
   const [banToastMessage, setBanToastMessage] = useState<string | null>(null)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [messageForReport, setMessageForReport] = useState<{ id: string; content: string; senderName: string } | null>(null)
+  const [reportsListOpen, setReportsListOpen] = useState(false)
+  const [allReports, setAllReports] = useState<any[]>([])
+  const [reportToastMessage, setReportToastMessage] = useState<string | null>(null)
+  const [reportCount, setReportCount] = useState(0)
 
   // Verificar se usuária está banida
   useEffect(() => {
@@ -50,6 +58,11 @@ export function CommunitySection() {
 
       const communityRules = CommunityDataMock.getRules()
       setRules(communityRules.content)
+
+      // Carregar reports pendentes
+      const reports = CommunityDataMock.getReports()
+      setAllReports(reports)
+      setReportCount(CommunityDataMock.getPendingReportCount())
 
       // Verificar ban status a cada reload (para detectar bans em tempo real)
       if (user?.id) {
@@ -186,6 +199,73 @@ export function CommunitySection() {
     loadCommunityData()
   }
 
+  const handleReport = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId)
+    if (message) {
+      setMessageForReport({
+        id: messageId,
+        content: message.content,
+        senderName: message.userProfile.fullName
+      })
+      setReportModalOpen(true)
+    }
+  }
+
+  const handleSubmitReport = (reason: string, description: string, anonymous: boolean) => {
+    if (!messageForReport || !user) return
+
+    const message = messages.find(m => m.id === messageForReport.id)
+    if (!message) return
+
+    const report = CommunityDataMock.submitReport(
+      messageForReport.id,
+      message,
+      anonymous ? null : user.id,
+      anonymous ? null : profile?.full_name || 'Usuária',
+      reason as any,
+      description
+    )
+
+    if (report) {
+      setReportToastMessage('✅ Report enviado com sucesso')
+      setReportModalOpen(false)
+      setMessageForReport(null)
+      loadCommunityData()
+    }
+  }
+
+  const handleReportAction = (action: 'ban' | 'delete' | 'archive', reportId: string, messageId?: string) => {
+    if (action === 'archive') {
+      const success = CommunityDataMock.updateReportStatus(reportId, 'resolved')
+      if (success) {
+        loadCommunityData()
+      }
+    } else if (action === 'delete' && messageId) {
+      const message = messages.find(m => m.id === messageId)
+      if (message && user) {
+        CommunityDataMock.deleteMessage(messageId, user.id, 'Deletada por report')
+        CommunityDataMock.updateReportStatus(reportId, 'resolved')
+        loadCommunityData()
+      }
+    } else if (action === 'ban' && messageId) {
+      const message = messages.find(m => m.id === messageId)
+      if (message) {
+        setMessageForQuickBan({
+          id: messageId,
+          userId: message.userId,
+          userName: message.userProfile.fullName,
+          content: message.content
+        })
+        setQuickBanModalOpen(true)
+        // Marcar report como resolvido após banir
+        const success = CommunityDataMock.updateReportStatus(reportId, 'resolved')
+        if (success) {
+          loadCommunityData()
+        }
+      }
+    }
+  }
+
   const isAdmin = profile?.role === 'ceo'
 
   // Determinar mensagem de banimento
@@ -235,13 +315,27 @@ export function CommunitySection() {
           </p>
         </div>
 
-        <button
-          onClick={() => setRulesOpen(true)}
-          className="px-4 py-2 bg-zayia-purple text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
-        >
-          <BookOpen size={18} />
-          Regras
-        </button>
+        <div className="flex items-center gap-2">
+          {isAdmin && reportCount > 0 && (
+            <button
+              onClick={() => setReportsListOpen(true)}
+              className="relative px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2"
+            >
+              <span>📊 Reports</span>
+              <span className="bg-white text-red-500 rounded-full w-5 h-5 text-xs font-bold flex items-center justify-center">
+                {reportCount}
+              </span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setRulesOpen(true)}
+            className="px-4 py-2 bg-zayia-purple text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+          >
+            <BookOpen size={18} />
+            Regras
+          </button>
+        </div>
       </div>
 
       {/* Ban Notice */}
@@ -291,6 +385,7 @@ export function CommunitySection() {
                       onRemoveReaction={handleRemoveReaction}
                       onDelete={handleDeleteMessage}
                       onQuickBan={handleQuickBan}
+                      onReport={handleReport}
                       onClickUser={handleClickUser}
                     />
                   )
@@ -345,6 +440,43 @@ export function CommunitySection() {
             setMessageForQuickBan(null)
           }}
           onConfirm={handleConfirmQuickBan}
+        />
+      )}
+
+      {/* Report Modal */}
+      {messageForReport && (
+        <ReportModal
+          isOpen={reportModalOpen}
+          messageContent={messageForReport.content}
+          messageSenderName={messageForReport.senderName}
+          onClose={() => {
+            setReportModalOpen(false)
+            setMessageForReport(null)
+          }}
+          onConfirm={handleSubmitReport}
+        />
+      )}
+
+      {/* Reports List Modal */}
+      {isAdmin && (
+        <ReportsListModal
+          isOpen={reportsListOpen}
+          reports={allReports}
+          onClose={() => setReportsListOpen(false)}
+          onViewContext={() => {}} // TODO: implementar scroll para mensagem
+          onBan={(messageId) => handleReportAction('ban', allReports.find(r => r.messageId === messageId)?.id || '', messageId)}
+          onDelete={(messageId) => handleReportAction('delete', allReports.find(r => r.messageId === messageId)?.id || '', messageId)}
+          onArchive={(reportId) => handleReportAction('archive', reportId)}
+        />
+      )}
+
+      {/* Report Toast */}
+      {reportToastMessage && (
+        <Toast
+          message={reportToastMessage}
+          type="success"
+          duration={4000}
+          onClose={() => setReportToastMessage(null)}
         />
       )}
     </div>

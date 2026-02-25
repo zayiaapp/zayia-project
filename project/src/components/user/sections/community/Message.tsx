@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react'
 import { CommunityMessage, MessageReaction } from '../../../../lib/community-data-mock'
 import { ReactionButtons } from './ReactionButtons'
+import { ReportButton } from './ReportButton'
 
 // Formatar tempo relativo (ex: "há 5 minutos")
 function formatTimeAgo(date: string): string {
@@ -28,6 +29,7 @@ interface MessageProps {
   onRemoveReaction: (messageId: string, emoji: string) => void
   onDelete: (messageId: string) => void
   onQuickBan: (messageId: string) => void
+  onReport: (messageId: string) => void
   onClickUser: (userId: string, userName: string) => void
 }
 
@@ -40,6 +42,7 @@ export function Message({
   onRemoveReaction,
   onDelete,
   onQuickBan,
+  onReport,
   onClickUser
 }: MessageProps) {
   const avatar = message.userProfile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.userProfile.fullName}`
@@ -116,26 +119,39 @@ export function Message({
               <span className="text-xs text-gray-500">{timeAgo}</span>
             </div>
 
-            {/* Admin buttons */}
-            {isAdmin && (
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                <button
-                  onClick={() => onQuickBan(message.id)}
-                  className="p-1 hover:bg-orange-50 rounded hover:text-orange-600 transition text-gray-600"
-                  title="Banir usuária"
-                >
-                  ⛔
-                </button>
+            {/* Action buttons */}
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+              {/* Report button (for all users except admins) */}
+              {!isAdmin && (
+                <ReportButton
+                  messageId={message.id}
+                  isOwnMessage={message.userId === currentUserId}
+                  isDeleted={message.deletedByAdmin}
+                  onReport={onReport}
+                />
+              )}
 
-                <button
-                  onClick={() => onDelete(message.id)}
-                  className="p-1 hover:bg-red-50 rounded text-red-500 hover:text-red-700 transition"
-                  title="Deletar mensagem"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            )}
+              {/* Admin buttons */}
+              {isAdmin && (
+                <>
+                  <button
+                    onClick={() => onQuickBan(message.id)}
+                    className="p-1 hover:bg-orange-50 rounded hover:text-orange-600 transition text-gray-600"
+                    title="Banir usuária"
+                  >
+                    ⛔
+                  </button>
+
+                  <button
+                    onClick={() => onDelete(message.id)}
+                    className="p-1 hover:bg-red-50 rounded text-red-500 hover:text-red-700 transition"
+                    title="Deletar mensagem"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Conteúdo */}
