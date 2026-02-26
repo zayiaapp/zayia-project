@@ -129,6 +129,33 @@ export function PrizeManagementSection({
   const handleOpenPrizeModal = (userId: string) => {
     setSelectedPrizeUserId(userId)
     setPrizeModalOpen(true)
+
+    // Pre-fill form with existing data if available
+    const now = new Date()
+    const currentMonth = now.getMonth() + 1
+    const currentYear = now.getFullYear()
+    const monthData = monthlyWinnersState.find(m =>
+      m.month === currentMonth && m.year === currentYear
+    )
+
+    if (monthData) {
+      if (monthData.firstPlaceUserId === userId) {
+        setPrizeAmount(monthData.firstPlaceAmount?.toString() || '')
+        setPaymentMethod(monthData.firstPlaceMethod || 'pix')
+        setPixKey(monthData.firstPlacePixKey || '')
+        setPaymentDate(monthData.firstPlacePaymentDate || '')
+      } else if (monthData.secondPlaceUserId === userId) {
+        setPrizeAmount(monthData.secondPlaceAmount?.toString() || '')
+        setPaymentMethod(monthData.secondPlaceMethod || 'pix')
+        setPixKey(monthData.secondPlacePixKey || '')
+        setPaymentDate(monthData.secondPlacePaymentDate || '')
+      } else if (monthData.thirdPlaceUserId === userId) {
+        setPrizeAmount(monthData.thirdPlaceAmount?.toString() || '')
+        setPaymentMethod(monthData.thirdPlaceMethod || 'pix')
+        setPixKey(monthData.thirdPlacePixKey || '')
+        setPaymentDate(monthData.thirdPlacePaymentDate || '')
+      }
+    }
   }
 
   const handleSavePrize = () => {
@@ -192,6 +219,24 @@ export function PrizeManagementSection({
     setMonthlyWinners(updatedWinners)
     setMonthlyWinnersState(updatedWinners)
 
+    // 🔥 SALVAR COMPROVANTE NO LOCALSTORAGE se fornecido
+    if (proofFile) {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const fileData = {
+          name: proofFile.name,
+          type: proofFile.type,
+          size: proofFile.size,
+          base64: event.target?.result
+        }
+        // Chave única: user-id-mês-ano
+        const storageKey = `zayia_proof_${selectedPrizeUserId}_${currentMonth}_${currentYear}`
+        localStorage.setItem(storageKey, JSON.stringify(fileData))
+        console.log('✅ Comprovante salvo em localStorage:', storageKey)
+      }
+      reader.readAsDataURL(proofFile)
+    }
+
     // Log para debug
     console.log('✅ Prêmio salvo no histórico:', {
       userId: selectedPrizeUserId,
@@ -212,7 +257,7 @@ export function PrizeManagementSection({
     setPrizeModalOpen(false)
 
     // Feedback ao usuário
-    alert('✅ Prêmio marcado como PAGO e salvo no histórico!')
+    alert('✅ Prêmio marcado como PAGO! Status mudou para VERDE e comprovante foi salvo!')
   }
 
   const handleStatusChange = (userId: string, newStatus: string) => {
@@ -337,16 +382,33 @@ export function PrizeManagementSection({
 
             let currentStatus = 'pending'
             let currentAmount = user.prizeAmount || 0
+            let currentMethod = undefined
+            let currentPixKey = undefined
+            let currentPaymentDate = undefined
+            let currentProofUrl = undefined
 
-            if (index === 0 && monthData?.firstPlaceUserId === user.id) {
+            // Verificar qual posição este usuário ocupa no histórico
+            if (monthData?.firstPlaceUserId === user.id) {
               currentStatus = monthData.firstPlaceStatus || 'pending'
               currentAmount = monthData.firstPlaceAmount || user.prizeAmount || 0
-            } else if (index === 1 && monthData?.secondPlaceUserId === user.id) {
+              currentMethod = monthData.firstPlaceMethod
+              currentPixKey = monthData.firstPlacePixKey
+              currentPaymentDate = monthData.firstPlacePaymentDate
+              currentProofUrl = monthData.firstPlaceProofUrl
+            } else if (monthData?.secondPlaceUserId === user.id) {
               currentStatus = monthData.secondPlaceStatus || 'pending'
               currentAmount = monthData.secondPlaceAmount || user.prizeAmount || 0
-            } else if (index === 2 && monthData?.thirdPlaceUserId === user.id) {
+              currentMethod = monthData.secondPlaceMethod
+              currentPixKey = monthData.secondPlacePixKey
+              currentPaymentDate = monthData.secondPlacePaymentDate
+              currentProofUrl = monthData.secondPlaceProofUrl
+            } else if (monthData?.thirdPlaceUserId === user.id) {
               currentStatus = monthData.thirdPlaceStatus || 'pending'
               currentAmount = monthData.thirdPlaceAmount || user.prizeAmount || 0
+              currentMethod = monthData.thirdPlaceMethod
+              currentPixKey = monthData.thirdPlacePixKey
+              currentPaymentDate = monthData.thirdPlacePaymentDate
+              currentProofUrl = monthData.thirdPlaceProofUrl
             }
 
             return (
@@ -690,13 +752,36 @@ export function PrizeManagementSection({
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          {winner.firstPlaceProofUrl ? (
-                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
-                              📄 Ver
-                            </button>
-                          ) : (
-                            <span className="text-zayia-violet-gray text-sm">-</span>
-                          )}
+                          {(() => {
+                            const storageKey = `zayia_proof_${winner.firstPlaceUserId}_${winner.month}_${winner.year}`
+                            const proofData = localStorage.getItem(storageKey)
+
+                            if (proofData) {
+                              try {
+                                const proof = JSON.parse(proofData)
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      const link = document.createElement('a')
+                                      link.href = proof.base64
+                                      link.download = proof.name
+                                      document.body.appendChild(link)
+                                      link.click()
+                                      document.body.removeChild(link)
+                                    }}
+                                    className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition"
+                                    title={`Baixar: ${proof.name}`}
+                                  >
+                                    📥 {proof.name.split('.').pop()?.toUpperCase()}
+                                  </button>
+                                )
+                              } catch {
+                                return <span className="text-red-500 text-sm">❌ Erro</span>
+                              }
+                            }
+
+                            return <span className="text-zayia-violet-gray text-sm">-</span>
+                          })()}
                         </td>
                       </tr>
 
@@ -733,13 +818,36 @@ export function PrizeManagementSection({
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          {winner.secondPlaceProofUrl ? (
-                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
-                              📄 Ver
-                            </button>
-                          ) : (
-                            <span className="text-zayia-violet-gray text-sm">-</span>
-                          )}
+                          {(() => {
+                            const storageKey = `zayia_proof_${winner.secondPlaceUserId}_${winner.month}_${winner.year}`
+                            const proofData = localStorage.getItem(storageKey)
+
+                            if (proofData) {
+                              try {
+                                const proof = JSON.parse(proofData)
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      const link = document.createElement('a')
+                                      link.href = proof.base64
+                                      link.download = proof.name
+                                      document.body.appendChild(link)
+                                      link.click()
+                                      document.body.removeChild(link)
+                                    }}
+                                    className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition"
+                                    title={`Baixar: ${proof.name}`}
+                                  >
+                                    📥 {proof.name.split('.').pop()?.toUpperCase()}
+                                  </button>
+                                )
+                              } catch {
+                                return <span className="text-red-500 text-sm">❌ Erro</span>
+                              }
+                            }
+
+                            return <span className="text-zayia-violet-gray text-sm">-</span>
+                          })()}
                         </td>
                       </tr>
 
@@ -776,13 +884,36 @@ export function PrizeManagementSection({
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          {winner.thirdPlaceProofUrl ? (
-                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
-                              📄 Ver
-                            </button>
-                          ) : (
-                            <span className="text-zayia-violet-gray text-sm">-</span>
-                          )}
+                          {(() => {
+                            const storageKey = `zayia_proof_${winner.thirdPlaceUserId}_${winner.month}_${winner.year}`
+                            const proofData = localStorage.getItem(storageKey)
+
+                            if (proofData) {
+                              try {
+                                const proof = JSON.parse(proofData)
+                                return (
+                                  <button
+                                    onClick={() => {
+                                      const link = document.createElement('a')
+                                      link.href = proof.base64
+                                      link.download = proof.name
+                                      document.body.appendChild(link)
+                                      link.click()
+                                      document.body.removeChild(link)
+                                    }}
+                                    className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition"
+                                    title={`Baixar: ${proof.name}`}
+                                  >
+                                    📥 {proof.name.split('.').pop()?.toUpperCase()}
+                                  </button>
+                                )
+                              } catch {
+                                return <span className="text-red-500 text-sm">❌ Erro</span>
+                              }
+                            }
+
+                            return <span className="text-zayia-violet-gray text-sm">-</span>
+                          })()}
                         </td>
                       </tr>
                     </React.Fragment>
