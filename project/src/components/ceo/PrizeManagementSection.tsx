@@ -329,7 +329,6 @@ export function PrizeManagementSection({
                   <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Pontos</th>
                   <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Hoje</th>
                   <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">1º Desafio</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Ação</th>
                 </tr>
               </thead>
               <tbody>
@@ -357,11 +356,6 @@ export function PrizeManagementSection({
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button className="text-zayia-soft-purple hover:text-zayia-deep-violet transition text-sm font-medium">
-                        Editar
-                      </button>
                     </td>
                   </tr>
                 ))}
