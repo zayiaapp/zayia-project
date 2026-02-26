@@ -211,78 +211,6 @@ export function ChallengesSection() {
 
   const totalMetrics = getTotalMetrics()
 
-  const renderCategoryCard = (category: LegacyCategory) => {
-    const IconComponent = category.iconComponent || getIconComponentForCategory(category.id)
-    const metrics = getMetrics(category.id)
-    
-    return (
-      <div 
-        key={category.id}
-        className="zayia-card p-6 cursor-pointer hover:scale-105 transition-all duration-300"
-        onClick={() => setSelectedCategory(category.id)}
-      >
-        {/* Header da Categoria */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${category.color} flex items-center justify-center`}>
-              <IconComponent className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-zayia-deep-violet">{category.label}</h3>
-              <p className="text-sm text-zayia-violet-gray">
-                {category.data.facil.length + category.data.dificil.length} desafios
-              </p>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-zayia-soft-purple">
-              {metrics.totalCompletions.toLocaleString()}
-            </div>
-            <div className="text-xs text-zayia-violet-gray">Completados</div>
-          </div>
-        </div>
-
-        {/* Métricas Rápidas */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="text-center p-2 bg-zayia-lilac/20 rounded-lg">
-            <div className="text-lg font-bold text-zayia-deep-violet">{metrics.completionRate}%</div>
-            <div className="text-xs text-zayia-violet-gray">Taxa Conclusão</div>
-          </div>
-          <div className="text-center p-2 bg-zayia-lilac/20 rounded-lg">
-            <div className="text-lg font-bold text-zayia-soft-purple">{metrics.topUsers}</div>
-            <div className="text-xs text-zayia-violet-gray">Usuárias Ativas</div>
-          </div>
-          <div className="text-center p-2 bg-zayia-lilac/20 rounded-lg">
-            <div className="text-lg font-bold text-zayia-lavender">{metrics.avgTimeSpent}min</div>
-            <div className="text-xs text-zayia-violet-gray">Tempo Médio</div>
-          </div>
-        </div>
-
-        {/* Crescimento */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-zayia-violet-gray">Crescimento Semanal</span>
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-bold text-green-600">+{metrics.weeklyGrowth}%</span>
-          </div>
-        </div>
-
-        {/* Preview de Desafios */}
-        <div className="mt-4 pt-4 border-t border-zayia-lilac/30">
-          <div className="text-xs text-zayia-violet-gray mb-2">Exemplos de Desafios:</div>
-          <div className="space-y-1">
-            <div className="text-xs text-zayia-deep-violet">
-              • {category.data.facil[0]?.title.substring(0, 40)}...
-            </div>
-            <div className="text-xs text-zayia-deep-violet">
-              • {category.data.dificil[0]?.title.substring(0, 40)}...
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   const renderDetailedView = () => {
     const category = categories.find(c => c.id === selectedCategory)
     if (!category) return null
@@ -599,11 +527,6 @@ export function ChallengesSection() {
               )
             })}
         </div>
-      </div>
-
-      {/* Grid de Categorias */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {categories.map(renderCategoryCard)}
       </div>
 
       {/* Insights e Análises */}
