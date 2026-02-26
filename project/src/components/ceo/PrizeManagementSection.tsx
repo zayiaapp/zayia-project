@@ -72,6 +72,14 @@ export function PrizeManagementSection({
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [editingConfig, setEditingConfig] = useState(false)
   const [showPaymentForm, setShowPaymentForm] = useState<string | null>(null)
+  const [prizeModalOpen, setPrizeModalOpen] = useState(false)
+  const [selectedPrizeUserId, setSelectedPrizeUserId] = useState<string | null>(null)
+  const [prizeAmount, setPrizeAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('pix')
+  const [pixKey, setPixKey] = useState('')
+  const [paymentDate, setPaymentDate] = useState('')
+  const [proofFile, setProofFile] = useState<File | null>(null)
+  const [statusChanges, setStatusChanges] = useState<Record<string, string>>({})
 
   const itemsPerPage = 20
 
@@ -109,6 +117,54 @@ export function PrizeManagementSection({
       console.error('Error loading data:', error)
     }
     setLoading(false)
+  }
+
+  const handleOpenPrizeModal = (userId: string) => {
+    setSelectedPrizeUserId(userId)
+    setPrizeModalOpen(true)
+  }
+
+  const handleSavePrize = () => {
+    if (!selectedPrizeUserId || !prizeAmount) {
+      alert('Por favor, preencha os campos obrigatórios')
+      return
+    }
+
+    console.log('Prêmio salvo:', {
+      userId: selectedPrizeUserId,
+      amount: prizeAmount,
+      method: paymentMethod,
+      pixKey: pixKey,
+      date: paymentDate,
+      proof: proofFile?.name
+    })
+
+    // Limpar formulário
+    setPrizeAmount('')
+    setPixKey('')
+    setPaymentDate('')
+    setPaymentMethod('pix')
+    setProofFile(null)
+    setPrizeModalOpen(false)
+
+    alert('Prêmio marcado como pago! ✅')
+  }
+
+  const handleStatusChange = (userId: string, newStatus: string) => {
+    setStatusChanges({
+      ...statusChanges,
+      [userId]: newStatus
+    })
+    console.log(`Status de ${userId} mudou para ${newStatus}`)
+  }
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'paid': return 'bg-green-100 text-green-800'
+      case 'cancelled': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
   }
 
   // ========================================================================
@@ -237,11 +293,9 @@ export function PrizeManagementSection({
                   <div className="flex justify-between text-sm">
                     <span>Status:</span>
                     <select
-                      value={user.prizeStatus || 'pending'}
-                      onChange={(e) => {
-                        // Handler para mudança de status
-                      }}
-                      className="zayia-input px-2 py-1 text-xs rounded border-0 focus:outline-none"
+                      value={statusChanges[user.id] || user.prizeStatus || 'pending'}
+                      onChange={(e) => handleStatusChange(user.id, e.target.value)}
+                      className={`px-2 py-1 text-xs rounded font-medium border-0 focus:outline-none ${getStatusColor(statusChanges[user.id] || user.prizeStatus || 'pending')}`}
                     >
                       <option value="pending">Pendente</option>
                       <option value="paid">Pago</option>
@@ -250,8 +304,11 @@ export function PrizeManagementSection({
                   </div>
                 </div>
 
-                <button className="w-full bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition text-sm">
-                  Gerenciar Prêmio
+                <button
+                  onClick={() => handleOpenPrizeModal(user.id)}
+                  className="w-full bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition text-sm"
+                >
+                  Gerenciar Prêmio →
                 </button>
               </div>
             )
@@ -272,8 +329,6 @@ export function PrizeManagementSection({
                   <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Pontos</th>
                   <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Hoje</th>
                   <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">1º Desafio</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Badges</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Zona</th>
                   <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Ação</th>
                 </tr>
               </thead>
@@ -302,20 +357,6 @@ export function PrizeManagementSection({
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
-                    </td>
-                    <td className="py-3 px-4 text-right text-sm text-zayia-lavender">{user.badges_count}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`text-xs font-bold px-2 py-1 rounded ${
-                          user.zone === 'prize'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : user.zone === 'attention'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {user.zone === 'prize' ? '🏆 Prêmio' : user.zone === 'attention' ? '⚠️ Atenção' : 'Neutra'}
-                      </span>
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button className="text-zayia-soft-purple hover:text-zayia-deep-violet transition text-sm font-medium">
@@ -349,6 +390,102 @@ export function PrizeManagementSection({
             </button>
           </div>
         </div>
+
+        {/* Modal Gerenciar Prêmio */}
+        {prizeModalOpen && selectedPrizeUserId && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h2 className="text-2xl font-bold text-zayia-deep-violet mb-4">Gerenciar Prêmio</h2>
+
+              {/* Nome da Usuária */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Usuária</label>
+                <p className="text-sm text-zayia-violet-gray p-2 bg-zayia-lilac/20 rounded">
+                  {users.find(u => u.id === selectedPrizeUserId)?.name}
+                </p>
+              </div>
+
+              {/* Valor do Prêmio */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Valor Prêmio (R$)</label>
+                <input
+                  type="number"
+                  value={prizeAmount}
+                  onChange={(e) => setPrizeAmount(e.target.value)}
+                  placeholder="500.00"
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+                />
+              </div>
+
+              {/* Método de Pagamento */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Método</label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+                >
+                  <option value="pix">PIX</option>
+                  <option value="transfer">Transferência Bancária</option>
+                  <option value="stripe">Stripe</option>
+                </select>
+              </div>
+
+              {/* Chave PIX (se PIX selecionado) */}
+              {paymentMethod === 'pix' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Chave PIX</label>
+                  <input
+                    type="text"
+                    value={pixKey}
+                    onChange={(e) => setPixKey(e.target.value)}
+                    placeholder="CPF, email ou chave aleatória"
+                    className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple text-sm"
+                  />
+                </div>
+              )}
+
+              {/* Data do Pagamento */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Data do Pagamento</label>
+                <input
+                  type="date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+                />
+              </div>
+
+              {/* Upload Comprovante */}
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Comprovante (Opcional)</label>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                  className="w-full border border-zayia-lilac/30 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+                />
+                {proofFile && <p className="text-xs text-green-600 mt-1">✅ {proofFile.name}</p>}
+              </div>
+
+              {/* Botões */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPrizeModalOpen(false)}
+                  className="flex-1 px-4 py-2 border border-zayia-lilac/30 text-zayia-deep-violet rounded-lg font-medium hover:bg-zayia-lilac/10 transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSavePrize}
+                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition"
+                >
+                  Marcar Pago ✅
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
