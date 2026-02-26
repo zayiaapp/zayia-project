@@ -80,6 +80,8 @@ export function PrizeManagementSection({
   const [paymentDate, setPaymentDate] = useState('')
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [statusChanges, setStatusChanges] = useState<Record<string, string>>({})
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'paid' | 'cancelled'>('all')
 
   const itemsPerPage = 20
 
@@ -489,9 +491,6 @@ export function PrizeManagementSection({
   // ========================================================================
 
   const renderHistory = () => {
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-    const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'paid' | 'cancelled'>('all')
-
     const filteredWinners = monthlyWinners.filter(w => w.year === selectedYear)
 
     return (
