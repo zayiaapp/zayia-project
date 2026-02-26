@@ -32,15 +32,15 @@ export interface Level {
 
 export const LEVELS: Level[] = [
   { level: 0, pointsRequired: 0, name: "Iniciante", icon: Level0Icon3D, color: "#D1D5DB", description: "Você acaba de começar sua jornada!" },
-  { level: 1, pointsRequired: 168, name: "Aprendiz", icon: Level1Icon3D, color: "#60A5FA", description: "Primeiros passos dados!" },
-  { level: 2, pointsRequired: 336, name: "Praticante", icon: Level2Icon3D, color: "#06B6D4", description: "Você está no caminho certo!" },
-  { level: 3, pointsRequired: 504, name: "Especialista", icon: Level3Icon3D, color: "#FBBF24", description: "Você domina a prática!" },
-  { level: 4, pointsRequired: 672, name: "Mestre", icon: Level4Icon3D, color: "#FB923C", description: "Você é um verdadeiro mestre!" },
-  { level: 5, pointsRequired: 840, name: "Sábio", icon: Level5Icon3D, color: "#A78BFA", description: "A sabedoria guia seus passos!" },
-  { level: 6, pointsRequired: 1008, name: "Lenda", icon: Level6Icon3D, color: "#F87171", description: "Você é uma lenda viva!" },
-  { level: 7, pointsRequired: 1176, name: "Imortal", icon: Level7Icon3D, color: "#EC4899", description: "Imortal na memória!" },
-  { level: 8, pointsRequired: 1344, name: "Divino", icon: Level8Icon3D, color: "#6366F1", description: "Você é quase um deus!" },
-  { level: 9, pointsRequired: 1512, name: "Supremo", icon: Level9Icon3D, color: "#EC4899", description: "O pico máximo da excelência!" }
+  { level: 1, pointsRequired: 2203, name: "Aprendiz", icon: Level1Icon3D, color: "#60A5FA", description: "Primeiros passos dados!" },
+  { level: 2, pointsRequired: 4406, name: "Praticante", icon: Level2Icon3D, color: "#06B6D4", description: "Você está no caminho certo!" },
+  { level: 3, pointsRequired: 6609, name: "Especialista", icon: Level3Icon3D, color: "#FBBF24", description: "Você domina a prática!" },
+  { level: 4, pointsRequired: 8812, name: "Mestre", icon: Level4Icon3D, color: "#FB923C", description: "Você é um verdadeiro mestre!" },
+  { level: 5, pointsRequired: 11015, name: "Sábio", icon: Level5Icon3D, color: "#A78BFA", description: "A sabedoria guia seus passos!" },
+  { level: 6, pointsRequired: 13218, name: "Lenda", icon: Level6Icon3D, color: "#F87171", description: "Você é uma lenda viva!" },
+  { level: 7, pointsRequired: 15421, name: "Imortal", icon: Level7Icon3D, color: "#EC4899", description: "Imortal na memória!" },
+  { level: 8, pointsRequired: 17624, name: "Divino", icon: Level8Icon3D, color: "#6366F1", description: "Você é quase um deus!" },
+  { level: 9, pointsRequired: 22035, name: "Supremo", icon: Level9Icon3D, color: "#EC4899", description: "O pico máximo da excelência!" }
 ]
 
 export const BADGES: Badge[] = [
