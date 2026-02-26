@@ -188,7 +188,8 @@ export function PrizeManagementSection({
       return month
     })
 
-    // Atualizar estado global
+    // Atualizar ambos os estados (monthlyWinners e monthlyWinnersState)
+    setMonthlyWinners(updatedWinners)
     setMonthlyWinnersState(updatedWinners)
 
     // Log para debug
@@ -326,6 +327,28 @@ export function PrizeManagementSection({
               'from-orange-50 to-red-50'
             ][index]
 
+            // Obter status do monthlyWinnersState para o mês/ano atual
+            const now = new Date()
+            const currentMonth = now.getMonth() + 1
+            const currentYear = now.getFullYear()
+            const monthData = monthlyWinnersState.find(m =>
+              m.month === currentMonth && m.year === currentYear
+            )
+
+            let currentStatus = 'pending'
+            let currentAmount = user.prizeAmount || 0
+
+            if (index === 0 && monthData?.firstPlaceUserId === user.id) {
+              currentStatus = monthData.firstPlaceStatus || 'pending'
+              currentAmount = monthData.firstPlaceAmount || user.prizeAmount || 0
+            } else if (index === 1 && monthData?.secondPlaceUserId === user.id) {
+              currentStatus = monthData.secondPlaceStatus || 'pending'
+              currentAmount = monthData.secondPlaceAmount || user.prizeAmount || 0
+            } else if (index === 2 && monthData?.thirdPlaceUserId === user.id) {
+              currentStatus = monthData.thirdPlaceStatus || 'pending'
+              currentAmount = monthData.thirdPlaceAmount || user.prizeAmount || 0
+            }
+
             return (
               <div
                 key={user.id}
@@ -355,19 +378,13 @@ export function PrizeManagementSection({
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Prêmio:</span>
-                    <span className="font-bold text-green-600">{formatCurrency(user.prizeAmount || 0)}</span>
+                    <span className="font-bold text-green-600">{formatCurrency(currentAmount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Status:</span>
-                    <select
-                      value={statusChanges[user.id] || user.prizeStatus || 'pending'}
-                      onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                      className={`px-2 py-1 text-xs rounded font-medium border-0 focus:outline-none ${getStatusColor(statusChanges[user.id] || user.prizeStatus || 'pending')}`}
-                    >
-                      <option value="pending">Pendente</option>
-                      <option value="paid">Pago</option>
-                      <option value="cancelled">Cancelado</option>
-                    </select>
+                    <span className={`text-xs font-bold px-2 py-1 rounded ${getStatusColor(currentStatus)}`}>
+                      {currentStatus === 'paid' ? '✅ Pago' : currentStatus === 'pending' ? '⏳ Pendente' : '❌ Cancelado'}
+                    </span>
                   </div>
                 </div>
 
