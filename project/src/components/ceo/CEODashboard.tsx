@@ -2,12 +2,12 @@ import React, { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Logo } from '../ui/Logo'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
-import { 
-  BarChart3, 
-  Users, 
-  MessageSquare, 
-  Settings, 
-  LogOut, 
+import {
+  BarChart3,
+  Users,
+  MessageSquare,
+  Settings,
+  LogOut,
   Trophy,
   Target,
   TrendingUp,
@@ -32,7 +32,8 @@ import {
   Trash2,
   Save,
   X,
-  Brain
+  Brain,
+  DollarSign
 } from 'lucide-react'
 
 // Import das seções
@@ -40,6 +41,7 @@ import { CommunitySection } from '../user/sections/CommunitySection'
 import { ChallengesSection } from './ChallengesSection'
 import { AwardsSection } from './AwardsSection'
 import { RankingSection } from './RankingSection'
+import { PrizeManagementSection } from './PrizeManagementSection'
 import { ComplianceSection } from './ComplianceSection'
 import { NotificationsSection } from './NotificationsSection'
 import IntegrationsSection from './IntegrationsSection'
@@ -47,10 +49,12 @@ import { Dashboard2Section } from './Dashboard2Section'
 import { GuerreirasSection } from './GuerreirasSection'
 import { QuizzSection } from './QuizzSection'
 import { SettingsSection } from './SettingsSection'
+import { generateMockRankingUsers } from '../../lib/ranking-data-mock'
 
 export function CEODashboard() {
   const { profile, signOut } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
+  const [rankingUsers] = useState(() => generateMockRankingUsers())
 
   const sections = [
     { id: 'dashboard2', label: 'Dashboard 2.0', icon: TrendingUp },
@@ -60,11 +64,28 @@ export function CEODashboard() {
     { id: 'challenges', label: 'Desafios', icon: Target },
     { id: 'awards', label: 'Medalhas', icon: Trophy },
     { id: 'ranking', label: 'Ranking', icon: Crown },
+    { id: 'prizes', label: 'Prêmios 💰', icon: DollarSign },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'integrations', label: 'Integrações', icon: Zap },
     { id: 'compliance', label: 'Compliance', icon: Shield },
     { id: 'settings', label: 'Configurações', icon: Settings }
   ]
+
+  const handleRefreshRanking = async () => {
+    // Simular refresh
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    window.location.reload()
+  }
+
+  const handleFinalizeMonth = async () => {
+    if (!confirm('Finalizar mês? Isso vai salvar o ranking e criar prêmios pendentes!')) {
+      return
+    }
+    // Simular finalize
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    alert('Mês finalizado! Prêmios criados como PENDENTES')
+    window.location.reload()
+  }
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -232,6 +253,13 @@ export function CEODashboard() {
       case 'challenges': return <ChallengesSection />
       case 'awards': return <AwardsSection />
       case 'ranking': return <RankingSection />
+      case 'prizes': return (
+        <PrizeManagementSection
+          users={rankingUsers}
+          onRefreshRanking={handleRefreshRanking}
+          onFinalizeMonth={handleFinalizeMonth}
+        />
+      )
       case 'notifications': return <NotificationsSection />
       case 'integrations': return <IntegrationsSection />
       case 'compliance': return <ComplianceSection />

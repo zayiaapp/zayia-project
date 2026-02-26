@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Trophy, 
-  BarChart3, 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  Search, 
-  RefreshCw, 
-  Download, 
-  Filter, 
-  Eye, 
-  Crown, 
-  Medal, 
-  Star, 
-  Zap, 
-  Target, 
-  Calendar, 
-  Clock, 
-  ChevronUp, 
-  ChevronDown, 
+import {
+  Trophy,
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Search,
+  RefreshCw,
+  Download,
+  Filter,
+  Eye,
+  Crown,
+  Medal,
+  Star,
+  Zap,
+  Target,
+  Calendar,
+  Clock,
+  ChevronUp,
+  ChevronDown,
   Minus,
   Award,
   Flame,
@@ -30,58 +30,24 @@ import {
   MessageCircle,
   Briefcase,
   Home,
-  Smartphone
+  Smartphone,
+  DollarSign,
+  AlertCircle,
+  CheckCircle,
+  Clock3
 } from 'lucide-react'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
-
-interface RankingUser {
-  id: string
-  position: number
-  previousPosition: number
-  name: string
-  email: string
-  avatar_url: string
-  points: number
-  level: number
-  streak: number
-  badges_count: number
-  completed_challenges: number
-  last_activity: string
-  weekly_growth: number
-  monthly_growth: number
-  favorite_category: string
-  total_sessions: number
-  join_date: string
-  recent_badges: Array<{
-    id: string
-    name: string
-    icon: string
-    earned_at: string
-  }>
-}
-
-interface RankingStats {
-  total_users: number
-  active_today: number
-  average_points: number
-  top_performer_growth: number
-  total_points_distributed: number
-  new_users_this_week: number
-}
-
-// Nomes femininos brasileiros para mock data
-const femaleNames = [
-  'Ana Silva', 'Maria Santos', 'Julia Costa', 'Beatriz Oliveira', 'Camila Souza',
-  'Fernanda Lima', 'Gabriela Alves', 'Helena Rodrigues', 'Isabella Ferreira', 'Larissa Martins',
-  'Letícia Pereira', 'Mariana Carvalho', 'Natália Ribeiro', 'Patrícia Gomes', 'Rafaela Barbosa',
-  'Sabrina Dias', 'Tatiana Moreira', 'Vanessa Castro', 'Yasmin Araújo', 'Adriana Nascimento',
-  'Bruna Cardoso', 'Carolina Mendes', 'Daniela Rocha', 'Eduarda Teixeira', 'Fabiana Correia',
-  'Giovanna Pinto', 'Ingrid Monteiro', 'Jéssica Freitas', 'Karina Lopes', 'Luana Cavalcanti',
-  'Mônica Azevedo', 'Nicole Campos', 'Priscila Nunes', 'Roberta Vieira', 'Simone Machado',
-  'Thais Ramos', 'Viviane Cunha', 'Amanda Farias', 'Bianca Moura', 'Cláudia Rezende',
-  'Débora Silveira', 'Eliane Torres', 'Flávia Batista', 'Graziela Melo', 'Heloísa Duarte',
-  'Íris Nogueira', 'Jaqueline Siqueira', 'Kelly Miranda', 'Luciana Vasconcelos', 'Michele Andrade'
-]
+import {
+  RankingUser,
+  RankingStats,
+  generateMockRankingUsers,
+  calculateRankingPosition,
+  defaultRankingConfig,
+  formatCurrency,
+  getPrizeMedal,
+  getZoneColor,
+  getDaysLeftInMonth
+} from '../../lib/ranking-data-mock'
 
 const categories = [
   { id: 'autoestima', name: 'Autoestima', icon: Heart, color: 'text-pink-500' },
@@ -92,53 +58,6 @@ const categories = [
   { id: 'carreira', name: 'Carreira', icon: Briefcase, color: 'text-blue-500' },
   { id: 'digital_detox', name: 'Digital Detox', icon: Smartphone, color: 'text-red-500' }
 ]
-
-// Gerar dados mock realistas
-const generateMockUsers = (): RankingUser[] => {
-  const users: RankingUser[] = []
-  
-  for (let i = 0; i < 50; i++) {
-    const basePoints = Math.max(0, Math.floor(Math.random() * 5000) + (50 - i) * 50)
-    const level = Math.min(20, Math.floor(basePoints / 200) + 1)
-    const streak = Math.floor(Math.random() * 100)
-    const badges_count = Math.floor(level * 1.5 + Math.random() * 5)
-    const completed_challenges = Math.floor(basePoints / 15)
-    
-    const user: RankingUser = {
-      id: `user-${i + 1}`,
-      position: i + 1,
-      previousPosition: i + 1 + Math.floor(Math.random() * 6) - 3, // Variação de -3 a +3
-      name: femaleNames[i] || `Usuária ${i + 1}`,
-      email: `user${i + 1}@exemplo.com`,
-      avatar_url: `https://images.pexels.com/photos/${3756679 + (i * 123) % 1000}/pexels-photo-${3756679 + (i * 123) % 1000}.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop`,
-      points: basePoints,
-      level,
-      streak,
-      badges_count,
-      completed_challenges,
-      last_activity: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-      weekly_growth: Math.floor(Math.random() * 40) - 10, // -10% a +30%
-      monthly_growth: Math.floor(Math.random() * 60) - 15, // -15% a +45%
-      favorite_category: categories[Math.floor(Math.random() * categories.length)].id,
-      total_sessions: Math.floor(completed_challenges * 0.7),
-      join_date: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-      recent_badges: Array.from({ length: Math.min(3, badges_count) }, (_, idx) => ({
-        id: `badge-${i}-${idx}`,
-        name: ['Primeira Semana', 'Guerreira', 'Inspiradora', 'Constante', 'Sábia'][Math.floor(Math.random() * 5)],
-        icon: ['🌟', '⚔️', '✨', '🔥', '🦉'][Math.floor(Math.random() * 5)],
-        earned_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      }))
-    }
-    
-    users.push(user)
-  }
-  
-  // Ordenar por pontos
-  return users.sort((a, b) => b.points - a.points).map((user, index) => ({
-    ...user,
-    position: index + 1
-  }))
-}
 
 export function RankingSection() {
   const [users, setUsers] = useState<RankingUser[]>([])
@@ -151,14 +70,16 @@ export function RankingSection() {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [isAutoRefresh, setIsAutoRefresh] = useState(true)
   const [showUserDetail, setShowUserDetail] = useState<string | null>(null)
-  
+  const [config] = useState(defaultRankingConfig)
+
   const usersPerPage = 20
 
   // Carregar dados iniciais
   useEffect(() => {
-    const mockUsers = generateMockUsers()
-    setUsers(mockUsers)
-    setFilteredUsers(mockUsers)
+    const mockUsers = generateMockRankingUsers()
+    const rankedUsers = calculateRankingPosition(mockUsers)
+    setUsers(rankedUsers)
+    setFilteredUsers(rankedUsers)
   }, [])
 
   // Auto-refresh a cada 30 segundos
@@ -303,24 +224,20 @@ export function RankingSection() {
   const getCategoryIcon = (categoryId: string) => {
     const category = categories.find(c => c.id === categoryId)
     if (!category) return <Heart className="w-4 h-4 text-gray-400" />
-    
+
     const Icon = category.icon
     return <Icon className={`w-4 h-4 ${category.color}`} />
   }
 
-  const exportRanking = () => {
-    const csvContent = [
-      'Posição,Nome,Email,Pontos,Nível,Sequência,Medalhas,Desafios Completos,Última Atividade',
-      ...filteredUsers.map(user => 
-        `${user.position},"${user.name}","${user.email}",${user.points},${user.level},${user.streak},${user.badges_count},${user.completed_challenges},"${new Date(user.last_activity).toLocaleString('pt-BR')}"`
-      )
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `ranking-zayia-${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
+  const handleManualRefresh = async () => {
+    setLoading(true)
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    const mockUsers = generateMockRankingUsers()
+    const rankedUsers = calculateRankingPosition(mockUsers)
+    setUsers(rankedUsers)
+    setFilteredUsers(rankedUsers)
+    setLastUpdate(new Date())
+    setLoading(false)
   }
 
   return (
@@ -330,69 +247,42 @@ export function RankingSection() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
           <div>
             <h2 className="text-2xl font-bold zayia-gradient-text mb-2">
-              🏆 Ranking de Usuárias
+              🏆 Ranking de Usuárias (com Prêmios)
             </h2>
-            <p className="text-zayia-violet-gray">
-              Acompanhe o progresso e engajamento de todas as usuárias em tempo real
+            <p className="text-zayia-violet-gray text-sm">
+              {getDaysLeftInMonth()} dias restantes | Top 3 ganha prêmios · Desempate por 1º desafio de hoje
             </p>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-zayia-violet-gray">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
-            </div>
-            
-            <button
-              onClick={handleManualRefresh}
-              disabled={loading}
-              className="zayia-button px-4 py-2 rounded-xl text-white font-medium flex items-center gap-2 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? 'Atualizando...' : 'Atualizar'}
-            </button>
-            
-            <button
-              onClick={exportRanking}
-              className="bg-zayia-lilac text-zayia-deep-violet px-4 py-2 rounded-xl font-medium hover:bg-zayia-lavender transition-colors flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Exportar
-            </button>
+
+          <div className="flex items-center gap-2 text-sm text-zayia-violet-gray">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            {lastUpdate.toLocaleTimeString('pt-BR')}
           </div>
         </div>
 
-        {/* Estatísticas Gerais */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+        {/* Estatísticas Gerais com Prêmios */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
             <Users className="w-6 h-6 text-zayia-deep-violet mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">{stats.total_users}</div>
+            <div className="text-xl font-bold text-zayia-deep-violet">{users.length}</div>
             <div className="text-xs text-zayia-violet-gray">Total Usuárias</div>
           </div>
           <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
             <Zap className="w-6 h-6 text-zayia-soft-purple mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">{stats.active_today}</div>
+            <div className="text-xl font-bold text-zayia-deep-violet">{users.filter(u => u.completed_today > 0).length}</div>
             <div className="text-xs text-zayia-violet-gray">Ativas Hoje</div>
           </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-            <BarChart3 className="w-6 h-6 text-zayia-lavender mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">{stats.average_points.toLocaleString()}</div>
-            <div className="text-xs text-zayia-violet-gray">Pontos Médios</div>
+          <div className="text-center p-4 bg-yellow-100 rounded-xl border-2 border-yellow-300">
+            <DollarSign className="w-6 h-6 text-yellow-700 mx-auto mb-2" />
+            <div className="text-xl font-bold text-yellow-700">
+              {formatCurrency(config.first_place_prize + config.second_place_prize + config.third_place_prize)}
+            </div>
+            <div className="text-xs text-yellow-600">Prêmios este mês</div>
           </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-            <TrendingUp className="w-6 h-6 text-zayia-orchid mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">+{stats.top_performer_growth}%</div>
-            <div className="text-xs text-zayia-violet-gray">Maior Crescimento</div>
-          </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-            <Trophy className="w-6 h-6 text-zayia-periwinkle mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">{stats.total_points_distributed.toLocaleString()}</div>
-            <div className="text-xs text-zayia-violet-gray">Pontos Totais</div>
-          </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-            <Sparkles className="w-6 h-6 text-zayia-amethyst mx-auto mb-2" />
-            <div className="text-xl font-bold text-zayia-deep-violet">{stats.new_users_this_week}</div>
-            <div className="text-xs text-zayia-violet-gray">Novas Usuárias</div>
+          <div className="text-center p-4 bg-blue-100 rounded-xl border-2 border-blue-300">
+            <Clock3 className="w-6 h-6 text-blue-700 mx-auto mb-2" />
+            <div className="text-xl font-bold text-blue-700">{getDaysLeftInMonth()}</div>
+            <div className="text-xs text-blue-600">Dias restantes</div>
           </div>
         </div>
       </div>
@@ -464,20 +354,27 @@ export function RankingSection() {
         </div>
       </div>
 
-      {/* Top 3 Destaque */}
+      {/* Top 3 Destaque com PRÊMIOS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {filteredUsers.slice(0, 3).map((user, index) => {
-          const positionChange = getPositionChange(user)
-          const category = categories.find(c => c.id === user.favorite_category)
-          
+        {users.slice(0, 3).map((user, index) => {
+          const medalColor = [
+            'from-yellow-400 to-orange-500 border-yellow-300',
+            'from-gray-300 to-gray-400 border-gray-300',
+            'from-orange-400 to-red-500 border-orange-300'
+          ][index]
+
+          const bgColor = [
+            'from-yellow-50 to-orange-50',
+            'from-gray-50 to-slate-50',
+            'from-orange-50 to-red-50'
+          ][index]
+
+          const prizeAmount = [config.first_place_prize, config.second_place_prize, config.third_place_prize][index]
+
           return (
-            <div 
-              key={user.id} 
-              className={`zayia-card p-6 text-center cursor-pointer hover:scale-105 transition-all duration-300 ${
-                index === 0 ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200' :
-                index === 1 ? 'bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-gray-200' :
-                'bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200'
-              }`}
+            <div
+              key={user.id}
+              className={`zayia-card p-6 text-center cursor-pointer hover:scale-105 transition-all duration-300 bg-gradient-to-br ${bgColor} border-2 ${medalColor}`}
               onClick={() => setShowUserDetail(user.id)}
             >
               <div className="relative mb-4">
@@ -485,77 +382,69 @@ export function RankingSection() {
                   src={user.avatar_url}
                   alt={user.name}
                   className="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+                  }}
                 />
-                <div className="absolute -top-2 -right-2">
-                  {getPositionIcon(user.position)}
+                <div className="absolute -top-2 -right-2 text-3xl">
+                  {getPrizeMedal(user.position)}
                 </div>
-                
-                {/* Indicador de mudança de posição */}
-                {positionChange.type !== 'same' && (
-                  <div className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${
-                    positionChange.type === 'up' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                  }`}>
-                    {positionChange.type === 'up' ? (
-                      <ChevronUp className="w-3 h-3" />
-                    ) : (
-                      <ChevronDown className="w-3 h-3" />
-                    )}
-                    {positionChange.value}
-                  </div>
-                )}
               </div>
 
               <h3 className="text-lg font-bold text-zayia-deep-violet mb-1">{user.name}</h3>
               <p className="text-sm text-zayia-violet-gray mb-3">{user.email}</p>
-              
-              <div className="space-y-2">
+
+              <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
                   <span>Pontos:</span>
                   <span className="font-bold text-zayia-soft-purple">{user.points.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Nível:</span>
-                  <div className="flex items-center gap-1">
-                    {getLevelIcon(user.level)}
-                    <span className="font-bold">{user.level}</span>
-                  </div>
+                  <span>Hoje:</span>
+                  <span className="font-bold text-zayia-lavender">{user.completed_today}/4 desafios</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span>Sequência:</span>
-                  <div className="flex items-center gap-1">
-                    <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="font-bold">{user.streak} dias</span>
-                  </div>
+                  <span>1º Desafio:</span>
+                  <span className="text-xs text-zayia-violet-gray">
+                    {new Date(user.firstChallengeTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </div>
               </div>
 
-              {/* Medalhas Recentes */}
-              {user.recent_badges.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-zayia-lilac/30">
-                  <div className="text-xs text-zayia-violet-gray mb-2">Medalhas Recentes:</div>
-                  <div className="flex justify-center gap-1">
-                    {user.recent_badges.slice(0, 3).map((badge, idx) => (
-                      <span key={idx} className="text-lg" title={badge.name}>
-                        {badge.icon}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* PRÊMIO */}
+              <div className="bg-white/60 p-3 rounded-lg border-2 border-green-400 mb-3">
+                <div className="text-green-600 font-bold text-sm">Prêmio</div>
+                <div className="text-2xl font-bold text-green-700">{formatCurrency(prizeAmount)}</div>
+                <div className="text-xs text-green-600">Status: {user.prizeStatus || 'Pendente'}</div>
+              </div>
+
+              <button className="w-full bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition text-sm">
+                Gerenciar Prêmio →
+              </button>
             </div>
           )
         })}
       </div>
 
-      {/* Lista Principal do Ranking */}
+      {/* Lista Principal do Ranking com ZONAS */}
       <div className="zayia-card p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold text-zayia-deep-violet">
-            Ranking Completo
+            Ranking Completo (com Zonas de Prêmio)
           </h3>
-          <div className="flex items-center gap-2 text-sm text-zayia-violet-gray">
-            <Clock className="w-4 h-4" />
-            Atualização automática a cada 30s
+          <div className="flex gap-2 text-xs">
+            <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded">
+              <span className="text-lg">🥇</span>
+              <span className="text-yellow-800">Prêmio</span>
+            </div>
+            <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 rounded">
+              <span className="text-lg">⚠️</span>
+              <span className="text-blue-800">Atenção</span>
+            </div>
+            <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded">
+              <span className="text-lg">➖</span>
+              <span className="text-gray-800">Neutra</span>
+            </div>
           </div>
         </div>
 
@@ -570,16 +459,16 @@ export function RankingSection() {
               {paginatedUsers.map((user) => {
                 const positionChange = getPositionChange(user)
                 const category = categories.find(c => c.id === user.favorite_category)
-                const isTopTen = user.position <= 10
-                
+                const zoneClass = user.zone === 'prize'
+                  ? 'bg-yellow-50 border-yellow-300 hover:border-yellow-400'
+                  : user.zone === 'attention'
+                  ? 'bg-blue-50 border-blue-300 hover:border-blue-400'
+                  : 'bg-white border-gray-200 hover:border-gray-300'
+
                 return (
-                  <div 
-                    key={user.id} 
-                    className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg ${
-                      isTopTen 
-                        ? 'bg-gradient-to-r from-zayia-lilac/30 to-zayia-lavender/30 border-zayia-lilac hover:border-zayia-soft-purple' 
-                        : 'bg-white border-zayia-lilac/30 hover:border-zayia-lilac'
-                    }`}
+                  <div
+                    key={user.id}
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer hover:shadow-lg ${zoneClass}`}
                     onClick={() => setShowUserDetail(user.id)}
                   >
                     <div className="flex items-center gap-4">
@@ -618,64 +507,43 @@ export function RankingSection() {
                         />
                       </div>
 
-                      {/* Informações da Usuária */}
+                      {/* Informações da Usuária + DESEMPATE */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-semibold text-zayia-deep-violet truncate">{user.name}</h4>
-                          {getLevelIcon(user.level)}
-                          <span className="text-sm text-zayia-violet-gray">Nível {user.level}</span>
+                          {user.zone === 'prize' && <span className="text-lg">🥇</span>}
+                          {user.zone === 'attention' && <span className="text-lg">⚠️</span>}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-zayia-violet-gray">
+                        <div className="flex items-center gap-4 text-xs text-zayia-violet-gray">
                           <span>{user.email}</span>
-                          <div className="flex items-center gap-1">
-                            {getCategoryIcon(user.favorite_category)}
-                            <span>{category?.name || 'Geral'}</span>
-                          </div>
+                          <span className="flex items-center gap-1">
+                            <Clock3 className="w-3 h-3" />
+                            {new Date(user.firstChallengeTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className="font-medium">
+                            {user.completed_today}/4
+                          </span>
                         </div>
                       </div>
 
-                      {/* Estatísticas */}
-                      <div className="hidden md:flex items-center gap-6 text-sm">
+                      {/* Estatísticas compactas */}
+                      <div className="hidden md:flex items-center gap-4 text-sm">
                         <div className="text-center">
                           <div className="font-bold text-zayia-deep-violet">{user.points.toLocaleString()}</div>
-                          <div className="text-zayia-violet-gray">Pontos</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-bold text-zayia-soft-purple">{user.streak}</div>
-                          <div className="text-zayia-violet-gray">Sequência</div>
+                          <div className="text-xs text-zayia-violet-gray">pts</div>
                         </div>
                         <div className="text-center">
                           <div className="font-bold text-zayia-lavender">{user.badges_count}</div>
-                          <div className="text-zayia-violet-gray">Medalhas</div>
+                          <div className="text-xs text-zayia-violet-gray">badges</div>
                         </div>
-                        <div className="text-center">
-                          <div className="font-bold text-zayia-orchid">{user.completed_challenges}</div>
-                          <div className="text-zayia-violet-gray">Desafios</div>
+                        <div>
+                          {user.zone === 'prize' && (
+                            <div className="text-center px-2 py-1 bg-yellow-100 rounded">
+                              <div className="text-sm font-bold text-yellow-800">{formatCurrency(user.prizeAmount || 0)}</div>
+                              <div className="text-xs text-yellow-600">Prêmio</div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-
-                      {/* Crescimento */}
-                      <div className="flex items-center gap-2">
-                        {user.weekly_growth > 0 ? (
-                          <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 rounded-full text-xs font-bold">
-                            <TrendingUp className="w-3 h-3" />
-                            +{user.weekly_growth}%
-                          </div>
-                        ) : user.weekly_growth < 0 ? (
-                          <div className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold">
-                            <TrendingDown className="w-3 h-3" />
-                            {user.weekly_growth}%
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold">
-                            <Minus className="w-3 h-3" />
-                            0%
-                          </div>
-                        )}
-                        
-                        <button className="text-zayia-soft-purple hover:text-zayia-deep-violet transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
 
