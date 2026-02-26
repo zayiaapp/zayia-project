@@ -40,7 +40,6 @@ import {
 import { CommunitySection } from '../user/sections/CommunitySection'
 import { ChallengesSection } from './ChallengesSection'
 import { AwardsSection } from './AwardsSection'
-import { RankingSection } from './RankingSection'
 import { PrizeManagementSection } from './PrizeManagementSection'
 import { ComplianceSection } from './ComplianceSection'
 import { NotificationsSection } from './NotificationsSection'
@@ -63,7 +62,6 @@ export function CEODashboard() {
     { id: 'community', label: 'Comunidade', icon: UserCheck },
     { id: 'challenges', label: 'Desafios', icon: Target },
     { id: 'awards', label: 'Medalhas', icon: Trophy },
-    { id: 'ranking', label: 'Ranking', icon: Crown },
     { id: 'prizes', label: 'Prêmios 💰', icon: DollarSign },
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'integrations', label: 'Integrações', icon: Zap },
@@ -252,7 +250,6 @@ export function CEODashboard() {
       case 'community': return <CommunitySection />
       case 'challenges': return <ChallengesSection />
       case 'awards': return <AwardsSection />
-      case 'ranking': return <RankingSection />
       case 'prizes': return (
         <PrizeManagementSection
           users={rankingUsers}
