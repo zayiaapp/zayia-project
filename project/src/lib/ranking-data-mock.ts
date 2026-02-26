@@ -25,12 +25,43 @@ export interface MonthlyWinner {
   id: string
   month: number
   year: number
+
+  // 1º Lugar
   firstPlaceUserId: string
+  firstPlaceName?: string
+  firstPlaceEmail?: string
   firstPlacePoints: number
+  firstPlaceAmount?: number
+  firstPlaceStatus?: 'pending' | 'paid' | 'cancelled'
+  firstPlaceMethod?: 'pix' | 'transfer' | 'stripe'
+  firstPlacePixKey?: string
+  firstPlacePaymentDate?: string
+  firstPlaceProofUrl?: string
+
+  // 2º Lugar
   secondPlaceUserId: string
+  secondPlaceName?: string
+  secondPlaceEmail?: string
   secondPlacePoints: number
+  secondPlaceAmount?: number
+  secondPlaceStatus?: 'pending' | 'paid' | 'cancelled'
+  secondPlaceMethod?: 'pix' | 'transfer' | 'stripe'
+  secondPlacePixKey?: string
+  secondPlacePaymentDate?: string
+  secondPlaceProofUrl?: string
+
+  // 3º Lugar
   thirdPlaceUserId: string
+  thirdPlaceName?: string
+  thirdPlaceEmail?: string
   thirdPlacePoints: number
+  thirdPlaceAmount?: number
+  thirdPlaceStatus?: 'pending' | 'paid' | 'cancelled'
+  thirdPlaceMethod?: 'pix' | 'transfer' | 'stripe'
+  thirdPlacePixKey?: string
+  thirdPlacePaymentDate?: string
+  thirdPlaceProofUrl?: string
+
   createdAt: string
   finalizedAt: string
 }
@@ -264,6 +295,7 @@ export function calculateRankingPosition(users: RankingUser[]): RankingUser[] {
 export function generateMockMonthlyWinners(): MonthlyWinner[] {
   const winners: MonthlyWinner[] = []
   const now = new Date()
+  const mockUsers = generateMockRankingUsers()
 
   // Últimos 12 meses
   for (let i = 11; i >= 0; i--) {
@@ -276,16 +308,39 @@ export function generateMockMonthlyWinners(): MonthlyWinner[] {
       Math.floor(Math.random() * 20)
     ].sort()
 
+    const firstPlace = mockUsers[top3Indices[0]]
+    const secondPlace = mockUsers[top3Indices[1]]
+    const thirdPlace = mockUsers[top3Indices[2]]
+
     winners.push({
       id: `winner-${year}-${month}`,
       month,
       year,
+
+      // 1º Lugar
       firstPlaceUserId: `user-${top3Indices[0] + 1}`,
+      firstPlaceName: firstPlace.name,
+      firstPlaceEmail: firstPlace.email,
       firstPlacePoints: 4500 + Math.random() * 1000,
+      firstPlaceAmount: 500,
+      firstPlaceStatus: 'pending',
+
+      // 2º Lugar
       secondPlaceUserId: `user-${top3Indices[1] + 1}`,
+      secondPlaceName: secondPlace.name,
+      secondPlaceEmail: secondPlace.email,
       secondPlacePoints: 4000 + Math.random() * 800,
+      secondPlaceAmount: 300,
+      secondPlaceStatus: 'pending',
+
+      // 3º Lugar
       thirdPlaceUserId: `user-${top3Indices[2] + 1}`,
+      thirdPlaceName: thirdPlace.name,
+      thirdPlaceEmail: thirdPlace.email,
       thirdPlacePoints: 3500 + Math.random() * 800,
+      thirdPlaceAmount: 100,
+      thirdPlaceStatus: 'pending',
+
       createdAt: new Date(year, month - 1, 28).toISOString(),
       finalizedAt: new Date(year, month - 1, 28, 23, 59).toISOString()
     })

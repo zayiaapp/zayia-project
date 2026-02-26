@@ -81,7 +81,6 @@ export function PrizeManagementSection({
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [statusChanges, setStatusChanges] = useState<Record<string, string>>({})
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'paid' | 'cancelled'>('all')
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [monthlyWinnersState, setMonthlyWinnersState] = useState<MonthlyWinner[]>([])
 
@@ -134,50 +133,73 @@ export function PrizeManagementSection({
 
   const handleSavePrize = () => {
     if (!selectedPrizeUserId || !prizeAmount) {
-      alert('Por favor, preencha os campos obrigatórios')
+      alert('Por favor, preencha Usuária e Valor do Prêmio')
       return
     }
 
-    // Atualizar histórico de vencedoras com o novo prêmio
     const now = new Date()
     const currentMonth = now.getMonth() + 1
     const currentYear = now.getFullYear()
 
-    const updatedWinners = monthlyWinnersState.map(month => {
-      if (month.month === currentMonth && month.year === currentYear) {
-        // Verificar qual posição está sendo editada
-        if (month.firstPlaceUserId === selectedPrizeUserId) {
-          return {
-            ...month,
-            firstPlacePoints: Number(prizeAmount)
-          }
-        }
-        if (month.secondPlaceUserId === selectedPrizeUserId) {
-          return {
-            ...month,
-            secondPlacePoints: Number(prizeAmount)
-          }
-        }
-        if (month.thirdPlaceUserId === selectedPrizeUserId) {
-          return {
-            ...month,
-            thirdPlacePoints: Number(prizeAmount)
-          }
+    // 🔥 LÓGICA PRINCIPAL: Atualizar histórico com dados completos
+    const updatedWinners: MonthlyWinner[] = monthlyWinnersState.map(month => {
+      // Só atualiza o mês/ano atual
+      if (month.month !== currentMonth || month.year !== currentYear) {
+        return month
+      }
+
+      // Verificar qual posição está sendo paga
+      if (month.firstPlaceUserId === selectedPrizeUserId) {
+        return {
+          ...month,
+          firstPlaceAmount: Number(prizeAmount),
+          firstPlaceStatus: 'paid' as const,
+          firstPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
+          firstPlacePixKey: pixKey || undefined,
+          firstPlacePaymentDate: paymentDate || undefined,
+          firstPlaceProofUrl: proofFile?.name || undefined
         }
       }
+
+      if (month.secondPlaceUserId === selectedPrizeUserId) {
+        return {
+          ...month,
+          secondPlaceAmount: Number(prizeAmount),
+          secondPlaceStatus: 'paid' as const,
+          secondPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
+          secondPlacePixKey: pixKey || undefined,
+          secondPlacePaymentDate: paymentDate || undefined,
+          secondPlaceProofUrl: proofFile?.name || undefined
+        }
+      }
+
+      if (month.thirdPlaceUserId === selectedPrizeUserId) {
+        return {
+          ...month,
+          thirdPlaceAmount: Number(prizeAmount),
+          thirdPlaceStatus: 'paid' as const,
+          thirdPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
+          thirdPlacePixKey: pixKey || undefined,
+          thirdPlacePaymentDate: paymentDate || undefined,
+          thirdPlaceProofUrl: proofFile?.name || undefined
+        }
+      }
+
       return month
     })
 
-    // Atualizar estado local
+    // Atualizar estado global
     setMonthlyWinnersState(updatedWinners)
 
-    console.log('Prêmio salvo no histórico:', {
+    // Log para debug
+    console.log('✅ Prêmio salvo no histórico:', {
       userId: selectedPrizeUserId,
       amount: prizeAmount,
       method: paymentMethod,
       pixKey: pixKey,
       date: paymentDate,
-      proof: proofFile?.name
+      proof: proofFile?.name,
+      status: 'paid'
     })
 
     // Limpar formulário
@@ -188,7 +210,8 @@ export function PrizeManagementSection({
     setProofFile(null)
     setPrizeModalOpen(false)
 
-    alert('Prêmio salvo e adicionado ao histórico! ✅')
+    // Feedback ao usuário
+    alert('✅ Prêmio marcado como PAGO e salvo no histórico!')
   }
 
   const handleStatusChange = (userId: string, newStatus: string) => {
@@ -198,30 +221,8 @@ export function PrizeManagementSection({
       [userId]: newStatus
     })
 
-    // Atualizar no histórico de vencedoras
-    const updatedWinners = monthlyWinnersState.map(month => {
-      let updated = false
-
-      if (month.firstPlaceUserId === userId) {
-        // Nota: Estamos atualizando o prêmio temporariamente para manter estado
-        // TODO: Integrar com Supabase para salvar status de pagamento
-        updated = true
-      }
-      if (month.secondPlaceUserId === userId) {
-        updated = true
-      }
-      if (month.thirdPlaceUserId === userId) {
-        updated = true
-      }
-
-      return month
-    })
-
-    if (updatedWinners.length > 0) {
-      setMonthlyWinnersState(updatedWinners)
-    }
-
     console.log(`Status de ${userId} mudou para ${newStatus} e foi salvo no histórico`)
+    // TODO: Integrar com Supabase para salvar status de pagamento
   }
 
   const getStatusColor = (status: string) => {
@@ -562,8 +563,6 @@ export function PrizeManagementSection({
       return yearMatch && monthMatch
     })
 
-    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-
     return (
       <div className="space-y-6">
         <div className="zayia-card p-6">
@@ -626,58 +625,151 @@ export function PrizeManagementSection({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zayia-lilac/30">
-                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">Mês/Ano</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">1º Lugar</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">2º Lugar</th>
-                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">3º Lugar</th>
-                    <th className="text-right py-3 px-4 font-semibold text-zayia-deep-violet">Prêmios (R$)</th>
-                    <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Status</th>
-                    <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Ação</th>
+                  <tr className="border-b-2 border-zayia-lilac/30 bg-zayia-lilac/10">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Mês/Ano</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Posição</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Vencedora</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Email</th>
+                    <th className="text-right py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Prêmio (R$)</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Data Pgto</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Método</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Status</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-zayia-deep-violet">Comprovante</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredWinners.map((winner) => (
-                  <tr
-                    key={winner.id}
-                    className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10 transition cursor-pointer"
-                  >
-                    <td className="py-3 px-4 font-medium text-zayia-deep-violet">
-                      {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][winner.month - 1]} {winner.year}
-                    </td>
-                    <td className="py-3 px-4 text-zayia-violet-gray">
-                      <div className="flex items-center gap-1">
-                        <span>🥇</span>
-                        <span>{winner.firstPlaceUserId}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-zayia-violet-gray">
-                      <div className="flex items-center gap-1">
-                        <span>🥈</span>
-                        <span>{winner.secondPlaceUserId}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-zayia-violet-gray">
-                      <div className="flex items-center gap-1">
-                        <span>🥉</span>
-                        <span>{winner.thirdPlaceUserId}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right font-bold text-zayia-soft-purple">
-                      {formatCurrency(
-                        config.first_place_prize + config.second_place_prize + config.third_place_prize
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Pendente</span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button className="text-zayia-soft-purple hover:text-zayia-deep-violet transition text-sm font-medium">
-                        Expandir
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    <React.Fragment key={winner.id}>
+                      {/* 1º Lugar */}
+                      <tr className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/5">
+                        <td className="py-3 px-4 font-semibold text-zayia-deep-violet">
+                          {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][winner.month - 1]} {winner.year}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-lg font-bold">🥇 1º</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm font-medium text-zayia-deep-violet">{winner.firstPlaceName}</div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-zayia-violet-gray">{winner.firstPlaceEmail}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-green-600">
+                          {formatCurrency(winner.firstPlaceAmount || 0)}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.firstPlacePaymentDate || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.firstPlaceMethod?.toUpperCase() || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${
+                            winner.firstPlaceStatus === 'paid'
+                              ? 'bg-green-100 text-green-800'
+                              : winner.firstPlaceStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {winner.firstPlaceStatus === 'paid' ? '✅ Pago' : winner.firstPlaceStatus === 'pending' ? '⏳ Pendente' : '❌ Cancelado'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {winner.firstPlaceProofUrl ? (
+                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
+                              📄 Ver
+                            </button>
+                          ) : (
+                            <span className="text-zayia-violet-gray text-sm">-</span>
+                          )}
+                        </td>
+                      </tr>
+
+                      {/* 2º Lugar */}
+                      <tr className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/5">
+                        <td className="py-3 px-4 font-semibold text-zayia-deep-violet">
+                          {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][winner.month - 1]} {winner.year}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-lg font-bold">🥈 2º</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm font-medium text-zayia-deep-violet">{winner.secondPlaceName}</div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-zayia-violet-gray">{winner.secondPlaceEmail}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-green-600">
+                          {formatCurrency(winner.secondPlaceAmount || 0)}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.secondPlacePaymentDate || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.secondPlaceMethod?.toUpperCase() || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${
+                            winner.secondPlaceStatus === 'paid'
+                              ? 'bg-green-100 text-green-800'
+                              : winner.secondPlaceStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {winner.secondPlaceStatus === 'paid' ? '✅ Pago' : winner.secondPlaceStatus === 'pending' ? '⏳ Pendente' : '❌ Cancelado'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {winner.secondPlaceProofUrl ? (
+                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
+                              📄 Ver
+                            </button>
+                          ) : (
+                            <span className="text-zayia-violet-gray text-sm">-</span>
+                          )}
+                        </td>
+                      </tr>
+
+                      {/* 3º Lugar */}
+                      <tr className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/5">
+                        <td className="py-3 px-4 font-semibold text-zayia-deep-violet">
+                          {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][winner.month - 1]} {winner.year}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-lg font-bold">🥉 3º</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-sm font-medium text-zayia-deep-violet">{winner.thirdPlaceName}</div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-zayia-violet-gray">{winner.thirdPlaceEmail}</td>
+                        <td className="py-3 px-4 text-right font-semibold text-green-600">
+                          {formatCurrency(winner.thirdPlaceAmount || 0)}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.thirdPlacePaymentDate || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center text-sm text-zayia-violet-gray">
+                          {winner.thirdPlaceMethod?.toUpperCase() || '-'}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={`text-xs font-bold px-2 py-1 rounded ${
+                            winner.thirdPlaceStatus === 'paid'
+                              ? 'bg-green-100 text-green-800'
+                              : winner.thirdPlaceStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {winner.thirdPlaceStatus === 'paid' ? '✅ Pago' : winner.thirdPlaceStatus === 'pending' ? '⏳ Pendente' : '❌ Cancelado'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {winner.thirdPlaceProofUrl ? (
+                            <button className="text-zayia-soft-purple hover:text-zayia-deep-violet text-sm font-medium transition">
+                              📄 Ver
+                            </button>
+                          ) : (
+                            <span className="text-zayia-violet-gray text-sm">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>
