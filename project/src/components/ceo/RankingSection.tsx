@@ -166,17 +166,6 @@ export function RankingSection() {
     setLastUpdate(new Date())
   }
 
-  // Atualização manual
-  const handleManualRefresh = async () => {
-    setLoading(true)
-    
-    // Simular delay de API
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    simulateRealTimeUpdate()
-    setLoading(false)
-  }
-
   // Calcular estatísticas
   const getStats = (): RankingStats => {
     const now = new Date()
