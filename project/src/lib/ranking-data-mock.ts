@@ -143,7 +143,6 @@ const categories = ['autoestima', 'rotina', 'mindfulness', 'corpo_saude', 'relac
 
 export function generateMockRankingUsers(): RankingUser[] {
   const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const users: RankingUser[] = []
 
   for (let i = 0; i < 50; i++) {
@@ -223,7 +222,7 @@ export function generateMockRankingUsers(): RankingUser[] {
  */
 export function calculateRankingPosition(users: RankingUser[]): RankingUser[] {
   // 1. Ordenar por PONTOS (maior primeiro)
-  let sorted = [...users].sort((a, b) => b.points - a.points)
+  const sorted = [...users].sort((a, b) => b.points - a.points)
 
   // 2. Agrupar por pontos iguais
   const pointsGroups: { [key: number]: RankingUser[] } = {}
@@ -244,7 +243,7 @@ export function calculateRankingPosition(users: RankingUser[]): RankingUser[] {
   })
 
   // 4. Reconstruir ranking com posições corretas
-  let finalRanking: RankingUser[] = []
+  const finalRanking: RankingUser[] = []
   let position = 1
 
   Object.keys(pointsGroups).forEach(points => {

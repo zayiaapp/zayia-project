@@ -1,74 +1,44 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { 
-  Trophy, 
-  Crown, 
-  Medal, 
-  Award, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus,
+import {
+  Trophy,
+  Crown,
+  Medal,
+  Award,
   RefreshCw,
   ChevronUp,
   ChevronDown,
   Star,
   Flame,
-  Target
+  Target,
+  CheckCircle,
+  Sparkles
 } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
-
-interface RankingUser {
-  id: string
-  position: number
-  previousPosition: number
-  name: string
-  avatar_url: string
-  points: number
-  level: number
-  streak: number
-  isCurrentUser?: boolean
-}
+import {
+  RankingUser,
+  generateMockRankingUsers,
+  calculateRankingPosition,
+  defaultRankingConfig,
+  formatCurrency,
+  getPrizeMedal,
+  getPrizeAmount
+} from '../../../lib/ranking-data-mock'
 
 export function RankingSection() {
   const { profile } = useAuth()
   const [users, setUsers] = useState<RankingUser[]>([])
   const [loading, setLoading] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
+  const [showPrizeNotif, setShowPrizeNotif] = useState(false)
+  const [config] = useState(defaultRankingConfig)
 
-  // Gerar dados mock do ranking
-  const generateMockRanking = (): RankingUser[] => {
-    const mockUsers: RankingUser[] = []
-    const names = [
-      'Ana Silva', 'Maria Santos', 'Julia Costa', 'Beatriz Oliveira', 'Camila Souza',
-      'Fernanda Lima', 'Gabriela Alves', 'Helena Rodrigues', 'Isabella Ferreira', 'Larissa Martins',
-      'Letícia Pereira', 'Mariana Carvalho', 'Natália Ribeiro', 'Patrícia Gomes', 'Rafaela Barbosa',
-      'Sabrina Dias', 'Tatiana Moreira', 'Vanessa Castro', 'Yasmin Araújo', 'Adriana Nascimento'
-    ]
-
-    for (let i = 0; i < 20; i++) {
-      const points = Math.max(0, Math.floor(Math.random() * 5000) + (20 - i) * 100)
-      const level = Math.min(20, Math.floor(points / 200) + 1)
-      const streak = Math.floor(Math.random() * 50)
-      
-      mockUsers.push({
-        id: `user-${i + 1}`,
-        position: i + 1,
-        previousPosition: i + 1 + Math.floor(Math.random() * 6) - 3,
-        name: names[i] || `Usuária ${i + 1}`,
-        avatar_url: `https://images.pexels.com/photos/${3756679 + (i * 123) % 1000}/pexels-photo-${3756679 + (i * 123) % 1000}.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop`,
-        points,
-        level,
-        streak,
-        isCurrentUser: i === 4 // Simular que usuária atual está na 5ª posição
-      })
-    }
-
-    return mockUsers
-  }
+  // Índice da usuária atual no ranking (simulado como 5º lugar)
+  const currentUserIndex = 4
 
   useEffect(() => {
     loadRanking()
-    
+
     // Atualizar ranking a cada 30 segundos
     const interval = setInterval(() => {
       updateRanking()
@@ -79,36 +49,42 @@ export function RankingSection() {
 
   const loadRanking = async () => {
     setLoading(true)
-    // Simular carregamento
     await new Promise(resolve => setTimeout(resolve, 1000))
-    setUsers(generateMockRanking())
+    const mockUsers = generateMockRankingUsers()
+    const rankedUsers = calculateRankingPosition(mockUsers)
+    // Marcar usuária atual
+    rankedUsers[currentUserIndex].isCurrentUser = true
+    setUsers(rankedUsers)
     setLoading(false)
+
+    // Mostrar notificação se em top 3
+    if (rankedUsers[currentUserIndex].position <= 3) {
+      setShowPrizeNotif(true)
+      setTimeout(() => setShowPrizeNotif(false), 5000)
+    }
   }
 
   const updateRanking = () => {
     setUsers(prevUsers => {
-      // Simular pequenas mudanças no ranking
       const updatedUsers = prevUsers.map(user => {
-        if (Math.random() < 0.3) { // 30% chance de mudança
-          const pointsChange = Math.floor(Math.random() * 50) - 10
+        if (Math.random() < 0.2) {
+          const pointsChange = Math.floor(Math.random() * 50) + 10
           return {
             ...user,
-            points: Math.max(0, user.points + pointsChange)
+            points: Math.max(0, user.points + pointsChange),
+            completed_today: Math.min(4, user.completed_today + 1)
           }
         }
         return user
       })
 
-      // Reordenar por pontos
-      return updatedUsers
-        .sort((a, b) => b.points - a.points)
-        .map((user, index) => ({
-          ...user,
-          previousPosition: user.position,
-          position: index + 1
-        }))
+      // Reordenar com desempate
+      return calculateRankingPosition(updatedUsers).map((user, index) => ({
+        ...user,
+        isCurrentUser: user.id === prevUsers[currentUserIndex].id
+      }))
     })
-    
+
     setLastUpdate(new Date())
   }
 
@@ -125,8 +101,6 @@ export function RankingSection() {
     if (position === 3) return <Award className="w-5 h-5 text-orange-500" />
     return null
   }
-
-  const currentUser = users.find(user => user.isCurrentUser)
 
   if (loading) {
     return (
@@ -154,56 +128,97 @@ export function RankingSection() {
         </p>
       </div>
 
-      {/* Sua Posição (Destaque) */}
-      {currentUser && (
-        <div className="zayia-card p-6 bg-gradient-to-r from-zayia-lilac/30 to-zayia-lavender/30 border-2 border-zayia-soft-purple">
+      {/* NOTIFICAÇÃO DE PRÊMIO */}
+      {showPrizeNotif && users[currentUserIndex] && users[currentUserIndex].position <= 3 && (
+        <div className={`zayia-card p-4 text-center border-2 ${
+          users[currentUserIndex].position === 1
+            ? 'bg-yellow-50 border-yellow-400'
+            : users[currentUserIndex].position === 2
+            ? 'bg-gray-100 border-gray-400'
+            : 'bg-orange-50 border-orange-400'
+        }`}>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Sparkles className="w-5 h-5 text-purple-600 animate-spin" />
+            <span className="text-lg font-bold text-purple-700">Parabéns! 🎉</span>
+          </div>
+          <p className="text-sm font-semibold text-zayia-deep-violet mb-1">
+            Você está em {users[currentUserIndex].position}º lugar!
+          </p>
+          <p className="text-sm font-bold text-green-600">
+            Prêmio garantido: {formatCurrency(getPrizeAmount(users[currentUserIndex].position, config))}
+          </p>
+        </div>
+      )}
+
+      {/* Sua Posição (Destaque com PRÊMIOS) */}
+      {users[currentUserIndex] && (
+        <div className={`zayia-card p-6 bg-gradient-to-r border-2 ${
+          users[currentUserIndex].position <= 3
+            ? 'from-yellow-50 to-orange-50 border-yellow-400'
+            : 'from-zayia-lilac/30 to-zayia-lavender/30 border-zayia-soft-purple'
+        }`}>
           <div className="text-center mb-4">
-            <div className="text-sm font-medium text-zayia-deep-violet mb-1">SUA POSIÇÃO</div>
-            <div className="text-3xl font-bold text-zayia-soft-purple">#{currentUser.position}</div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="text-sm font-medium text-zayia-deep-violet">SUA POSIÇÃO</span>
+              {users[currentUserIndex].position <= 3 && (
+                <span className="text-2xl">{getPrizeMedal(users[currentUserIndex].position)}</span>
+              )}
+            </div>
+            <div className="text-3xl font-bold text-zayia-soft-purple">#{users[currentUserIndex].position}</div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-4">
             <div className="relative">
               <img
-                src={currentUser.avatar_url}
-                alt={currentUser.name}
+                src={users[currentUserIndex].avatar_url}
+                alt={users[currentUserIndex].name}
                 className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
                 onError={(e) => {
                   e.currentTarget.src = 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
                 }}
               />
-              {getPositionIcon(currentUser.position) && (
-                <div className="absolute -top-2 -right-2">
-                  {getPositionIcon(currentUser.position)}
-                </div>
-              )}
             </div>
 
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-zayia-deep-violet">{currentUser.name}</h3>
+              <h3 className="text-lg font-bold text-zayia-deep-violet">{users[currentUserIndex].name}</h3>
               <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
                 <div className="text-center">
-                  <div className="font-bold text-zayia-soft-purple">{currentUser.points.toLocaleString()}</div>
+                  <div className="font-bold text-zayia-soft-purple">{users[currentUserIndex].points.toLocaleString()}</div>
                   <div className="text-xs text-zayia-violet-gray">Pontos</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-zayia-lavender">{currentUser.level}</div>
+                  <div className="font-bold text-zayia-lavender">{users[currentUserIndex].level}</div>
                   <div className="text-xs text-zayia-violet-gray">Nível</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-bold text-zayia-orchid">{currentUser.streak}</div>
-                  <div className="text-xs text-zayia-violet-gray">Sequência</div>
+                  <div className="font-bold text-zayia-orchid">{users[currentUserIndex].completed_today}/4</div>
+                  <div className="text-xs text-zayia-violet-gray">Hoje</div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* PRÊMIO */}
+          {users[currentUserIndex].position <= 3 && (
+            <div className="bg-white/80 p-3 rounded-lg border-2 border-green-400 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-bold text-green-700">Prêmio Garantido</div>
+                  <div className="text-lg font-bold text-green-600">
+                    {formatCurrency(getPrizeAmount(users[currentUserIndex].position, config))}
+                  </div>
+                </div>
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+          )}
+
           {/* Mudança de Posição */}
           {(() => {
-            const change = getPositionChange(currentUser)
+            const change = getPositionChange(users[currentUserIndex])
             if (change.type !== 'same') {
               return (
-                <div className={`mt-4 p-2 rounded-lg text-center ${
+                <div className={`p-2 rounded-lg text-center ${
                   change.type === 'up' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                 }`}>
                   <div className="flex items-center justify-center gap-1 text-sm font-bold">
@@ -235,7 +250,7 @@ export function RankingSection() {
         </h3>
 
         <div className="grid grid-cols-3 gap-3">
-          {users.slice(0, 3).map((user, index) => (
+          {users.slice(0, 3).map((user, _index) => (
             <div key={user.id} className="text-center">
               <div className="relative mb-3">
                 <img
