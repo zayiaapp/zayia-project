@@ -94,6 +94,17 @@ export function PrizeManagementSection({
     setMonthlyWinnersState(monthlyWinners)
   }, [monthlyWinners])
 
+  useEffect(() => {
+    // Listener para evento de atualização de prêmios
+    const handlePrizeUpdate = () => {
+      console.log('✅ Evento prizeUpdated capturado - Cards atualizando...')
+      // O setState acima já dispara re-render, isso é só para logging
+    }
+
+    window.addEventListener('prizeUpdated', handlePrizeUpdate)
+    return () => window.removeEventListener('prizeUpdated', handlePrizeUpdate)
+  }, [])
+
   const loadData = async () => {
     setLoading(true)
     try {
@@ -248,6 +259,13 @@ export function PrizeManagementSection({
       status: 'paid'
     })
 
+    // 🔥 FORÇAR RE-RENDER dos cards adicionando um pequeno delay
+    setTimeout(() => {
+      // Dispara evento customizado para re-renderização
+      window.dispatchEvent(new Event('prizeUpdated'))
+      console.log('✅ Cards re-renderizados')
+    }, 100)
+
     // Limpar formulário
     setPrizeAmount('')
     setPixKey('')
@@ -357,109 +375,122 @@ export function PrizeManagementSection({
           </div>
         </div>
 
-        {/* Top 3 Destaque */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {users.slice(0, 3).map((user, index) => {
-            const medalColor = [
-              'from-yellow-400 to-orange-500 border-yellow-300',
-              'from-gray-300 to-gray-400 border-gray-300',
-              'from-orange-400 to-red-500 border-orange-300'
-            ][index]
+        {/* Top 3 Destaque - Renderizado direto do monthlyWinnersState */}
+        {(() => {
+          const now = new Date()
+          const currentMonth = now.getMonth() + 1
+          const currentYear = now.getFullYear()
+          const monthData = monthlyWinnersState.find(m =>
+            m.month === currentMonth && m.year === currentYear
+          )
 
-            const bgColor = [
-              'from-yellow-50 to-orange-50',
-              'from-gray-50 to-slate-50',
-              'from-orange-50 to-red-50'
-            ][index]
-
-            // Obter status do monthlyWinnersState para o mês/ano atual
-            const now = new Date()
-            const currentMonth = now.getMonth() + 1
-            const currentYear = now.getFullYear()
-            const monthData = monthlyWinnersState.find(m =>
-              m.month === currentMonth && m.year === currentYear
-            )
-
-            let currentStatus = 'pending'
-            let currentAmount = user.prizeAmount || 0
-            let currentMethod = undefined
-            let currentPixKey = undefined
-            let currentPaymentDate = undefined
-            let currentProofUrl = undefined
-
-            // Verificar qual posição este usuário ocupa no histórico
-            if (monthData?.firstPlaceUserId === user.id) {
-              currentStatus = monthData.firstPlaceStatus || 'pending'
-              currentAmount = monthData.firstPlaceAmount || user.prizeAmount || 0
-              currentMethod = monthData.firstPlaceMethod
-              currentPixKey = monthData.firstPlacePixKey
-              currentPaymentDate = monthData.firstPlacePaymentDate
-              currentProofUrl = monthData.firstPlaceProofUrl
-            } else if (monthData?.secondPlaceUserId === user.id) {
-              currentStatus = monthData.secondPlaceStatus || 'pending'
-              currentAmount = monthData.secondPlaceAmount || user.prizeAmount || 0
-              currentMethod = monthData.secondPlaceMethod
-              currentPixKey = monthData.secondPlacePixKey
-              currentPaymentDate = monthData.secondPlacePaymentDate
-              currentProofUrl = monthData.secondPlaceProofUrl
-            } else if (monthData?.thirdPlaceUserId === user.id) {
-              currentStatus = monthData.thirdPlaceStatus || 'pending'
-              currentAmount = monthData.thirdPlaceAmount || user.prizeAmount || 0
-              currentMethod = monthData.thirdPlaceMethod
-              currentPixKey = monthData.thirdPlacePixKey
-              currentPaymentDate = monthData.thirdPlacePaymentDate
-              currentProofUrl = monthData.thirdPlaceProofUrl
+          const topThree = [
+            {
+              position: 1,
+              name: monthData?.firstPlaceName || 'Não preenchido',
+              email: monthData?.firstPlaceEmail || '-',
+              points: monthData?.firstPlacePoints || 0,
+              amount: monthData?.firstPlaceAmount || 0,
+              status: monthData?.firstPlaceStatus || 'pending',
+              icon: '🥇',
+              userId: monthData?.firstPlaceUserId || '',
+              bgGradient: 'from-yellow-50 to-orange-50',
+              borderGradient: 'from-yellow-400 to-orange-500 border-yellow-300'
+            },
+            {
+              position: 2,
+              name: monthData?.secondPlaceName || 'Não preenchido',
+              email: monthData?.secondPlaceEmail || '-',
+              points: monthData?.secondPlacePoints || 0,
+              amount: monthData?.secondPlaceAmount || 0,
+              status: monthData?.secondPlaceStatus || 'pending',
+              icon: '🥈',
+              userId: monthData?.secondPlaceUserId || '',
+              bgGradient: 'from-gray-50 to-slate-50',
+              borderGradient: 'from-gray-300 to-gray-400 border-gray-300'
+            },
+            {
+              position: 3,
+              name: monthData?.thirdPlaceName || 'Não preenchido',
+              email: monthData?.thirdPlaceEmail || '-',
+              points: monthData?.thirdPlacePoints || 0,
+              amount: monthData?.thirdPlaceAmount || 0,
+              status: monthData?.thirdPlaceStatus || 'pending',
+              icon: '🥉',
+              userId: monthData?.thirdPlaceUserId || '',
+              bgGradient: 'from-orange-50 to-red-50',
+              borderGradient: 'from-orange-400 to-red-500 border-orange-300'
             }
+          ]
 
-            return (
-              <div
-                key={user.id}
-                className={`zayia-card p-6 text-center bg-gradient-to-br ${bgColor} border-2 ${medalColor}`}
-              >
-                <div className="relative mb-4">
-                  <img
-                    src={user.avatar_url}
-                    alt={user.name}
-                    className="w-20 h-20 rounded-full mx-auto border-4 border-white shadow-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-                    }}
-                  />
-                  <div className="absolute -top-2 -right-2 text-3xl">
-                    {getPrizeMedal(user.position)}
-                  </div>
-                </div>
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {topThree.map((winner) => {
+                const statusColor = winner.status === 'paid'
+                  ? 'bg-green-100 text-green-800'
+                  : winner.status === 'pending'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-red-100 text-red-800'
 
-                <h3 className="text-lg font-bold text-zayia-deep-violet mb-1">{user.name}</h3>
-                <p className="text-sm text-zayia-violet-gray mb-4">{user.email}</p>
+                const statusText = winner.status === 'paid'
+                  ? '✅ Pago'
+                  : winner.status === 'pending'
+                  ? '⏳ Pendente'
+                  : '❌ Cancelado'
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span>Pontos:</span>
-                    <span className="font-bold text-zayia-soft-purple">{user.points.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Prêmio:</span>
-                    <span className="font-bold text-green-600">{formatCurrency(currentAmount)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Status:</span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded ${getStatusColor(currentStatus)}`}>
-                      {currentStatus === 'paid' ? '✅ Pago' : currentStatus === 'pending' ? '⏳ Pendente' : '❌ Cancelado'}
-                    </span>
-                  </div>
-                </div>
+                return (
+                  <div
+                    key={winner.position}
+                    className={`zayia-card p-6 border-2 border-zayia-lilac/30 bg-gradient-to-br ${winner.bgGradient}`}
+                  >
+                    {/* Ícone posição */}
+                    <div className="text-4xl mb-3">{winner.icon}</div>
 
-                <button
-                  onClick={() => handleOpenPrizeModal(user.id)}
-                  className="w-full bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition text-sm"
-                >
-                  Gerenciar Prêmio →
-                </button>
-              </div>
-            )
-          })}
-        </div>
+                    {/* Nome e email */}
+                    <h3 className="text-lg font-bold text-zayia-deep-violet mb-1">
+                      {winner.name}
+                    </h3>
+                    <p className="text-sm text-zayia-violet-gray mb-4">
+                      {winner.email}
+                    </p>
+
+                    {/* Pontos */}
+                    <div className="flex justify-between text-sm mb-3 pb-3 border-b border-zayia-lilac/20">
+                      <span className="text-zayia-violet-gray">Pontos:</span>
+                      <span className="font-semibold text-zayia-deep-violet">
+                        {winner.points.toLocaleString('pt-BR')}
+                      </span>
+                    </div>
+
+                    {/* Prêmio */}
+                    <div className="flex justify-between text-sm mb-3">
+                      <span className="text-zayia-violet-gray">Prêmio:</span>
+                      <span className="font-semibold text-green-600">
+                        {formatCurrency(winner.amount)}
+                      </span>
+                    </div>
+
+                    {/* Status */}
+                    <div className="flex justify-between text-sm mb-4">
+                      <span className="text-zayia-violet-gray">Status:</span>
+                      <span className={`text-xs font-bold px-2 py-1 rounded ${statusColor}`}>
+                        {statusText}
+                      </span>
+                    </div>
+
+                    {/* Botão Gerenciar Prêmio */}
+                    <button
+                      onClick={() => handleOpenPrizeModal(winner.userId)}
+                      className="w-full bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition text-sm"
+                    >
+                      Gerenciar Prêmio →
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Lista Completa */}
         <div className="zayia-card p-6">
