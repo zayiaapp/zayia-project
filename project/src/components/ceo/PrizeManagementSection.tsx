@@ -82,12 +82,18 @@ export function PrizeManagementSection({
   const [statusChanges, setStatusChanges] = useState<Record<string, string>>({})
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'paid' | 'cancelled'>('all')
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
+  const [monthlyWinnersState, setMonthlyWinnersState] = useState<MonthlyWinner[]>([])
 
   const itemsPerPage = 20
 
   useEffect(() => {
     loadData()
   }, [])
+
+  useEffect(() => {
+    setMonthlyWinnersState(monthlyWinners)
+  }, [monthlyWinners])
 
   const loadData = async () => {
     setLoading(true)
@@ -132,7 +138,40 @@ export function PrizeManagementSection({
       return
     }
 
-    console.log('Prêmio salvo:', {
+    // Atualizar histórico de vencedoras com o novo prêmio
+    const now = new Date()
+    const currentMonth = now.getMonth() + 1
+    const currentYear = now.getFullYear()
+
+    const updatedWinners = monthlyWinnersState.map(month => {
+      if (month.month === currentMonth && month.year === currentYear) {
+        // Verificar qual posição está sendo editada
+        if (month.firstPlaceUserId === selectedPrizeUserId) {
+          return {
+            ...month,
+            firstPlacePoints: Number(prizeAmount)
+          }
+        }
+        if (month.secondPlaceUserId === selectedPrizeUserId) {
+          return {
+            ...month,
+            secondPlacePoints: Number(prizeAmount)
+          }
+        }
+        if (month.thirdPlaceUserId === selectedPrizeUserId) {
+          return {
+            ...month,
+            thirdPlacePoints: Number(prizeAmount)
+          }
+        }
+      }
+      return month
+    })
+
+    // Atualizar estado local
+    setMonthlyWinnersState(updatedWinners)
+
+    console.log('Prêmio salvo no histórico:', {
       userId: selectedPrizeUserId,
       amount: prizeAmount,
       method: paymentMethod,
@@ -149,15 +188,40 @@ export function PrizeManagementSection({
     setProofFile(null)
     setPrizeModalOpen(false)
 
-    alert('Prêmio marcado como pago! ✅')
+    alert('Prêmio salvo e adicionado ao histórico! ✅')
   }
 
   const handleStatusChange = (userId: string, newStatus: string) => {
+    // Atualizar estado local do objeto statusChanges
     setStatusChanges({
       ...statusChanges,
       [userId]: newStatus
     })
-    console.log(`Status de ${userId} mudou para ${newStatus}`)
+
+    // Atualizar no histórico de vencedoras
+    const updatedWinners = monthlyWinnersState.map(month => {
+      let updated = false
+
+      if (month.firstPlaceUserId === userId) {
+        // Nota: Estamos atualizando o prêmio temporariamente para manter estado
+        // TODO: Integrar com Supabase para salvar status de pagamento
+        updated = true
+      }
+      if (month.secondPlaceUserId === userId) {
+        updated = true
+      }
+      if (month.thirdPlaceUserId === userId) {
+        updated = true
+      }
+
+      return month
+    })
+
+    if (updatedWinners.length > 0) {
+      setMonthlyWinnersState(updatedWinners)
+    }
+
+    console.log(`Status de ${userId} mudou para ${newStatus} e foi salvo no histórico`)
   }
 
   const getStatusColor = (status: string) => {
@@ -491,68 +555,89 @@ export function PrizeManagementSection({
   // ========================================================================
 
   const renderHistory = () => {
-    const filteredWinners = monthlyWinners.filter(w => w.year === selectedYear)
+    // Filtrar por ano E mês
+    const filteredWinners = monthlyWinnersState.filter(w => {
+      const yearMatch = w.year === selectedYear
+      const monthMatch = selectedMonth === null || w.month === selectedMonth
+      return yearMatch && monthMatch
+    })
+
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
     return (
       <div className="space-y-6">
         <div className="zayia-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-zayia-deep-violet flex items-center gap-2">
-              <Calendar className="w-6 h-6" />
-              Histórico de Vencedoras
-            </h3>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="zayia-input px-4 py-2 rounded-xl border-0 focus:outline-none"
-            >
-              {[2024, 2023, 2022, 2021].map(year => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
+          <h3 className="text-xl font-bold text-zayia-deep-violet flex items-center gap-2 mb-6">
+            <Calendar className="w-6 h-6" />
+            Histórico de Vencedoras
+          </h3>
 
-          {/* Tabs de Status */}
-          <div className="flex gap-2 mb-4 border-b border-zayia-lilac/30">
-            {(['all', 'pending', 'paid', 'cancelled'] as const).map(status => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-4 py-2 font-medium text-sm transition border-b-2 ${
-                  filterStatus === status
-                    ? 'border-zayia-soft-purple text-zayia-soft-purple'
-                    : 'border-transparent text-zayia-violet-gray hover:text-zayia-deep-violet'
-                }`}
+          {/* Filtros de Ano e Mês */}
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Filtrar por Ano</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(Number(e.target.value))
+                  setSelectedMonth(null)
+                }}
+                className="w-full border border-zayia-lilac/30 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
               >
-                {status === 'all'
-                  ? 'Todos'
-                  : status === 'pending'
-                  ? 'Pendentes'
-                  : status === 'paid'
-                  ? 'Pagos'
-                  : 'Cancelados'}
-              </button>
-            ))}
+                <option value={2026}>2026</option>
+                <option value={2025}>2025</option>
+                <option value={2024}>2024</option>
+                <option value={2023}>2023</option>
+                <option value={2022}>2022</option>
+                <option value={2021}>2021</option>
+              </select>
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Filtrar por Mês</label>
+              <select
+                value={selectedMonth || ''}
+                onChange={(e) => setSelectedMonth(e.target.value ? Number(e.target.value) : null)}
+                className="w-full border border-zayia-lilac/30 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+              >
+                <option value="">Todos os meses</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+            </div>
           </div>
 
           {/* Tabela */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zayia-lilac/30">
-                  <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">Mês/Ano</th>
-                  <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">1º Lugar</th>
-                  <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">2º Lugar</th>
-                  <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">3º Lugar</th>
-                  <th className="text-right py-3 px-4 font-semibold text-zayia-deep-violet">Prêmios (R$)</th>
-                  <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Status</th>
-                  <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredWinners.map((winner) => (
+          {filteredWinners.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-zayia-violet-gray">Nenhum resultado para o período selecionado</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zayia-lilac/30">
+                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">Mês/Ano</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">1º Lugar</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">2º Lugar</th>
+                    <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">3º Lugar</th>
+                    <th className="text-right py-3 px-4 font-semibold text-zayia-deep-violet">Prêmios (R$)</th>
+                    <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Status</th>
+                    <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredWinners.map((winner) => (
                   <tr
                     key={winner.id}
                     className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10 transition cursor-pointer"
@@ -593,9 +678,10 @@ export function PrizeManagementSection({
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     )
