@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import {
   Trophy,
@@ -79,7 +79,7 @@ export function RankingSection() {
       })
 
       // Reordenar com desempate
-      return calculateRankingPosition(updatedUsers).map((user, index) => ({
+      return calculateRankingPosition(updatedUsers).map((user, _index) => ({
         ...user,
         isCurrentUser: user.id === prevUsers[currentUserIndex].id
       }))
@@ -250,7 +250,7 @@ export function RankingSection() {
         </h3>
 
         <div className="grid grid-cols-3 gap-3">
-          {users.slice(0, 3).map((user, _index) => (
+          {users.slice(0, 3).map((user, index) => (
             <div key={user.id} className="text-center">
               <div className="relative mb-3">
                 <img
