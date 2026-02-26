@@ -529,65 +529,6 @@ export function ChallengesSection() {
         </div>
       </div>
 
-      {/* Insights e Análises */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Categorias Mais Populares */}
-        <div className="zayia-card p-6">
-          <h3 className="text-lg font-bold text-zayia-deep-violet mb-4">
-            📈 Tendências da Semana
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                <span className="font-medium text-green-800">Maior Crescimento</span>
-              </div>
-              <span className="text-green-700 font-bold">Digital Detox (+23.1%)</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-blue-600" />
-                <span className="font-medium text-blue-800">Mais Completada</span>
-              </div>
-              <span className="text-blue-700 font-bold">Rotina & Organização</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <Users className="w-5 h-5 text-purple-600" />
-                <span className="font-medium text-purple-800">Mais Engajamento</span>
-              </div>
-              <span className="text-purple-700 font-bold">Corpo & Saúde</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Horários de Maior Atividade */}
-      <div className="zayia-card p-6">
-        <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-          ⏰ Horários de Maior Atividade
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-yellow-50 rounded-xl">
-            <div className="text-3xl mb-2">🌅</div>
-            <div className="text-lg font-bold text-zayia-deep-violet">7h - 9h</div>
-            <div className="text-sm text-zayia-violet-gray">Manhã (35% das atividades)</div>
-            <div className="text-xs text-yellow-700 mt-2">Rotina & Corpo & Saúde</div>
-          </div>
-          <div className="text-center p-4 bg-orange-50 rounded-xl">
-            <div className="text-3xl mb-2">🌞</div>
-            <div className="text-lg font-bold text-zayia-deep-violet">12h - 14h</div>
-            <div className="text-sm text-zayia-violet-gray">Almoço (25% das atividades)</div>
-            <div className="text-xs text-orange-700 mt-2">Mindfulness & Digital Detox</div>
-          </div>
-          <div className="text-center p-4 bg-purple-50 rounded-xl">
-            <div className="text-3xl mb-2">🌙</div>
-            <div className="text-lg font-bold text-zayia-deep-violet">20h - 22h</div>
-            <div className="text-sm text-zayia-violet-gray">Noite (40% das atividades)</div>
-            <div className="text-xs text-purple-700 mt-2">Autoestima & Relacionamentos</div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
