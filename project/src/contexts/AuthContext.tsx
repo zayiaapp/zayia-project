@@ -44,7 +44,7 @@ export function useAuth() {
 }
 
 // Mock users database expandido
-let mockUsers = [
+const mockUsers = [
   {
     id: 'ceo-123',
     email: 'ceo@zayia.com',

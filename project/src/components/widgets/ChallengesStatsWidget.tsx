@@ -126,7 +126,7 @@ export function ChallengesStatsWidget() {
     data.forEach(item => {
       const itemDate = new Date(item.date)
       const monthKey = monthNames[itemDate.getMonth()]
-      if (months.hasOwnProperty(monthKey)) {
+      if (monthKey in months) {
         months[monthKey] += item.completed
       }
     })
