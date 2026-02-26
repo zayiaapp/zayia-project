@@ -116,7 +116,8 @@ export function UserBanPanel({
         {!isConfirming ? (
           <button
             onClick={() => setIsConfirming(true)}
-            className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-medium"
+            style={{ backgroundColor: '#EF4444', color: 'white' }}
+            className="w-full px-4 py-2 rounded-lg font-medium cursor-pointer"
           >
             🚫 Iniciar Processo de Ban
           </button>
@@ -144,7 +145,8 @@ export function UserBanPanel({
 
               <button
                 onClick={handleConfirmBan}
-                className="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm font-medium"
+                style={{ backgroundColor: '#EF4444', color: 'white' }}
+                className="flex-1 px-3 py-2 rounded text-sm font-medium cursor-pointer"
               >
                 Confirmar Ban
               </button>

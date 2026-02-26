@@ -110,3 +110,118 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #7C3AED, #A855F7);
 }
+
+/* Dark Mode */
+:root.dark {
+  color-scheme: dark;
+}
+
+:root.dark body {
+  background: #1a1a2e;
+  color: #ffffff;
+}
+
+:root.dark .zayia-card {
+  background: rgba(31, 41, 55, 0.9);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+:root.dark .zayia-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.25);
+}
+
+:root.dark .zayia-input {
+  background: rgba(31, 41, 55, 0.8);
+  border: 2px solid rgba(168, 85, 247, 0.3);
+  color: #ffffff;
+}
+
+:root.dark .zayia-input:focus {
+  background: rgba(31, 41, 55, 0.95);
+}
+
+:root.dark .zayia-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:root.dark button {
+  transition: all 0.3s ease;
+}
+
+:root.dark input[type="text"],
+:root.dark input[type="email"],
+:root.dark input[type="password"],
+:root.dark textarea,
+:root.dark select {
+  background: rgba(31, 41, 55, 0.9);
+  color: #ffffff;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+:root.dark input:focus,
+:root.dark textarea:focus,
+:root.dark select:focus {
+  background: rgba(31, 41, 55, 0.95);
+  border-color: rgba(168, 85, 247, 0.6);
+}
+
+:root.dark h1,
+:root.dark h2,
+:root.dark h3,
+:root.dark h4,
+:root.dark h5,
+:root.dark h6 {
+  color: #ffffff;
+}
+
+:root.dark p,
+:root.dark span,
+:root.dark label,
+:root.dark div {
+  color: inherit;
+}
+
+:root.dark .bg-white {
+  background: rgba(31, 41, 55, 0.95);
+}
+
+:root.dark .text-gray-700 {
+  color: #e5e7eb;
+}
+
+:root.dark .text-gray-600 {
+  color: #d1d5db;
+}
+
+:root.dark .text-gray-500 {
+  color: #9ca3af;
+}
+
+:root.dark .border-gray-200 {
+  border-color: #374151;
+}
+
+:root.dark .bg-gray-50 {
+  background: #0f1419;
+}
+
+:root.dark .bg-gray-100 {
+  background: #1f2937;
+}
+
+:root.dark .hover\:bg-gray-50:hover {
+  background: #1f2937;
+}
+
+:root.dark .bg-zayia-lilac\/30 {
+  background: rgba(168, 85, 247, 0.15);
+}
+
+:root.dark ::-webkit-scrollbar-track {
+  background: #0f1419;
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #7C3AED, #A855F7);
+}

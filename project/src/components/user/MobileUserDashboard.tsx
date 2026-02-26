@@ -1,18 +1,19 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getGreeting } from '../../lib/utils'
-import { 
-  Home, 
-  Trophy, 
-  Target, 
-  Award, 
-  Users, 
-  CreditCard, 
+import {
+  Home,
+  Trophy,
+  Target,
+  Award,
+  Users,
+  CreditCard,
   User,
   X,
   ChevronRight,
   Menu,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react'
 
 // Import das seções
@@ -23,6 +24,7 @@ import { BadgesSection } from './sections/BadgesSection'
 import { CommunitySection } from './sections/CommunitySection'
 import { SubscriptionSection } from './sections/SubscriptionSection'
 import { ProfileSection } from './sections/ProfileSection'
+import { SettingsSection } from './sections/SettingsSection'
 
 export function MobileUserDashboard() {
   const { profile, signOut } = useAuth()
@@ -37,7 +39,8 @@ export function MobileUserDashboard() {
     { id: 'badges', label: 'Medalhas', icon: Award, description: 'Conquistas e níveis alcançados' },
     { id: 'community', label: 'Comunidade', icon: Users, description: 'Grupos WhatsApp da ZAYIA' },
     { id: 'subscription', label: 'Assinatura', icon: CreditCard, description: 'Gerenciar seu plano' },
-    { id: 'profile', label: 'Perfil', icon: User, description: 'Suas informações pessoais' }
+    { id: 'profile', label: 'Perfil', icon: User, description: 'Suas informações pessoais' },
+    { id: 'settings', label: 'Configurações', icon: Settings, description: 'Personalize sua experiência' }
   ]
 
   const handleSectionChange = (sectionId: string) => {
@@ -58,6 +61,7 @@ export function MobileUserDashboard() {
       case 'community': return <CommunitySection />
       case 'subscription': return <SubscriptionSection />
       case 'profile': return <ProfileSection />
+      case 'settings': return <SettingsSection />
       default: return <DashboardSection />
     }
   }

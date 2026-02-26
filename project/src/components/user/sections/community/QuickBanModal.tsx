@@ -143,7 +143,8 @@ export function QuickBanModal({
               <button
                 type="submit"
                 disabled={isLoading || !reason.trim()}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                style={isLoading || !reason.trim() ? { backgroundColor: '#9CA3AF', color: 'white' } : { backgroundColor: '#EF4444', color: 'white' }}
+                className="flex-1 px-4 py-2 rounded-lg font-medium cursor-pointer"
               >
                 {isLoading ? 'Banindo...' : 'Banir'}
               </button>

@@ -42,10 +42,10 @@ export const CategoriesLockedView: React.FC<CategoriesLockedViewProps> = ({
             key={category.id}
             onClick={() => handleLockedCategoryClick(category)}
             disabled={category.id === activeCategory.id}
-            className={`relative p-4 rounded-lg border-2 transition ${
+            className={`relative p-4 rounded-lg border-2 transition cursor-pointer ${
               category.id === activeCategory.id
                 ? 'bg-zayia-lilac/20 border-zayia-soft-purple cursor-default'
-                : 'bg-gray-50 border-gray-200 hover:border-gray-300 opacity-70 hover:opacity-85'
+                : 'bg-white border-gray-400 hover:border-gray-500'
             }`}
           >
             <div className="text-4xl mb-2">{category.icon}</div>
@@ -86,7 +86,8 @@ export const CategoriesLockedView: React.FC<CategoriesLockedViewProps> = ({
 
             <button
               onClick={() => setShowWarning(false)}
-              className="w-full px-4 py-2 bg-zayia-purple text-white rounded-lg hover:bg-zayia-deep-violet font-bold transition"
+              style={{ backgroundColor: '#8B4FC1', color: 'white' }}
+              className="w-full px-4 py-2 rounded-lg font-bold cursor-pointer"
             >
               Entendi
             </button>

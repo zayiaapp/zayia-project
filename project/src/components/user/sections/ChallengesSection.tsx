@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-data-mock'
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
@@ -6,7 +6,7 @@ import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
 
 export function ChallengesSection() {
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
 
   // State
   const [activeCategory, setActiveCategory] = useState<ChallengeCategory | null>(null)

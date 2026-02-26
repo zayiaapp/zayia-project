@@ -113,7 +113,8 @@ export function RulesModal({ isOpen, rules, isAdmin, onClose, onSaveRules }: Rul
 
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 bg-zayia-pink text-white rounded-lg hover:bg-pink-600 transition flex items-center gap-2"
+                  style={{ backgroundColor: '#EC4899', color: 'white' }}
+                  className="px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer"
                 >
                   <Save size={18} />
                   Salvar Regras

@@ -102,7 +102,8 @@ export const ChallengeCardDaily: React.FC<ChallengeCardDailyProps> = ({
 
         <button
           onClick={handleStartChallenge}
-          className="w-full bg-zayia-purple hover:bg-zayia-deep-violet text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+          style={{ backgroundColor: '#8B4FC1', color: 'white' }}
+          className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 cursor-pointer"
         >
           🚀 Começar Desafio
         </button>
@@ -143,7 +144,8 @@ export const ChallengeCardDaily: React.FC<ChallengeCardDailyProps> = ({
           {/* Botão Cancelar */}
           <button
             onClick={handleCancel}
-            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+            style={{ backgroundColor: '#6B7280', color: 'white' }}
+            className="w-full py-3 rounded-lg font-semibold flex items-center justify-center gap-2 cursor-pointer"
           >
             ❌ Cancelar Desafio
           </button>
@@ -214,11 +216,8 @@ export const ChallengeCardDaily: React.FC<ChallengeCardDailyProps> = ({
           <button
             onClick={handleSubmitProof}
             disabled={!selectedFile}
-            className={`w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-              selectedFile
-                ? 'bg-zayia-purple hover:bg-zayia-deep-violet text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
+            style={selectedFile ? { backgroundColor: '#8B4FC1', color: 'white' } : { backgroundColor: '#6B7280', color: '#D1D5DB' }}
+            className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 cursor-pointer"
           >
             📤 Enviar Prova e Validar
           </button>

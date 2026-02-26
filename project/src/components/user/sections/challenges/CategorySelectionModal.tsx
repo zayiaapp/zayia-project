@@ -58,7 +58,7 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
               <button
                 key={category.id}
                 onClick={() => setSelectedCategoryId(category.id)}
-                className={`p-4 rounded-xl border-2 transition ${
+                className={`p-4 rounded-xl border-2 transition cursor-pointer ${
                   selectedCategoryId === category.id
                     ? 'border-purple-600 bg-purple-50'
                     : 'border-gray-200 hover:border-purple-300 bg-white'
@@ -76,14 +76,17 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
         <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
           <button
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition disabled:opacity-50"
+            className={`flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold transition ${
+              isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
+            }`}
           >
             Escolher Depois
           </button>
           <button
             onClick={handleConfirm}
             disabled={!selectedCategoryId || isLoading}
-            className="flex-1 px-4 py-2 bg-zayia-purple hover:bg-zayia-deep-violet text-white rounded-lg font-semibold transition disabled:opacity-50"
+            style={!selectedCategoryId || isLoading ? { backgroundColor: '#9CA3AF', color: '#4B5563' } : { backgroundColor: '#8B4FC1', color: 'white' }}
+            className="flex-1 px-4 py-2 rounded-lg font-semibold cursor-pointer"
           >
             {isLoading ? 'Confirmando...' : 'Confirmar Escolha'}
           </button>

@@ -46,6 +46,7 @@ import IntegrationsSection from './IntegrationsSection'
 import { Dashboard2Section } from './Dashboard2Section'
 import { GuerreirasSection } from './GuerreirasSection'
 import { QuizzSection } from './QuizzSection'
+import { SettingsSection } from './SettingsSection'
 
 export function CEODashboard() {
   const { profile, signOut } = useAuth()
@@ -60,8 +61,9 @@ export function CEODashboard() {
     { id: 'awards', label: 'Medalhas', icon: Trophy },
     { id: 'ranking', label: 'Ranking', icon: Crown },
     { id: 'notifications', label: 'Notificações', icon: Bell },
-    { id: 'integrations', label: 'Integrações', icon: Settings },
-    { id: 'compliance', label: 'Compliance', icon: Shield }
+    { id: 'integrations', label: 'Integrações', icon: Zap },
+    { id: 'compliance', label: 'Compliance', icon: Shield },
+    { id: 'settings', label: 'Configurações', icon: Settings }
   ]
 
   const renderDashboard = () => (
@@ -233,6 +235,7 @@ export function CEODashboard() {
       case 'notifications': return <NotificationsSection />
       case 'integrations': return <IntegrationsSection />
       case 'compliance': return <ComplianceSection />
+      case 'settings': return <SettingsSection />
       default: return renderDashboard()
     }
   }

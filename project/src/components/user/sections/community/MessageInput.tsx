@@ -47,7 +47,8 @@ export function MessageInput({ onSendMessage, isDisabled, disabledReason }: Mess
       <button
         type="submit"
         disabled={!content.trim()}
-        className="px-4 py-3 bg-zayia-pink text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2 font-medium"
+        style={!content.trim() ? { backgroundColor: '#9CA3AF', color: 'white' } : { backgroundColor: '#EC4899', color: 'white' }}
+        className="px-4 py-3 rounded-lg flex items-center gap-2 font-medium cursor-pointer"
       >
         <Send size={18} />
         <span className="hidden sm:inline">Enviar</span>

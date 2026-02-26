@@ -16,7 +16,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   completedChallengeIds,
   onChallengeCompleted,
 }) => {
-  const [dailyChallenges] = useState<Challenge[]>(() => {
+  const [dailyChallenges, setDailyChallenges] = useState<Challenge[]>(() => {
     const today = new Date().toISOString().split('T')[0]
     return ChallengesDataMock.getDailyChallenges(category.id, today)
   })
@@ -68,6 +68,27 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
             {totalChallenges - totalCompleted} desafios restantes
           </p>
         </div>
+
+        {/* 🧪 DEBUG: Botão para avançar dia (APENAS EM DEVELOPMENT) */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={() => {
+              const today = new Date()
+              today.setDate(today.getDate() + 1)
+              const nextDayStr = today.toISOString().split('T')[0]
+
+              const newChallenges = ChallengesDataMock.getDailyChallenges(category.id, nextDayStr)
+              setDailyChallenges(newChallenges)
+
+              console.log(`🧪 TESTE: Avançando para ${nextDayStr}`)
+              console.log(`🧪 Novos desafios carregados:`, newChallenges)
+            }}
+            style={{ backgroundColor: '#FBBF24', color: '#1F2937' }}
+            className="mt-4 px-4 py-2 text-sm font-bold rounded-lg flex items-center gap-2 w-fit cursor-pointer"
+          >
+            🧪 Avançar Dia (Teste)
+          </button>
+        )}
       </div>
 
       {/* Desafios de Hoje */}
