@@ -302,7 +302,7 @@ export function DashboardSection() {
             Medalhas Conquistadas ({recentMedalsEarned.length})
           </h3>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="flex justify-center items-center gap-4 flex-wrap">
             {recentMedalsEarned.slice(0, 8).map((medalId) => {
               const medal = BADGES.find(b => b.id === medalId)
               if (!medal) return null
@@ -310,24 +310,21 @@ export function DashboardSection() {
               return (
                 <div
                   key={medalId}
-                  className="p-4 rounded-lg text-center transition-transform hover:scale-105"
+                  className="w-24 h-24 flex flex-col items-center justify-center p-4 rounded-lg text-center transition-transform hover:scale-105"
                   style={{
                     backgroundColor: `${medal.color}20`,
                     border: `2px solid ${medal.color}`
                   }}
                 >
-                  <div className="w-16 h-16 mx-auto mb-2">
+                  <div className="w-16 h-16 flex items-center justify-center mb-1">
                     {(() => {
                       const IconComponent = medal.icon
                       return <IconComponent />
                     })()}
                   </div>
-                  <h4 className="font-semibold text-sm text-zayia-deep-violet">
+                  <h4 className="font-semibold text-xs text-zayia-deep-violet line-clamp-1">
                     {medal.name}
                   </h4>
-                  <p className="text-xs text-zayia-violet-gray mt-1">
-                    {medal.requirement} desafios
-                  </p>
                 </div>
               )
             })}

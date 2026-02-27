@@ -83,8 +83,8 @@ export function ChallengesSection() {
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
 
-    // 3. Save points to localStorage
-    localStorage.setItem('user_points', newPoints.toString())
+    // 3. Initialize total points with challenge points
+    let totalPointsWithMedals = newPoints
 
     // 4. ✅ Verificar e desbloquear medalhas (nível + categoria)
     const unlockedLevelMedalIds = checkAndUnlockMedals(newPoints, previousPoints, user.id)
@@ -100,7 +100,22 @@ export function ChallengesSection() {
     const allNewMedals = [...unlockedLevelMedalIds, ...newUnlockedMedalIds]
     console.log('🎯 ALL new medals:', allNewMedals) // ← DEBUG
 
-    // 7. Show pop-up for first new medal
+    // 7. ✅ ADICIONAR PONTOS DE MEDALHAS DESBLOQUEADAS
+    let medalPointsTotal = 0
+    allNewMedals.forEach(medalId => {
+      const medalObj = BADGES.find(b => b.id === medalId)
+      if (medalObj && medalObj.points) {
+        totalPointsWithMedals += medalObj.points
+        medalPointsTotal += medalObj.points
+        console.log(`💎 Adicionando ${medalObj.points} pontos da medalha ${medalObj.name}`)
+      }
+    })
+
+    // 8. Salvar TOTAL (desafio + medalhas)
+    localStorage.setItem('user_points', totalPointsWithMedals.toString())
+    console.log(`💰 TOTAL: ${newPoints} (desafio) + ${medalPointsTotal} (medalhas) = ${totalPointsWithMedals}`)
+
+    // 9. Show pop-up for first new medal
     if (allNewMedals.length > 0) {
       const newMedalId = allNewMedals[0]
       const medalObj = BADGES.find(b => b.id === newMedalId)
@@ -114,17 +129,17 @@ export function ChallengesSection() {
       console.log('❌ Nenhuma medalha nova para mostrar') // ← DEBUG
     }
 
-    // 8. Incrementar contador de desafios hoje
+    // 10. Incrementar contador de desafios hoje
     incrementDailyCount()
 
-    // 9. Dispatch events to update other tabs
+    // 11. Dispatch events to update other tabs
     window.dispatchEvent(new Event('pointsUpdated'))
     window.dispatchEvent(new Event('dailyProgressUpdated'))
     if (allNewMedals.length > 0) {
       window.dispatchEvent(new Event('medalsUpdated'))
     }
 
-    console.log(`✅ Desafio completo! +${challenge.points} pontos (Total: ${newPoints})`)
+    console.log(`✅ Desafio completo! +${challenge.points} pts (desafio) + ${medalPointsTotal} pts (medalhas) = ${totalPointsWithMedals} pts total`)
   }
 
   // Loading state

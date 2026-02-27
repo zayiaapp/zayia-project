@@ -34,7 +34,7 @@ export function PopUpMedalUnlocked({
   if (!isOpen || !medal) return null
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       {/* Confete - apenas visual com CSS animations */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -64,7 +64,7 @@ export function PopUpMedalUnlocked({
         }
       `}</style>
 
-      <div className="bg-white rounded-2xl p-8 max-w-sm mx-auto shadow-2xl relative z-10">
+      <div className="bg-white rounded-2xl p-6 max-w-xs mx-auto shadow-2xl relative z-10 max-h-[90vh] overflow-y-auto">
         {/* Botão Fechar */}
         <button
           onClick={onClose}
@@ -75,8 +75,8 @@ export function PopUpMedalUnlocked({
 
         {/* Parabenização */}
         <div className="text-center mb-6">
-          <div className="text-6xl mb-4 animate-bounce">🎉</div>
-          <h2 className="text-3xl font-bold text-zayia-deep-violet mb-2">
+          <div className="text-5xl mb-3 animate-bounce">🎉</div>
+          <h2 className="text-2xl font-bold text-zayia-deep-violet mb-2">
             PARABÉNS!
           </h2>
           <p className="text-zayia-violet-gray text-sm">
@@ -86,7 +86,7 @@ export function PopUpMedalUnlocked({
 
         {/* Card da Medalha */}
         <div className="bg-gradient-to-br from-zayia-cream to-zayia-lilac/30 rounded-2xl p-6 text-center mb-6 border-2 border-zayia-soft-purple">
-          <div className="text-8xl mb-4 flex justify-center">
+          <div className="text-6xl mb-3 flex justify-center">
             {medal.icon ? (
               (() => {
                 const IconComponent = medal.icon as any
@@ -101,7 +101,7 @@ export function PopUpMedalUnlocked({
             )}
           </div>
 
-          <h3 className="text-2xl font-bold text-zayia-deep-violet mb-1">
+          <h3 className="text-xl font-bold text-zayia-deep-violet mb-1">
             {medal.name}
           </h3>
 
