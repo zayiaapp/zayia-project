@@ -1,12 +1,9 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { 
-  Trophy, 
-  Target, 
-  Flame, 
-  Star, 
-  TrendingUp, 
-  Calendar,
+import {
+  Trophy,
+  Target,
+  Flame,
   Award,
   Crown,
   Zap,
@@ -15,10 +12,55 @@ import {
   Gift
 } from 'lucide-react'
 import { getGreeting } from '../../../lib/utils'
+import { getNextMilestones } from '../../../lib/medals-unlock'
+import { getEarnedBadges } from '../../../lib/badges-storage'
+import { BADGES } from '../../../lib/badges-data-mock'
 
 export function DashboardSection() {
   const { profile } = useAuth()
   const greeting = getGreeting()
+
+  // ✅ State para Próximos Milestones e Medalhas
+  const [nextMilestones, setNextMilestones] = useState<any[]>([])
+  const [recentMedalsEarned, setRecentMedalsEarned] = useState<string[]>([])
+  const [currentPoints, setCurrentPoints] = useState(0)
+
+  // ✅ Carregar dados iniciais
+  useEffect(() => {
+    const points = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
+    setCurrentPoints(points)
+    const milestones = getNextMilestones(points)
+    setNextMilestones(milestones)
+
+    const earned = getEarnedBadges()
+    setRecentMedalsEarned(earned)
+  }, [profile?.points])
+
+  // ✅ Listener para atualizar quando pontos mudam (em tempo real)
+  useEffect(() => {
+    const handlePointsUpdated = () => {
+      const points = parseInt(localStorage.getItem('user_points') || '0', 10)
+      setCurrentPoints(points)
+      const milestones = getNextMilestones(points)
+      setNextMilestones(milestones)
+      console.log('📊 Dashboard atualizado - próximos milestones:', milestones)
+    }
+
+    window.addEventListener('pointsUpdated', handlePointsUpdated)
+    return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
+  }, [])
+
+  // ✅ Listener para atualizar quando medalhas mudam
+  useEffect(() => {
+    const handleMedalsUpdated = () => {
+      const earned = getEarnedBadges()
+      setRecentMedalsEarned(earned)
+      console.log('🏆 Dashboard - medalhas atualizadas:', earned)
+    }
+
+    window.addEventListener('medalsUpdated', handleMedalsUpdated)
+    return () => window.removeEventListener('medalsUpdated', handleMedalsUpdated)
+  }, [])
 
   // Mock de dados de progresso
   const progressData = {
@@ -213,6 +255,102 @@ export function DashboardSection() {
           <div className="text-xs text-zayia-violet-gray">Desafios Completos</div>
         </div>
       </div>
+
+      {/* ✅ NOVA SEÇÃO: Próximos Milestones */}
+      <div className="zayia-card p-6">
+        <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5" />
+          Próximos Milestones
+        </h3>
+
+        {nextMilestones.length > 0 ? (
+          <div className="space-y-4">
+            {nextMilestones.map((milestone, idx) => {
+              const progress = (currentPoints / milestone.points) * 100
+
+              return (
+                <div key={idx} className="space-y-2">
+                  {/* Nome do milestone */}
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-zayia-deep-violet">
+                      🎯 {milestone.medalName}
+                    </span>
+                    <span className="text-sm font-bold text-zayia-soft-purple">
+                      {milestone.pointsNeeded} pts faltam
+                    </span>
+                  </div>
+
+                  {/* Barra de progresso */}
+                  <div className="w-full bg-zayia-lilac/30 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${Math.min(100, progress)}%` }}
+                    />
+                  </div>
+
+                  {/* Progresso em números */}
+                  <div className="text-xs text-zayia-violet-gray">
+                    {currentPoints} / {milestone.points} pontos
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-4 text-zayia-violet-gray">
+            🎉 Todos os milestones conquistados! Parabéns!
+          </div>
+        )}
+      </div>
+
+      {/* ✅ ATUALIZADO: Medalhas Conquistadas com dados reais */}
+      {recentMedalsEarned.length > 0 && (
+        <div className="zayia-card p-6">
+          <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
+            <Award className="w-5 h-5" />
+            Medalhas Conquistadas ({recentMedalsEarned.length})
+          </h3>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recentMedalsEarned.slice(0, 8).map((medalId) => {
+              const medal = BADGES.find(b => b.id === medalId)
+              if (!medal) return null
+
+              return (
+                <div
+                  key={medalId}
+                  className="p-4 rounded-lg text-center transition-transform hover:scale-105"
+                  style={{
+                    backgroundColor: `${medal.color}20`,
+                    border: `2px solid ${medal.color}`
+                  }}
+                >
+                  <div className="w-16 h-16 mx-auto mb-2">
+                    {(() => {
+                      const IconComponent = medal.icon
+                      return <IconComponent />
+                    })()}
+                  </div>
+                  <h4 className="font-semibold text-sm text-zayia-deep-violet">
+                    {medal.name}
+                  </h4>
+                  <p className="text-xs text-zayia-violet-gray mt-1">
+                    {medal.requirement} desafios
+                  </p>
+                </div>
+              )
+            })}
+          </div>
+
+          {recentMedalsEarned.length > 8 && (
+            <div className="text-center mt-4">
+              <a href="/medalhas" className="text-zayia-soft-purple font-semibold hover:underline">
+                Ver todas ({recentMedalsEarned.length}) →
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Medalhas Conquistadas Recentemente */}
       <div className="zayia-card p-6">

@@ -44,7 +44,18 @@ export function RankingSection() {
       updateRanking()
     }, 30000)
 
-    return () => clearInterval(interval)
+    // ✅ Listener para atualizar ranking quando pontos mudam (em tempo real)
+    const handlePointsUpdated = () => {
+      console.log('📈 Ranking atualizado - pontos mudaram')
+      updateRanking()
+    }
+
+    window.addEventListener('pointsUpdated', handlePointsUpdated)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('pointsUpdated', handlePointsUpdated)
+    }
   }, [])
 
   const loadRanking = async () => {

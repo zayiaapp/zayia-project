@@ -166,13 +166,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check if user is logged in (localStorage)
     const savedUser = localStorage.getItem('zayia_user')
     const savedProfile = localStorage.getItem('zayia_profile')
-    
+
     if (savedUser && savedProfile) {
       setUser(JSON.parse(savedUser))
       setProfile(JSON.parse(savedProfile))
     }
-    
+
     setLoading(false)
+  }, [])
+
+  // ✅ Sincronizar pontos de localStorage quando mudam
+  useEffect(() => {
+    const handlePointsUpdated = () => {
+      const newPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
+
+      // Atualizar profile com novos pontos
+      setProfile(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          points: newPoints
+        }
+      })
+
+      console.log('📊 AuthContext atualizado - pontos:', newPoints)
+    }
+
+    window.addEventListener('pointsUpdated', handlePointsUpdated)
+    return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
   }, [])
 
   const signIn = async (email: string, password: string) => {
