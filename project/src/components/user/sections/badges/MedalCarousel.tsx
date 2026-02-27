@@ -20,6 +20,11 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
 
   const currentMedal = medals[currentIndex]
 
+  // 🔍 DEBUG: Log dos pontos
+  if (currentMedal) {
+    console.log(`🏅 ${categoryName} - ${currentMedal.name}: ${currentMedal.points || 'undefined'} pts`)
+  }
+
   if (!currentMedal) {
     return (
       <div className="zayia-card p-6 mb-6 text-center">

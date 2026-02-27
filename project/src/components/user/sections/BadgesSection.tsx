@@ -88,7 +88,8 @@ export function BadgesSection() {
           id: `level-${level.level}`,
           name: level.name,
           icon: level.icon,
-          requirement: `${level.pointsRequired} pontos`,
+          requirement: level.pointsRequired,
+          points: level.pointsRequired,
           isEarned: currentPoints >= level.pointsRequired,
         }))}
         categoryName="Todos os Níveis"
@@ -112,6 +113,7 @@ export function BadgesSection() {
                 name: medal.name,
                 icon: medal.icon,
                 requirement: medal.requirement || 0,
+                points: medal.points || 50,
                 isEarned: earnedBadgeIds.includes(medal.id),
               }))}
               categoryName={name}
