@@ -5,6 +5,7 @@ import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
 import { checkAndUnlockMedals, getMedalById } from '../../../lib/medals-unlock'
+import { incrementDailyCount } from '../../../lib/challenges-storage'
 
 export function ChallengesSection() {
   const { user } = useAuth()
@@ -83,7 +84,10 @@ export function ChallengesSection() {
       }
     })
 
-    // 6. Dispatch events to update other tabs
+    // 6. Incrementar contador de desafios hoje
+    incrementDailyCount()
+
+    // 7. Dispatch events to update other tabs
     window.dispatchEvent(new Event('pointsUpdated'))
     if (unlockedMedalIds.length > 0) {
       window.dispatchEvent(new Event('medalsUpdated'))
