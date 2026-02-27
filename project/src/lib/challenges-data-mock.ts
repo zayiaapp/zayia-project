@@ -470,20 +470,27 @@ class ChallengesDataMock {
     return null
   }
 
-  // Set active category (only once)
+  // Set active category (only once per category, but can change categories)
   static setActiveCategory(userId: string, categoryId: string): boolean {
     this.initialize()
     try {
-      const existing = this.getActiveCategory(userId)
-      if (existing) {
-        console.warn('User already has an active category')
-        return false
-      }
+      const userDataStr = localStorage.getItem(`zayia_user_challenges_${userId}`)
+      let userData = userDataStr ? JSON.parse(userDataStr) : null
 
-      const userData = {
-        activeCategory: categoryId,
-        completedChallenges: [],
-        completionDate: null,
+      // Se usuário já tem dados, atualizar para nova categoria
+      // Mas MANTER o totalCompleted (desafios globais)
+      if (userData) {
+        userData.activeCategory = categoryId
+        userData.completedChallenges = [] // Reset para nova categoria
+        // Mantém totalCompleted para medalhas globais
+      } else {
+        // Novo usuário
+        userData = {
+          activeCategory: categoryId,
+          completedChallenges: [],
+          totalCompleted: 0, // Inicializar contador global
+          completionDate: null,
+        }
       }
 
       localStorage.setItem(`zayia_user_challenges_${userId}`, JSON.stringify(userData))
@@ -511,6 +518,22 @@ class ChallengesDataMock {
     return []
   }
 
+  // Get TOTAL completed challenges across ALL categories (for global medals)
+  static getTotalChallengesCompleted(userId: string): number {
+    this.initialize()
+    try {
+      const userData = localStorage.getItem(`zayia_user_challenges_${userId}`)
+      if (userData) {
+        const parsed = JSON.parse(userData)
+        // Retorna o totalCompleted que é incrementado sempre que completa um desafio
+        return parsed.totalCompleted || 0
+      }
+    } catch (e) {
+      console.error('Error loading total completed challenges:', e)
+    }
+    return 0
+  }
+
   // Mark challenge as completed
   static completeChallenge(challengeId: string, userId: string): boolean {
     this.initialize()
@@ -521,6 +544,14 @@ class ChallengesDataMock {
       const parsed = JSON.parse(userData)
       if (!parsed.completedChallenges.includes(challengeId)) {
         parsed.completedChallenges.push(challengeId)
+
+        // ✅ INCREMENTAR TOTAL GLOBAL DE DESAFIOS
+        if (!parsed.totalCompleted) {
+          parsed.totalCompleted = 0
+        }
+        parsed.totalCompleted += 1
+
+        console.log(`🌍 Total de desafios completados: ${parsed.totalCompleted}`)
       }
 
       localStorage.setItem(`zayia_user_challenges_${userId}`, JSON.stringify(parsed))

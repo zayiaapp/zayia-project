@@ -58,17 +58,12 @@ export function checkAndUnlockMedals(newPoints: number, previousPoints: number, 
       })
     })
 
-    // 3️⃣ Verificar medalhas GLOBAIS (baseado em TOTAL de desafios)
+    // 3️⃣ Verificar medalhas GLOBAIS (baseado em TOTAL acumulado de desafios)
     console.log('\n🌍 VERIFICANDO MEDALHAS GLOBAIS:')
-    let totalChallengesCompleted = 0
 
-    // Contar TOTAL de desafios de TODAS as categorias
-    categories.forEach(category => {
-      const categoryCompleted = ChallengesDataMock.getUserCompletedChallenges(category.id, userId).length
-      totalChallengesCompleted += categoryCompleted
-    })
-
-    console.log(`   Total de desafios completados (todas categorias): ${totalChallengesCompleted}`)
+    // Usar o total global rastreado
+    const totalChallengesCompleted = ChallengesDataMock.getTotalChallengesCompleted(userId)
+    console.log(`   Total acumulado de desafios: ${totalChallengesCompleted}`)
 
     // Verificar cada medalha global
     BADGES.forEach(badge => {
