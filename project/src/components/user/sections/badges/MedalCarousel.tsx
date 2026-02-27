@@ -10,93 +10,103 @@ interface MedalCarouselProps {
 export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: MedalCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const itemsPerView = 4
-  const maxIndex = Math.max(0, medals.length - itemsPerView)
-
   const goToPrevious = () => {
     setCurrentIndex(Math.max(0, currentIndex - 1))
   }
 
   const goToNext = () => {
-    setCurrentIndex(Math.min(maxIndex, currentIndex + 1))
+    setCurrentIndex(Math.min(medals.length - 1, currentIndex + 1))
   }
 
-  const visibleMedals = medals.slice(currentIndex, currentIndex + itemsPerView)
+  const currentMedal = medals[currentIndex]
+
+  if (!currentMedal) {
+    return (
+      <div className="zayia-card p-6 mb-6 text-center">
+        <p className="text-zayia-violet-gray">Nenhuma medalha nesta categoria</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="zayia-card p-6 mb-6">
+    <div className="zayia-card p-8 mb-6">
       {/* Título da Categoria */}
-      <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-bold text-zayia-deep-violet mb-6 flex items-center gap-2">
         <span className="text-2xl">{categoryIcon}</span>
         {categoryName}
       </h3>
 
-      {/* Carrossel */}
-      <div className="flex items-center gap-4">
+      {/* Carrossel com 1 medalha GRANDE */}
+      <div className="flex items-center justify-center gap-6">
         {/* Botão Esquerda */}
         <button
           onClick={goToPrevious}
           disabled={currentIndex === 0}
-          className="p-2 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          className="p-3 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          <ChevronLeft className="w-5 h-5 text-zayia-deep-violet" />
+          <ChevronLeft className="w-6 h-6 text-zayia-deep-violet" />
         </button>
 
-        {/* Grid de Medalhas - 4 colunas, cada uma é quadrada */}
-        <div className="flex-1 grid grid-cols-4 gap-4">
-          {visibleMedals.map((medal) => (
-            <div
-              key={medal.id}
-              className="aspect-square p-4 border-2 border-zayia-lilac rounded-lg bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center text-center"
-            >
-              {/* Ícone da Medalha - GRANDE */}
-              <div className="text-5xl mb-2 flex-shrink-0">
-                {medal.icon ? (
-                  (() => {
-                    const IconComponent = medal.icon
-                    return typeof IconComponent === 'function' ? <IconComponent /> : medal.icon
-                  })()
-                ) : '🏅'}
-              </div>
+        {/* MEDALHA GRANDE - Moldura Quadrada */}
+        <div className="w-72 h-96 p-8 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center text-center shadow-lg">
+          {/* Ícone da Medalha - MUITO GRANDE */}
+          <div className="text-9xl mb-6 flex-shrink-0">
+            {currentMedal.icon ? (
+              (() => {
+                const IconComponent = currentMedal.icon
+                return typeof IconComponent === 'function' ? <IconComponent /> : currentMedal.icon
+              })()
+            ) : '🏅'}
+          </div>
 
-              {/* Nome - truncado */}
-              <h4 className="font-semibold text-xs text-zayia-deep-violet mb-1 line-clamp-2 leading-tight">
-                {medal.name}
-              </h4>
+          {/* Nome da Medalha */}
+          <h4 className="font-bold text-2xl text-zayia-deep-violet mb-4">
+            {currentMedal.name}
+          </h4>
 
-              {/* Requisito */}
-              <p className="text-xs text-zayia-violet-gray mb-2 line-clamp-1">
-                {typeof medal.requirement === 'number' ? `${medal.requirement} desafios` : medal.requirement}
+          {/* Requisitos e Recompensas */}
+          <div className="space-y-3 w-full text-sm">
+            {/* Desafios Necessários */}
+            <div className="p-3 bg-zayia-lilac/20 rounded-lg">
+              <p className="text-zayia-violet-gray text-xs mb-1">Desafios Necessários</p>
+              <p className="font-bold text-zayia-deep-violet text-lg">
+                {typeof currentMedal.requirement === 'number' ? currentMedal.requirement : 0} desafios
               </p>
-
-              {/* Status */}
-              <div className="mt-auto">
-                {medal.isEarned ? (
-                  <span className="text-xs font-bold text-green-600">✅</span>
-                ) : (
-                  <span className="text-xs text-zayia-violet-gray">🔒</span>
-                )}
-              </div>
             </div>
-          ))}
+
+            {/* Pontos que Ganha */}
+            <div className="p-3 bg-zayia-soft-purple/20 rounded-lg">
+              <p className="text-zayia-violet-gray text-xs mb-1">Pontos Ganhos</p>
+              <p className="font-bold text-zayia-soft-purple text-lg">
+                +{currentMedal.points || 50} pontos
+              </p>
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="mt-6 pt-4 border-t border-zayia-lilac/30 w-full">
+            {currentMedal.isEarned ? (
+              <p className="text-lg font-bold text-green-600">✅ Conquistada!</p>
+            ) : (
+              <p className="text-lg font-bold text-zayia-soft-purple">🔒 Bloqueada</p>
+            )}
+          </div>
         </div>
 
         {/* Botão Direita */}
         <button
           onClick={goToNext}
-          disabled={currentIndex >= maxIndex}
-          className="p-2 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          disabled={currentIndex >= medals.length - 1}
+          className="p-3 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          <ChevronRight className="w-5 h-5 text-zayia-deep-violet" />
+          <ChevronRight className="w-6 h-6 text-zayia-deep-violet" />
         </button>
       </div>
 
       {/* Indicador de Posição */}
-      {medals.length > itemsPerView && (
-        <div className="text-center mt-4 text-xs text-zayia-violet-gray">
-          {currentIndex + 1} - {Math.min(currentIndex + itemsPerView, medals.length)} de {medals.length}
-        </div>
-      )}
+      <div className="text-center mt-6 text-sm text-zayia-violet-gray">
+        {currentIndex + 1} de {medals.length}
+      </div>
     </div>
   )
 }
