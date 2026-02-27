@@ -9,8 +9,6 @@ import {
   ChevronUp,
   ChevronDown,
   Star,
-  Flame,
-  Target,
   CheckCircle,
   Sparkles
 } from 'lucide-react'
@@ -387,20 +385,9 @@ export function RankingSection() {
 
             <div className="flex-1">
               <h3 className="text-lg font-bold text-zayia-deep-violet">{users[currentUserIndex].name}</h3>
-              <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
-                <div className="text-center">
-                  <div className="font-bold text-zayia-soft-purple">{users[currentUserIndex].points.toLocaleString()}</div>
-                  <div className="text-xs text-zayia-violet-gray">Pontos</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-zayia-lavender">{users[currentUserIndex].level}</div>
-                  <div className="text-xs text-zayia-violet-gray">Nível</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-zayia-orchid">{users[currentUserIndex].completed_today}/4</div>
-                  <div className="text-xs text-zayia-violet-gray">Hoje</div>
-                </div>
-              </div>
+              <p className="text-sm text-zayia-violet-gray mt-2">
+                {users[currentUserIndex].points.toLocaleString()} pontos • Nível {users[currentUserIndex].level}
+              </p>
             </div>
           </div>
 
@@ -560,21 +547,9 @@ export function RankingSection() {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-zayia-violet-gray">
-                      <span>Nível {user.level}</span>
-                      <div className="flex items-center gap-1">
-                        <Flame className="w-3 h-3 text-orange-500" />
-                        <span>{user.streak} dias</span>
-                      </div>
+                    <div className="text-xs text-zayia-violet-gray mt-1">
+                      {user.points.toLocaleString()} pontos • Nível {user.level}
                     </div>
-                  </div>
-
-                  {/* Pontos */}
-                  <div className="text-right">
-                    <div className="font-bold text-zayia-soft-purple">
-                      {user.points.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-zayia-violet-gray">pontos</div>
                   </div>
                 </div>
               </div>
@@ -587,31 +562,6 @@ export function RankingSection() {
           <div className="flex items-center justify-center gap-2 text-xs text-zayia-violet-gray">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             Atualizado às {lastUpdate.toLocaleTimeString('pt-BR')}
-          </div>
-        </div>
-      </div>
-
-      {/* Estatísticas Pessoais */}
-      <div className="zayia-card p-6">
-        <h3 className="text-lg font-bold text-zayia-deep-violet mb-4">
-          Suas Estatísticas
-        </h3>
-        
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-3 bg-zayia-lilac/20 rounded-xl">
-            <Target className="w-6 h-6 text-zayia-deep-violet mx-auto mb-2" />
-            <div className="text-lg font-bold text-zayia-deep-violet">{profile?.completed_challenges || 0}</div>
-            <div className="text-xs text-zayia-violet-gray">Desafios</div>
-          </div>
-          <div className="text-center p-3 bg-zayia-lilac/20 rounded-xl">
-            <Trophy className="w-6 h-6 text-zayia-soft-purple mx-auto mb-2" />
-            <div className="text-lg font-bold text-zayia-deep-violet">12</div>
-            <div className="text-xs text-zayia-violet-gray">Medalhas</div>
-          </div>
-          <div className="text-center p-3 bg-zayia-lilac/20 rounded-xl">
-            <Flame className="w-6 h-6 text-zayia-lavender mx-auto mb-2" />
-            <div className="text-lg font-bold text-zayia-deep-violet">{profile?.streak || 0}</div>
-            <div className="text-xs text-zayia-violet-gray">Sequência</div>
           </div>
         </div>
       </div>
