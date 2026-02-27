@@ -124,46 +124,20 @@ export function BadgesSection() {
         })}
       </div>
 
-      {/* ===== SEÇÃO: MEDALHAS ESPECIAIS (GLOBAIS) ===== */}
+      {/* ===== SEÇÃO: MEDALHAS ESPECIAIS (GLOBAIS) - CARROSSEL ===== */}
       {globalMedals.length > 0 && (
-        <div className="zayia-card p-6">
-          <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
-            🦋 Medalhas Especiais
-          </h3>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {globalMedals.map((medal: any) => (
-              <div
-                key={medal.id}
-                className="aspect-square p-4 border-2 border-zayia-lilac rounded-lg bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center text-center"
-              >
-                {/* Ícone */}
-                <div className="text-5xl mb-2">
-                  {medal.icon ? (
-                    (() => {
-                      const IconComponent = medal.icon
-                      return typeof IconComponent === 'function' ? <IconComponent /> : medal.icon
-                    })()
-                  ) : '🦋'}
-                </div>
-
-                {/* Nome */}
-                <h4 className="font-semibold text-xs text-zayia-deep-violet mb-1 line-clamp-2">
-                  {medal.name}
-                </h4>
-
-                {/* Status */}
-                <div className="mt-auto">
-                  {earnedBadgeIds.includes(medal.id) ? (
-                    <span className="text-xs font-bold text-green-600">✅</span>
-                  ) : (
-                    <span className="text-xs text-zayia-violet-gray">🔒</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MedalCarousel
+          medals={globalMedals.map((medal: any) => ({
+            id: medal.id,
+            name: medal.name,
+            icon: medal.icon,
+            requirement: medal.requirement || 0,
+            points: medal.points || 50,
+            isEarned: earnedBadgeIds.includes(medal.id),
+          }))}
+          categoryName="Medalhas Especiais"
+          categoryIcon="🦋"
+        />
       )}
 
       {/* Motivação */}
