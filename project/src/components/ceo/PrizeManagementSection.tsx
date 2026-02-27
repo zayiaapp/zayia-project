@@ -38,6 +38,7 @@ import {
   getMonthEndDate
 } from '../../lib/ranking-data-mock'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
+import { AnalyticsSection } from './AnalyticsSection'
 
 interface TabType {
   id: 'current' | 'history' | 'manage' | 'analytics'
@@ -83,6 +84,12 @@ export function PrizeManagementSection({
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [monthlyWinnersState, setMonthlyWinnersState] = useState<MonthlyWinner[]>([])
+  const [prizeConfig, setPrizeConfig] = useState({
+    firstPlace: 500,
+    secondPlace: 300,
+    thirdPlace: 100
+  })
+  const [isEditingPrizeConfig, setIsEditingPrizeConfig] = useState(false)
 
   const itemsPerPage = 20
 
@@ -101,8 +108,16 @@ export function PrizeManagementSection({
       // O setState acima já dispara re-render, isso é só para logging
     }
 
+    const handlePrizeConfigUpdate = () => {
+      console.log('✅ Configuração de prêmios atualizada - Cards re-renderizando')
+    }
+
     window.addEventListener('prizeUpdated', handlePrizeUpdate)
-    return () => window.removeEventListener('prizeUpdated', handlePrizeUpdate)
+    window.addEventListener('prizeConfigUpdated', handlePrizeConfigUpdate)
+    return () => {
+      window.removeEventListener('prizeUpdated', handlePrizeUpdate)
+      window.removeEventListener('prizeConfigUpdated', handlePrizeConfigUpdate)
+    }
   }, [])
 
   const loadData = async () => {
@@ -390,7 +405,7 @@ export function PrizeManagementSection({
               name: monthData?.firstPlaceName || 'Não preenchido',
               email: monthData?.firstPlaceEmail || '-',
               points: monthData?.firstPlacePoints || 0,
-              amount: monthData?.firstPlaceAmount || 0,
+              amount: prizeConfig.firstPlace || monthData?.firstPlaceAmount || 0,
               status: monthData?.firstPlaceStatus || 'pending',
               icon: '🥇',
               userId: monthData?.firstPlaceUserId || '',
@@ -402,7 +417,7 @@ export function PrizeManagementSection({
               name: monthData?.secondPlaceName || 'Não preenchido',
               email: monthData?.secondPlaceEmail || '-',
               points: monthData?.secondPlacePoints || 0,
-              amount: monthData?.secondPlaceAmount || 0,
+              amount: prizeConfig.secondPlace || monthData?.secondPlaceAmount || 0,
               status: monthData?.secondPlaceStatus || 'pending',
               icon: '🥈',
               userId: monthData?.secondPlaceUserId || '',
@@ -414,7 +429,7 @@ export function PrizeManagementSection({
               name: monthData?.thirdPlaceName || 'Não preenchido',
               email: monthData?.thirdPlaceEmail || '-',
               points: monthData?.thirdPlacePoints || 0,
-              amount: monthData?.thirdPlaceAmount || 0,
+              amount: prizeConfig.thirdPlace || monthData?.thirdPlaceAmount || 0,
               status: monthData?.thirdPlaceStatus || 'pending',
               icon: '🥉',
               userId: monthData?.thirdPlaceUserId || '',
@@ -962,295 +977,222 @@ export function PrizeManagementSection({
   // TAB 3: GERENCIAR PRÊMIOS
   // ========================================================================
 
-  const renderManagePrizes = () => {
-    const pending = payments.filter(p => p.status === 'pending')
-    const paid = payments.filter(p => p.status === 'paid')
+  const handleSavePrizeConfig = () => {
+    if (!prizeConfig.firstPlace || !prizeConfig.secondPlace || !prizeConfig.thirdPlace) {
+      alert('Por favor, preencha todos os valores dos prêmios')
+      return
+    }
 
+    // 🔥 ATUALIZAR monthlyWinnersState com novos valores
+    const now = new Date()
+    const currentMonth = now.getMonth() + 1
+    const currentYear = now.getFullYear()
+
+    const updatedWinners = monthlyWinnersState.map(month => {
+      if (month.month === currentMonth && month.year === currentYear) {
+        return {
+          ...month,
+          firstPlaceAmount: Number(prizeConfig.firstPlace),
+          secondPlaceAmount: Number(prizeConfig.secondPlace),
+          thirdPlaceAmount: Number(prizeConfig.thirdPlace)
+        }
+      }
+      return month
+    })
+
+    // Atualizar estado
+    setMonthlyWinnersState(updatedWinners)
+
+    // Disparar evento de atualização
+    setTimeout(() => {
+      window.dispatchEvent(new Event('prizeConfigUpdated'))
+    }, 100)
+
+    console.log('✅ Prêmios atualizados:', {
+      firstPlace: prizeConfig.firstPlace,
+      secondPlace: prizeConfig.secondPlace,
+      thirdPlace: prizeConfig.thirdPlace
+    })
+
+    alert('✅ Configurações de prêmios salvas com sucesso!')
+  }
+
+  const renderManagePrizes = () => {
     return (
       <div className="space-y-6">
-        {/* Seção A: Pendentes */}
+        {/* CONFIGURAR PRÊMIOS */}
         <div className="zayia-card p-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
-            <AlertCircle className="w-6 h-6 text-orange-500" />
-            💰 Pagamentos Pendentes ({pending.length})
-          </h3>
-
-          {pending.length === 0 ? (
-            <p className="text-center py-8 text-zayia-violet-gray">Nenhum pagamento pendente! 🎉</p>
-          ) : (
-            <div className="space-y-4">
-              {pending.map(payment => (
-                <div
-                  key={payment.id}
-                  className="p-4 bg-orange-50 border border-orange-200 rounded-xl"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="font-bold text-zayia-deep-violet">{payment.winnerId}</div>
-                      <div className="text-sm text-zayia-violet-gray">
-                        {['', '1º Lugar 🥇', '2º Lugar 🥈', '3º Lugar 🥉'][payment.position]}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600">{formatCurrency(payment.prizeAmount)}</div>
-                      <div className="text-xs text-zayia-violet-gray">
-                        {['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][payment.month - 1]} {payment.year}
-                      </div>
-                    </div>
-                  </div>
-
-                  {showPaymentForm === payment.id ? (
-                    <div className="space-y-4 bg-white p-4 rounded-lg">
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Valor (R$)
-                        </label>
-                        <input
-                          type="number"
-                          defaultValue={payment.prizeAmount}
-                          className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
-                          placeholder="0,00"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Método de Pagamento
-                        </label>
-                        <select className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none">
-                          <option value="pix">PIX</option>
-                          <option value="transfer">Transferência Bancária</option>
-                          <option value="other">Outro</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Chave PIX (Telefone/Email)
-                        </label>
-                        <input
-                          type="text"
-                          defaultValue={payment.pixKey}
-                          className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
-                          placeholder="(11) 9xxxx-xxxx ou email@exemplo.com"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Data do Pagamento
-                        </label>
-                        <input type="date" className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none" />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Upload Comprovante
-                        </label>
-                        <div className="border-2 border-dashed border-zayia-lilac rounded-lg p-4 text-center cursor-pointer hover:bg-zayia-lilac/10 transition">
-                          <Upload className="w-6 h-6 text-zayia-soft-purple mx-auto mb-2" />
-                          <p className="text-sm text-zayia-violet-gray">Clique para fazer upload ou arraste o arquivo</p>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                          Notas (Opcional)
-                        </label>
-                        <textarea
-                          className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
-                          rows={3}
-                          placeholder="Adicione anotações sobre o pagamento..."
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition flex items-center justify-center gap-2">
-                          <Check className="w-4 h-4" />
-                          Marcar Pago
-                        </button>
-                        <button
-                          onClick={() => setShowPaymentForm(null)}
-                          className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-400 transition flex items-center justify-center gap-2"
-                        >
-                          <X className="w-4 h-4" />
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowPaymentForm(payment.id)}
-                        className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition flex items-center justify-center gap-2 text-sm"
-                      >
-                        <Check className="w-4 h-4" />
-                        Marcar Pago
-                      </button>
-                      <button className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2 text-sm">
-                        <X className="w-4 h-4" />
-                        Cancelar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Seção B: Histórico */}
-        <div className="zayia-card p-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
-            <Check className="w-6 h-6 text-green-500" />
-            ✅ Pagamentos Realizados ({paid.length})
-          </h3>
-
-          {paid.length === 0 ? (
-            <p className="text-center py-8 text-zayia-violet-gray">Nenhum pagamento realizado ainda</p>
-          ) : (
-            <div className="space-y-2">
-              {paid.map(payment => (
-                <div key={payment.id} className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-zayia-deep-violet">{payment.winnerId}</div>
-                    <div className="text-sm text-zayia-violet-gray">
-                      Pago em {new Date(payment.paymentDate || '').toLocaleDateString('pt-BR')}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold text-green-600">{formatCurrency(payment.prizeAmount)}</div>
-                    {payment.paymentProofUrl && (
-                      <button className="text-xs text-green-600 hover:text-green-700 flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
-                        Ver Comprovante
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Seção C: Configurações */}
-        <div className="zayia-card p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-zayia-deep-violet flex items-center gap-2">
-              <Settings className="w-6 h-6" />
-              ⚙️ Configurar Prêmios
+              <Settings className="w-5 h-5" />
+              Configurar Prêmios
             </h3>
-            {editingConfig && (
-              <button
-                onClick={() => setEditingConfig(false)}
-                className="text-sm text-zayia-soft-purple font-medium hover:text-zayia-deep-violet transition"
-              >
-                Pronto
-              </button>
-            )}
           </div>
 
-          {editingConfig ? (
+          {!isEditingPrizeConfig ? (
+            // ========================================================================
+            // VIEW: VISUALIZAÇÃO (Quando NÃO está editando)
+            // ========================================================================
             <div className="space-y-4">
+              {/* 1º Lugar */}
+              <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div>
+                  <label className="text-sm font-semibold text-zayia-deep-violet">
+                    1º Lugar:
+                  </label>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-green-600">
+                    R$ {Number(prizeConfig.firstPlace).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              {/* 2º Lugar */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                  <label className="text-sm font-semibold text-zayia-deep-violet">
+                    2º Lugar:
+                  </label>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-green-600">
+                    R$ {Number(prizeConfig.secondPlace).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              {/* 3º Lugar */}
+              <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div>
+                  <label className="text-sm font-semibold text-zayia-deep-violet">
+                    3º Lugar:
+                  </label>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-green-600">
+                    R$ {Number(prizeConfig.thirdPlace).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Auto-reset */}
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div>
+                  <label className="text-sm font-semibold text-zayia-deep-violet">
+                    Auto-reset:
+                  </label>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-medium text-zayia-violet-gray">
+                    Desligado
+                  </span>
+                </div>
+              </div>
+
+              {/* Botão Editar */}
+              <button
+                onClick={() => setIsEditingPrizeConfig(true)}
+                className="w-full bg-zayia-soft-purple text-white py-3 rounded-lg font-bold hover:bg-zayia-deep-violet transition"
+              >
+                ✏️ Editar Configurações
+              </button>
+            </div>
+          ) : (
+            // ========================================================================
+            // VIEW: EDIÇÃO (Quando está editando)
+            // ========================================================================
+            <div className="space-y-4">
+              {/* 1º Lugar Input */}
               <div>
-                <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
                   1º Lugar (R$)
                 </label>
                 <input
                   type="number"
-                  defaultValue={config.first_place_prize}
-                  className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
+                  value={prizeConfig.firstPlace}
+                  onChange={(e) =>
+                    setPrizeConfig({
+                      ...prizeConfig,
+                      firstPlace: Number(e.target.value) || 0
+                    })
+                  }
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
                 />
               </div>
 
+              {/* 2º Lugar Input */}
               <div>
-                <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
                   2º Lugar (R$)
                 </label>
                 <input
                   type="number"
-                  defaultValue={config.second_place_prize}
-                  className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
+                  value={prizeConfig.secondPlace}
+                  onChange={(e) =>
+                    setPrizeConfig({
+                      ...prizeConfig,
+                      secondPlace: Number(e.target.value) || 0
+                    })
+                  }
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
                 />
               </div>
 
+              {/* 3º Lugar Input */}
               <div>
-                <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
                   3º Lugar (R$)
                 </label>
                 <input
                   type="number"
-                  defaultValue={config.third_place_prize}
-                  className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
+                  value={prizeConfig.thirdPlace}
+                  onChange={(e) =>
+                    setPrizeConfig({
+                      ...prizeConfig,
+                      thirdPlace: Number(e.target.value) || 0
+                    })
+                  }
+                  className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
                 />
               </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-zayia-deep-violet mb-2">
-                  <input type="checkbox" defaultChecked={config.auto_reset_enabled} className="rounded" />
+              {/* Auto-reset Checkbox */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="autoReset"
+                  className="w-4 h-4 rounded border-zayia-lilac/30"
+                />
+                <label
+                  htmlFor="autoReset"
+                  className="text-sm font-semibold text-zayia-deep-violet"
+                >
                   Reset automático
                 </label>
               </div>
 
-              {config.auto_reset_enabled && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                      Dia do Reset (28-31)
-                    </label>
-                    <input
-                      type="number"
-                      min="28"
-                      max="31"
-                      defaultValue={config.reset_day}
-                      className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
-                    />
-                  </div>
+              {/* Botões de Ação */}
+              <div className="flex gap-3 pt-4">
+                {/* Cancelar */}
+                <button
+                  onClick={() => setIsEditingPrizeConfig(false)}
+                  className="flex-1 bg-gray-300 text-gray-800 py-3 rounded-lg font-bold hover:bg-gray-400 transition"
+                >
+                  ✕ Cancelar
+                </button>
 
-                  <div>
-                    <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-                      Hora (HH:MM)
-                    </label>
-                    <input
-                      type="time"
-                      defaultValue={config.reset_time}
-                      className="zayia-input w-full px-4 py-2 rounded-lg border-0 focus:outline-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              <button className="w-full bg-zayia-lilac text-zayia-deep-violet px-4 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition flex items-center justify-center gap-2">
-                <Download className="w-4 h-4" />
-                💾 SALVAR CONFIGURAÇÕES
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-zayia-lilac/20 rounded-lg">
-                <span className="text-zayia-deep-violet font-medium">1º Lugar:</span>
-                <span className="text-zayia-soft-purple font-bold">{formatCurrency(config.first_place_prize)}</span>
+                {/* Salvar */}
+                <button
+                  onClick={() => {
+                    handleSavePrizeConfig()
+                    setIsEditingPrizeConfig(false)
+                  }}
+                  className="flex-1 bg-zayia-soft-purple text-white py-3 rounded-lg font-bold hover:bg-zayia-deep-violet transition"
+                >
+                  ↓ Salvar Configurações
+                </button>
               </div>
-              <div className="flex justify-between items-center p-3 bg-zayia-lilac/20 rounded-lg">
-                <span className="text-zayia-deep-violet font-medium">2º Lugar:</span>
-                <span className="text-zayia-soft-purple font-bold">{formatCurrency(config.second_place_prize)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-zayia-lilac/20 rounded-lg">
-                <span className="text-zayia-deep-violet font-medium">3º Lugar:</span>
-                <span className="text-zayia-soft-purple font-bold">{formatCurrency(config.third_place_prize)}</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-zayia-lilac/20 rounded-lg">
-                <span className="text-zayia-deep-violet font-medium">Auto-reset:</span>
-                <span className="text-zayia-soft-purple font-bold">{config.auto_reset_enabled ? 'Ligado' : 'Desligado'}</span>
-              </div>
-
-              <button
-                onClick={() => setEditingConfig(true)}
-                className="w-full bg-zayia-lilac text-zayia-deep-violet px-4 py-2 rounded-lg font-medium hover:bg-zayia-lavender transition flex items-center justify-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Editar Configurações
-              </button>
             </div>
           )}
         </div>
@@ -1261,131 +1203,6 @@ export function PrizeManagementSection({
   // ========================================================================
   // TAB 4: ANALYTICS & RELATÓRIOS
   // ========================================================================
-
-  const renderAnalytics = () => {
-    const totalSpent = monthlyWinners.reduce(
-      (sum, w) => sum + config.first_place_prize + config.second_place_prize + config.third_place_prize,
-      0
-    )
-    const monthsActive = monthlyWinners.length
-    const averageSpent = Math.floor(totalSpent / monthsActive)
-
-    return (
-      <div className="space-y-6">
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="zayia-card p-6 text-center">
-            <DollarSign className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">{formatCurrency(totalSpent)}</div>
-            <div className="text-sm text-zayia-violet-gray">Gasto Total 2024</div>
-          </div>
-
-          <div className="zayia-card p-6 text-center">
-            <Calendar className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">{monthsActive}</div>
-            <div className="text-sm text-zayia-violet-gray">Meses Ativos</div>
-          </div>
-
-          <div className="zayia-card p-6 text-center">
-            <BarChart3 className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">{formatCurrency(averageSpent)}</div>
-            <div className="text-sm text-zayia-violet-gray">Gasto Médio</div>
-          </div>
-
-          <div className="zayia-card p-6 text-center">
-            <Trophy className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">8</div>
-            <div className="text-sm text-zayia-violet-gray">Vencedoras Únicas</div>
-          </div>
-        </div>
-
-        {/* Gráfico */}
-        <div className="zayia-card p-6">
-          <h3 className="text-lg font-bold text-zayia-deep-violet mb-4">Gastos por Mês (2024)</h3>
-          <div className="h-64 bg-zayia-lilac/10 rounded-lg flex items-end justify-around p-4">
-            {monthlyWinners
-              .filter(w => w.year === 2024)
-              .sort((a, b) => a.month - b.month)
-              .map((winner, idx) => (
-                <div key={idx} className="text-center">
-                  <div
-                    className="bg-gradient-to-t from-zayia-soft-purple to-zayia-lavender rounded-t-lg"
-                    style={{
-                      height: `${(totalSpent / monthlyWinners.length / 100) * 1.5}px`,
-                      minHeight: '20px'
-                    }}
-                  />
-                  <div className="text-xs text-zayia-violet-gray mt-2">
-                    {['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'][winner.month - 1]}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* Top Vencedoras */}
-        <div className="zayia-card p-6">
-          <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            🏆 Top Vencedoras de 2024
-          </h3>
-
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-zayia-lilac/30">
-                <th className="text-left py-3 px-4 font-semibold text-zayia-deep-violet">Nome</th>
-                <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Vezes</th>
-                <th className="text-right py-3 px-4 font-semibold text-zayia-deep-violet">Total (R$)</th>
-                <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Melhor Pos</th>
-                <th className="text-center py-3 px-4 font-semibold text-zayia-deep-violet">Mês Recente</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10">
-                <td className="py-3 px-4 font-medium text-zayia-deep-violet">Ana Silva</td>
-                <td className="py-3 px-4 text-center text-zayia-soft-purple font-bold">3</td>
-                <td className="py-3 px-4 text-right text-green-600 font-bold">{formatCurrency(1300)}</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">1º 🥇</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">Novembro</td>
-              </tr>
-              <tr className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10">
-                <td className="py-3 px-4 font-medium text-zayia-deep-violet">Maria Santos</td>
-                <td className="py-3 px-4 text-center text-zayia-soft-purple font-bold">2</td>
-                <td className="py-3 px-4 text-right text-green-600 font-bold">{formatCurrency(800)}</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">2º 🥈</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">Outubro</td>
-              </tr>
-              <tr className="hover:bg-zayia-lilac/10">
-                <td className="py-3 px-4 font-medium text-zayia-deep-violet">Julia Costa</td>
-                <td className="py-3 px-4 text-center text-zayia-soft-purple font-bold">2</td>
-                <td className="py-3 px-4 text-right text-green-600 font-bold">{formatCurrency(700)}</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">1º 🥇</td>
-                <td className="py-3 px-4 text-center text-zayia-violet-gray">Setembro</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="zayia-card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-600">
-            <div className="text-lg font-bold text-green-800 mb-1">Ana Silva foi 1º lugar 3 vezes em 2024</div>
-            <div className="text-sm text-green-700">Maior campeã do ano</div>
-          </div>
-
-          <div className="zayia-card p-6 bg-gradient-to-br from-orange-50 to-red-50 border-l-4 border-orange-600">
-            <div className="text-lg font-bold text-orange-800 mb-1">Fevereiro foi o mês com maior prêmio</div>
-            <div className="text-sm text-orange-700">Total: {formatCurrency(1200)}</div>
-          </div>
-
-          <div className="zayia-card p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-l-4 border-blue-600">
-            <div className="text-lg font-bold text-blue-800 mb-1">5 novas vencedoras em 2024</div>
-            <div className="text-sm text-blue-700">+67% vs 2023 (3 vencedoras)</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // ========================================================================
   // RENDER PRINCIPAL
@@ -1425,7 +1242,7 @@ export function PrizeManagementSection({
           {activeTab === 'current' && renderCurrentRanking()}
           {activeTab === 'history' && renderHistory()}
           {activeTab === 'manage' && renderManagePrizes()}
-          {activeTab === 'analytics' && renderAnalytics()}
+          {activeTab === 'analytics' && <AnalyticsSection monthlyWinnersState={monthlyWinnersState} />}
         </>
       )}
     </div>

@@ -67,6 +67,74 @@ export function NotificationsSection() {
   const [testNotificationsSent, setTestNotificationsSent] = useState(0)
   const [showDeactivateModal, setShowDeactivateModal] = useState(false)
 
+  // NOVOS: Estados de Filtro
+  const [filterStartDate, setFilterStartDate] = useState<string>(
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  )
+  const [filterEndDate, setFilterEndDate] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  )
+  const [filterType, setFilterType] = useState<'all' | 'morning' | 'evening' | 'absence' | 'manual'>('all')
+  const [filteredHistory, setFilteredHistory] = useState<NotificationHistory[]>([])
+
+  // NOVA: Função para pedir permissão de notificações
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      console.log('Browser não suporta notificações')
+      return
+    }
+
+    if (Notification.permission === 'granted') {
+      return
+    }
+
+    if (Notification.permission !== 'denied') {
+      try {
+        const permission = await Notification.requestPermission()
+        setPermissionStatus(permission as any)
+        localStorage.setItem('notification_permission', permission)
+      } catch (error) {
+        console.error('Erro ao pedir permissão:', error)
+      }
+    }
+  }
+
+  // NOVA: Função para filtrar notificações (com parâmetro opcional para usar history customizada)
+  const applyFilters = (historyToFilter?: NotificationHistory[]) => {
+    const history = historyToFilter || notificationHistory
+
+    console.log('🎬 applyFilters() CHAMADA')
+    console.log('  - history.length:', history.length)
+    console.log('  - filterType:', filterType)
+    console.log('  - filterStartDate:', filterStartDate)
+    console.log('  - filterEndDate:', filterEndDate)
+
+    let filtered = [...history]
+    console.log('  - Começando com', filtered.length, 'itens')
+
+    // Filtro por tipo
+    if (filterType !== 'all') {
+      filtered = filtered.filter(n => n.type === filterType)
+      console.log('  - Após filtro de tipo:', filtered.length, 'itens')
+    }
+
+    // Filtro por data
+    const startDate = new Date(filterStartDate + 'T00:00:00')
+    const endDate = new Date(filterEndDate + 'T23:59:59')
+
+    console.log('  - Intervalo:', startDate, 'até', endDate)
+
+    filtered = filtered.filter(n => {
+      const notifDate = new Date(n.timestamp)
+      return notifDate >= startDate && notifDate <= endDate
+    })
+
+    console.log('  - Após filtro de data:', filtered.length, 'itens')
+    console.log('  - Setando filteredHistory com:', filtered.length, 'notificações')
+
+    setFilteredHistory(filtered)
+  }
+
   useEffect(() => {
     // Carregar configurações salvas
     const savedSettings = localStorage.getItem('notification_settings')
@@ -84,28 +152,45 @@ export function NotificationsSection() {
     // Carregar token FCM
     const token = localStorage.getItem('fcm_token')
     setFCMToken(token)
-    
+
     // Carregar contadores de notificações
     const sentCount = parseInt(localStorage.getItem('notifications_sent_count') || '0')
     const testSentCount = parseInt(localStorage.getItem('test_notifications_sent_count') || '0')
     setNotificationsSent(sentCount)
     setTestNotificationsSent(testSentCount)
-    
+
     // CEO sempre tem sistema ativo por padrão
     setIsActive(true)
+
+    // NOVA: Pedir permissão de notificações
+    requestNotificationPermission()
+
+    // NOVA: Atualizar último login a cada minuto
+    const loginInterval = setInterval(() => {
+      const now = new Date().toISOString()
+      localStorage.setItem('last_login_time', now)
+    }, 60000)
+
+    return () => clearInterval(loginInterval)
   }, [])
+
+  // NOVA: Aplicar filtros quando dados mudam
+  useEffect(() => {
+    applyFilters()
+  }, [filterStartDate, filterEndDate, filterType, notificationHistory])
 
   const handleActivateSystem = () => {
     setIsActive(true)
     localStorage.setItem('notification_system_active', 'true')
     notificationScheduler.initialize()
+    console.log('✅ Sistema de notificações ativado')
   }
 
   const handleDeactivateSystem = () => {
     setIsActive(false)
     localStorage.setItem('notification_system_active', 'false')
     setShowDeactivateModal(false)
-    // Aqui você poderia cancelar notificações agendadas se necessário
+    console.log('❌ Sistema de notificações desativado')
   }
 
   const handleSaveSettings = () => {
@@ -118,37 +203,84 @@ export function NotificationsSection() {
   }
 
   const sendTestNotification = async () => {
-    if (!testMessage.trim()) return
+    if (!testMessage.trim()) {
+      alert('Digite uma mensagem!')
+      return
+    }
+
+    console.log('🚀 sendTestNotification() foi CHAMADA!')
 
     setSendingTest(true)
     try {
-      const success = await integrationsManager.sendNotification({
+      console.log('📤 Iniciando envio de teste...')
+
+      // 1. Enviar notificação local via Notification API
+      console.log('Notification.permission:', Notification.permission)
+
+      if (Notification.permission === 'granted') {
+        console.log('✅ Enviando notificação pro navegador...')
+        new Notification('🧪 Teste ZAYIA', {
+          body: testMessage,
+          icon: 'https://via.placeholder.com/192',
+          tag: 'zayia-test',
+          requireInteraction: true
+        })
+      } else {
+        console.error('❌ Permissão negada:', Notification.permission)
+        alert('⚠️ Permissões de notificação não concedidas. Clique em "Ativar Permissões" acima.')
+      }
+
+      // 2. Criar notificação para histórico
+      const newNotification: NotificationHistory = {
+        id: `test-${Date.now()}`,
         title: '🧪 Teste ZAYIA',
         body: testMessage,
-        icon: '/zayia-icon.png'
-      })
-      
-      if (success) {
-        // Incrementar contador de testes
-        const newTestCount = testNotificationsSent + 1
-        setTestNotificationsSent(newTestCount)
-        localStorage.setItem('test_notifications_sent_count', newTestCount.toString())
-        
-        // Adicionar ao histórico
-        const newNotification: NotificationHistory = {
-          id: Date.now().toString(),
-          title: '🧪 Teste ZAYIA',
-          body: testMessage,
-          timestamp: new Date().toISOString(),
-          read: false,
-          type: 'manual'
-        }
-
-        setNotificationHistory(prev => [newNotification, ...prev])
-        setTestMessage('')
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'manual'
       }
+
+      console.log('📊 Notificação criada:', newNotification)
+
+      // 3. Calcular updated history ANTES de salvar
+      const updatedHistory = [newNotification, ...notificationHistory]
+      if (updatedHistory.length > 100) {
+        updatedHistory.splice(100) // Remove do final
+      }
+
+      console.log('💾 Salvando em localStorage...', updatedHistory.length, 'itens')
+
+      // 4. ✅ CORRIGIDO: Salvar em localStorage PRIMEIRO (síncrono - imediato)
+      localStorage.setItem('notification_history', JSON.stringify(updatedHistory))
+
+      // 5. Incrementar contador e salvar em localStorage PRIMEIRO
+      const newTestCount = testNotificationsSent + 1
+      localStorage.setItem('test_notifications_sent_count', newTestCount.toString())
+
+      console.log('✅ localStorage atualizado - contador:', newTestCount)
+
+      // 6. ✅ DEPOIS atualizar states (assincronos, mas localStorage já está correto)
+      console.log('📝 Chamando setNotificationHistory com', updatedHistory.length, 'itens')
+      setNotificationHistory(updatedHistory)
+
+      console.log('📊 Chamando setTestNotificationsSent:', newTestCount)
+      setTestNotificationsSent(newTestCount)
+
+      // 7. ✅ NOVO: Chamar applyFilters() DIRETAMENTE com o updatedHistory
+      // Isso garante que a filtragem use os dados atualizados
+      // O useEffect vai executar depois, mas já teremos a UI atualizada
+      console.log('🔄 Aplicando filtros imediatamente com dados atualizados...')
+      applyFilters(updatedHistory)
+
+      // 8. ✅ Feedback visual
+      console.log('✅ Teste enviado com sucesso!')
+      alert('✅ Teste enviado! Verifique o Histórico.')
+
+      // 9. Limpar input
+      setTestMessage('')
     } catch (error) {
-      console.error('Error sending test notification:', error)
+      console.error('❌ Erro ao enviar teste:', error)
+      alert('❌ Erro ao enviar teste: ' + String(error))
     } finally {
       setSendingTest(false)
     }
@@ -182,6 +314,65 @@ export function NotificationsSection() {
 
   const renderDashboard = () => (
     <div className="space-y-6">
+      {/* FILTROS */}
+      <div className="zayia-card p-6">
+        <h3 className="text-lg font-bold text-zayia-deep-violet mb-4">📊 Filtrar Notificações</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Data Início */}
+          <div>
+            <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
+              Data Início
+            </label>
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+            />
+          </div>
+
+          {/* Data Fim */}
+          <div>
+            <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
+              Data Fim
+            </label>
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+            />
+          </div>
+
+          {/* Tipo */}
+          <div>
+            <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">
+              Tipo
+            </label>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as any)}
+              className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+            >
+              <option value="all">Todas</option>
+              <option value="morning">Manhã (6h)</option>
+              <option value="evening">Noite (20h)</option>
+              <option value="absence">Ausência (24h)</option>
+              <option value="manual">Teste Manual</option>
+            </select>
+          </div>
+
+          {/* Estatísticas do Filtro */}
+          <div className="bg-zayia-lilac/10 rounded p-3 flex flex-col justify-center">
+            <div className="text-xs text-zayia-violet-gray mb-1">Total Filtrado</div>
+            <div className="text-2xl font-bold text-zayia-soft-purple">
+              {filteredHistory.length}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Status do Sistema */}
       <div className="zayia-card p-6">
         <div className="flex items-center justify-between mb-6">
@@ -211,25 +402,33 @@ export function NotificationsSection() {
 
         {/* Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+          <div className="text-center p-4 bg-yellow-50 rounded-xl border border-yellow-200">
             <Sun className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">15</div>
-            <div className="text-sm text-zayia-violet-gray">Mensagens Manhã</div>
+            <div className="text-2xl font-bold text-zayia-deep-violet">
+              {filteredHistory.filter(n => n.type === 'morning').length}
+            </div>
+            <div className="text-sm text-zayia-violet-gray">Manhã</div>
           </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+          <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
             <Moon className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">15</div>
-            <div className="text-sm text-zayia-violet-gray">Mensagens Noite</div>
+            <div className="text-2xl font-bold text-zayia-deep-violet">
+              {filteredHistory.filter(n => n.type === 'evening').length}
+            </div>
+            <div className="text-sm text-zayia-violet-gray">Noite</div>
           </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-            <UserX className="w-8 h-8 text-red-500 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">7</div>
-            <div className="text-sm text-zayia-violet-gray">Mensagens Ausência</div>
+          <div className="text-center p-4 bg-orange-50 rounded-xl border border-orange-200">
+            <UserX className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-zayia-deep-violet">
+              {filteredHistory.filter(n => n.type === 'absence').length}
+            </div>
+            <div className="text-sm text-zayia-violet-gray">Ausência</div>
           </div>
-          <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+          <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
             <Bell className="w-8 h-8 text-zayia-soft-purple mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">{notificationsSent}</div>
-            <div className="text-sm text-zayia-violet-gray">Total Enviadas</div>
+            <div className="text-2xl font-bold text-zayia-deep-violet">
+              {filteredHistory.filter(n => n.type === 'manual').length}
+            </div>
+            <div className="text-sm text-zayia-violet-gray">Testes</div>
           </div>
         </div>
       </div>
@@ -268,40 +467,52 @@ export function NotificationsSection() {
         </div>
       </div>
 
-      {/* Teste de Notificação */}
+      {/* Teste de Notificação MELHORADO */}
       <div className="zayia-card p-6">
-        <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-          🧪 Teste de Notificação
+        <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
+          <Send className="w-5 h-5" />
+          Teste de Notificação
         </h3>
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-          <div className="flex items-center gap-2 text-blue-700">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">
-              Testes enviados: {testNotificationsSent}
-            </span>
+
+        <div className="space-y-3">
+          {/* Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-800">
+            ✅ Testes enviados: <strong>{testNotificationsSent}</strong>
+            <br />
+            💡 Notificações de teste aparecem no Histórico e no navegador
           </div>
+
+          {/* Input + Botão */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={testMessage}
+              onChange={(e) => setTestMessage(e.target.value)}
+              placeholder="Digite a mensagem de teste..."
+              className="flex-1 border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
+            />
+            <button
+              onClick={sendTestNotification}
+              disabled={sendingTest || !testMessage.trim()}
+              className={`px-6 py-2 rounded font-medium text-white transition ${
+                sendingTest || !testMessage.trim()
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-zayia-soft-purple hover:bg-zayia-deep-violet'
+              }`}
+            >
+              {sendingTest ? '⏳ Enviando...' : '📤 Enviar Teste'}
+            </button>
+          </div>
+
+          {/* Aviso Firebase */}
+          {!integrationsManager.isFirebaseConfigured() && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
+              ⚠️ Firebase não configurado - Notificações locais apenas
+              <br />
+              Firebase será adicionado depois para enviar no celular
+            </div>
+          )}
         </div>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={testMessage}
-            onChange={(e) => setTestMessage(e.target.value)}
-            placeholder="Digite uma mensagem de teste..."
-            className="flex-1 zayia-input px-4 py-3 rounded-xl border-0 focus:outline-none"
-            disabled={sendingTest}
-          />
-          <button
-            onClick={sendTestNotification}
-            disabled={!testMessage.trim() || sendingTest}
-            className="zayia-button px-6 py-3 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {sendingTest ? <LoadingSpinner size="sm" /> : <Send className="w-4 h-4" />}
-            {sendingTest ? 'Enviando...' : 'Enviar Teste'}
-          </button>
-        </div>
-        <p className="text-xs text-zayia-violet-gray mt-2">
-          💡 {integrationsManager.isFirebaseConfigured() ? 'Firebase configurado - notificações reais' : 'Configure Firebase para notificações reais'}
-        </p>
       </div>
     </div>
   )
@@ -374,71 +585,79 @@ export function NotificationsSection() {
   )
 
   const renderHistory = () => (
-    <div className="space-y-6">
-      <div className="zayia-card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet">
-            Histórico de Notificações ({notificationHistory.length})
-          </h3>
-          <button
-            onClick={() => {
-              localStorage.removeItem('notification_history')
+    <div className="space-y-4">
+      {/* Botão Limpar */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-bold text-zayia-deep-violet">
+          Histórico ({filteredHistory.length} / {notificationHistory.length})
+        </h3>
+        <button
+          onClick={() => {
+            if (window.confirm('Limpar todo o histórico de notificações?')) {
               setNotificationHistory([])
-            }}
-            className="text-red-500 hover:text-red-700 transition-colors flex items-center gap-2"
-          >
-            <Trash2 className="w-4 h-4" />
-            Limpar Histórico
-          </button>
-        </div>
+              localStorage.removeItem('notification_history')
+            }
+          }}
+          className="bg-red-500 text-white px-4 py-2 rounded font-medium hover:bg-red-600 flex items-center gap-2"
+        >
+          <Trash2 className="w-4 h-4" />
+          🗑️ Limpar
+        </button>
+      </div>
 
-        {notificationHistory.length === 0 ? (
-          <div className="text-center py-12">
-            <Bell className="w-16 h-16 text-zayia-violet-gray mx-auto mb-4" />
-            <p className="text-zayia-violet-gray">Nenhuma notificação enviada ainda</p>
+      {/* Lista */}
+      <div className="max-h-96 overflow-y-auto space-y-2 zayia-card p-6">
+        {filteredHistory.length === 0 ? (
+          <div className="text-center py-8 text-zayia-violet-gray">
+            {notificationHistory.length === 0
+              ? 'Nenhuma notificação enviada ainda'
+              : 'Nenhuma notificação encontrada no período/tipo selecionado'}
           </div>
         ) : (
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {notificationHistory.map((notification) => (
-              <div key={notification.id} className="p-4 border border-zayia-lilac/30 rounded-xl">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      notification.type === 'morning' ? 'bg-yellow-100 text-yellow-600' :
-                      notification.type === 'evening' ? 'bg-purple-100 text-purple-600' :
-                      notification.type === 'absence' ? 'bg-red-100 text-red-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>
-                      {notification.type === 'morning' ? <Sun className="w-4 h-4" /> :
-                       notification.type === 'evening' ? <Moon className="w-4 h-4" /> :
-                       notification.type === 'absence' ? <UserX className="w-4 h-4" /> :
-                       <Bell className="w-4 h-4" />}
+          filteredHistory.map((notif) => {
+            const iconEmoji = {
+              'morning': '🌅',
+              'evening': '🌙',
+              'absence': '👤',
+              'manual': '📤'
+            }[notif.type] || '🔔'
+
+            const bgColor = {
+              'morning': 'bg-yellow-100',
+              'evening': 'bg-blue-100',
+              'absence': 'bg-orange-100',
+              'manual': 'bg-green-100'
+            }[notif.type] || 'bg-gray-100'
+
+            const typeLabel = {
+              'morning': 'Manhã',
+              'evening': 'Noite',
+              'absence': 'Ausência',
+              'manual': 'Teste'
+            }[notif.type] || 'Desconhecido'
+
+            return (
+              <div key={notif.id} className={`${bgColor} p-4 rounded-lg border`}>
+                <div className="flex gap-3">
+                  <div className="text-2xl">{iconEmoji}</div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-zayia-deep-violet flex justify-between">
+                      <span>{notif.title}</span>
+                      <span className="text-xs font-normal text-zayia-violet-gray">
+                        {typeLabel}
+                      </span>
                     </div>
-                    <div>
-                      <div className="font-semibold text-zayia-deep-violet">{notification.title}</div>
-                      <div className="text-sm text-zayia-violet-gray">
-                        {new Date(notification.timestamp).toLocaleString('pt-BR')}
-                      </div>
+                    <div className="text-sm text-zayia-violet-gray mt-1">
+                      {notif.body}
+                    </div>
+                    <div className="text-xs text-zayia-violet-gray mt-2">
+                      {new Date(notif.timestamp).toLocaleString('pt-BR')}
                     </div>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    notification.type === 'morning' ? 'bg-yellow-100 text-yellow-700' :
-                    notification.type === 'evening' ? 'bg-purple-100 text-purple-700' :
-                    notification.type === 'absence' ? 'bg-red-100 text-red-700' :
-                    'bg-blue-100 text-blue-700'
-                  }`}>
-                    {notification.type === 'morning' ? 'Manhã' :
-                     notification.type === 'evening' ? 'Noite' :
-                     notification.type === 'absence' ? 'Ausência' :
-                     'Manual'}
-                  </span>
                 </div>
-                <p className="text-sm text-zayia-deep-violet bg-zayia-lilac/10 p-3 rounded-lg">
-                  {notification.body}
-                </p>
               </div>
-            ))}
-          </div>
+            )
+          })
         )}
       </div>
     </div>
