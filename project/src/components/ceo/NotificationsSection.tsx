@@ -219,12 +219,24 @@ export function NotificationsSection() {
 
       if (Notification.permission === 'granted') {
         console.log('✅ Enviando notificação pro navegador...')
-        new Notification('🧪 Teste ZAYIA', {
-          body: testMessage,
-          icon: 'https://via.placeholder.com/192',
-          tag: 'zayia-test',
-          requireInteraction: true
-        })
+        try {
+          const notification = new Notification('🧪 Teste ZAYIA', {
+            body: testMessage,
+            badge: '🔔',
+            tag: 'zayia-test-' + Date.now(), // Único para cada notificação
+            requireInteraction: false, // Deixa desaparecer automaticamente
+          })
+
+          // Callback quando notificação é clicada
+          notification.onclick = () => {
+            console.log('✅ Notificação clicada!')
+            window.focus()
+          }
+
+          console.log('✅ Notificação criada com sucesso')
+        } catch (error) {
+          console.error('❌ Erro ao criar notificação:', error)
+        }
       } else {
         console.error('❌ Permissão negada:', Notification.permission)
         alert('⚠️ Permissões de notificação não concedidas. Clique em "Ativar Permissões" acima.')

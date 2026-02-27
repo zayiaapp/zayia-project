@@ -4,6 +4,7 @@ import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-d
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
+import { checkAndUnlockMedals, getMedalById } from '../../../lib/medals-unlock'
 
 export function ChallengesSection() {
   const { user } = useAuth()
@@ -54,9 +55,41 @@ export function ChallengesSection() {
   }
 
   const handleChallengeCompleted = (challengeId: string) => {
+    if (!activeCategory || !user?.id) return
+
+    // 1. Find the challenge to get points
+    const challenge = ChallengesDataMock.getChallengeById(challengeId)
+    if (!challenge) return
+
+    const previousPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
+    const newPoints = previousPoints + challenge.points
+
+    // 2. Update local state
     const newCompleted = new Set(completedChallengeIds)
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
+
+    // 3. Save points to localStorage
+    localStorage.setItem('user_points', newPoints.toString())
+
+    // 4. ✅ Verificar e desbloquear medalhas
+    const unlockedMedalIds = checkAndUnlockMedals(newPoints, previousPoints)
+
+    // 5. Show notification for new medals
+    unlockedMedalIds.forEach(medalId => {
+      const medal = getMedalById(medalId)
+      if (medal) {
+        alert(`🏆 PARABÉNS! Você conquistou: ${medal.name}!`)
+      }
+    })
+
+    // 6. Dispatch events to update other tabs
+    window.dispatchEvent(new Event('pointsUpdated'))
+    if (unlockedMedalIds.length > 0) {
+      window.dispatchEvent(new Event('medalsUpdated'))
+    }
+
+    console.log(`✅ Desafio completo! +${challenge.points} pontos (Total: ${newPoints})`)
   }
 
   // Loading state
