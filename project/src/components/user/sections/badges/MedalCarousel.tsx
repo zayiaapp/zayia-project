@@ -74,11 +74,13 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
 
           {/* Requisitos */}
           <div className="w-full space-y-2 text-xs">
-            {/* Desafios Necessários */}
+            {/* Desafios ou Nível */}
             <div className="p-2 bg-zayia-lilac/20 rounded-lg">
-              <p className="text-zayia-violet-gray text-xs mb-0.5">Desafios</p>
+              <p className="text-zayia-violet-gray text-xs mb-0.5">
+                {currentMedal.levelNumber !== undefined ? 'Nível' : 'Desafios'}
+              </p>
               <p className="font-bold text-zayia-deep-violet text-sm">
-                {currentMedal.requirement}
+                {currentMedal.levelNumber !== undefined ? currentMedal.levelNumber : currentMedal.requirement}
               </p>
             </div>
 
