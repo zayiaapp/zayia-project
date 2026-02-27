@@ -40,14 +40,22 @@ export function DashboardSection() {
   // ✅ Listener para atualizar quando pontos mudam (em tempo real)
   useEffect(() => {
     const handlePointsUpdated = () => {
-      const points = parseInt(localStorage.getItem('user_points') || '0', 10)
-      setCurrentPoints(points)
-      const milestones = getNextMilestones(points)
+      // ⚠️ IMPORTANTE: Pegar valor DIRETO do localStorage
+      const updatedPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
+      console.log('📊 Dashboard: Recebeu pointsUpdated, novo valor:', updatedPoints)
+      setCurrentPoints(updatedPoints)
+      const milestones = getNextMilestones(updatedPoints)
       setNextMilestones(milestones)
-      console.log('📊 Dashboard atualizado - próximos milestones:', milestones)
     }
 
+    // Listener
     window.addEventListener('pointsUpdated', handlePointsUpdated)
+
+    // Também atualizar ao montar o componente
+    const initialPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
+    setCurrentPoints(initialPoints)
+    console.log('📊 Dashboard: Inicial points:', initialPoints)
+
     return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
   }, [])
 
