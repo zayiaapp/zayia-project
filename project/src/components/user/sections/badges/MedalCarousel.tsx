@@ -49,8 +49,8 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
 
         {/* MEDALHA GRANDE - Moldura Quadrada */}
         <div className="w-72 h-96 p-8 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center text-center shadow-lg">
-          {/* Ícone da Medalha - MUITO GRANDE */}
-          <div className="text-9xl mb-6 flex-shrink-0">
+          {/* Ícone da Medalha - GRANDE MAS ENQUADRADO */}
+          <div className="text-7xl mb-4 flex-shrink-0">
             {currentMedal.icon ? (
               (() => {
                 const IconComponent = currentMedal.icon
