@@ -5,7 +5,7 @@ import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
 import { PopUpMedalUnlocked } from '../modals/PopUpMedalUnlocked'
-import { checkAndUnlockMedals, getMedalById } from '../../../lib/medals-unlock'
+import { checkAndUnlockMedals } from '../../../lib/medals-unlock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { incrementDailyCount } from '../../../lib/challenges-storage'
 import { BADGES } from '../../../lib/badges-data-mock'
@@ -67,12 +67,16 @@ export function ChallengesSection() {
   const handleChallengeCompleted = (challengeId: string) => {
     if (!activeCategory || !user?.id) return
 
+    console.log('🚀 Challenge completed:', challengeId) // ← DEBUG
+
     // 1. Find the challenge to get points
     const challenge = ChallengesDataMock.getChallengeById(challengeId)
     if (!challenge) return
 
     const previousPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
     const newPoints = previousPoints + challenge.points
+
+    console.log('📊 Previous points:', previousPoints, '→ New points:', newPoints) // ← DEBUG
 
     // 2. Update local state
     const newCompleted = new Set(completedChallengeIds)
@@ -82,24 +86,32 @@ export function ChallengesSection() {
     // 3. Save points to localStorage
     localStorage.setItem('user_points', newPoints.toString())
 
-    // 4. ✅ Verificar e desbloquear medalhas de nível
-    const unlockedLevelMedalIds = checkAndUnlockMedals(newPoints, previousPoints)
+    // 4. ✅ Verificar e desbloquear medalhas (nível + categoria)
+    const unlockedLevelMedalIds = checkAndUnlockMedals(newPoints, previousPoints, user.id)
+    console.log('🏆 Unlocked level medals:', unlockedLevelMedalIds) // ← DEBUG
 
     // 5. ✅ Detectar NOVAS medalhas conquistadas (comparar antes e depois)
     const currentEarnedBadges = getEarnedBadges()
     const newUnlockedMedalIds = currentEarnedBadges.filter(id => !previousEarnedBadges.has(id))
+    console.log('🎖️ New unlocked medals:', newUnlockedMedalIds) // ← DEBUG
     setPreviousEarnedBadges(new Set(currentEarnedBadges))
 
     // 6. Combine level medals and other new medals
     const allNewMedals = [...unlockedLevelMedalIds, ...newUnlockedMedalIds]
+    console.log('🎯 ALL new medals:', allNewMedals) // ← DEBUG
 
     // 7. Show pop-up for first new medal
     if (allNewMedals.length > 0) {
       const newMedalId = allNewMedals[0]
       const medalObj = BADGES.find(b => b.id === newMedalId)
+      console.log('🎪 Medal para pop-up:', medalObj) // ← DEBUG
+
       if (medalObj) {
+        console.log('✅ MOSTRANDO POP-UP para:', medalObj.name) // ← DEBUG
         setUnlockedMedalPopup(medalObj)
       }
+    } else {
+      console.log('❌ Nenhuma medalha nova para mostrar') // ← DEBUG
     }
 
     // 8. Incrementar contador de desafios hoje

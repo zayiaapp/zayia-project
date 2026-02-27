@@ -3,17 +3,18 @@
  * Verifica quando usuário atinge milestones de pontos
  */
 
-import { addEarnedBadge } from './badges-storage'
+import { addEarnedBadge, getEarnedBadges } from './badges-storage'
 import { LEVELS, BADGES } from './badges-data-mock'
+import ChallengesDataMock from './challenges-data-mock'
 
 /**
- * Verificar e desbloquear medalhas baseado em pontos
+ * Verificar e desbloquear medalhas baseado em pontos (NÍVEIS)
  * Chamado toda vez que usuário ganha pontos
  */
-export function checkAndUnlockMedals(newPoints: number, previousPoints: number): string[] {
+export function checkAndUnlockMedals(newPoints: number, previousPoints: number, userId?: string): string[] {
   const unlockedMedalIds: string[] = []
 
-  // Verificar medalhas de nível
+  // 1️⃣ Verificar medalhas de nível
   const previousLevel = LEVELS.filter(l => previousPoints >= l.pointsRequired).length - 1
   const currentLevel = LEVELS.filter(l => newPoints >= l.pointsRequired).length - 1
 
@@ -25,9 +26,37 @@ export function checkAndUnlockMedals(newPoints: number, previousPoints: number):
         const medalId = `level_${i}` // Formato: level_0, level_1, etc
         addEarnedBadge(medalId)
         unlockedMedalIds.push(medalId)
-        console.log(`🏆 Medalha desbloqueada: ${levelMedal.name} (${levelMedal.pointsRequired} pts)`)
+        console.log(`🏆 NÍVEL DESBLOQUEADO: ${medalId} - ${levelMedal.name}`)
       }
     }
+  }
+
+  // 2️⃣ Verificar medalhas de categoria (se userId fornecido)
+  if (userId) {
+    const earnedBadgeIds = getEarnedBadges()
+
+    // Pegar todas as categorias
+    const categories = ChallengesDataMock.getCategories()
+
+    categories.forEach(category => {
+      // Contar desafios completados nesta categoria
+      const completedCount = ChallengesDataMock.getUserCompletedChallenges(category.id, userId).length
+
+      // Verificar medalhas de categoria
+      BADGES.forEach(badge => {
+        // Se é medalha desta categoria E usuário completou requisito
+        if (
+          badge.category === category.label &&
+          !badge.category.includes('Global') &&
+          completedCount >= badge.requirement &&
+          !earnedBadgeIds.includes(badge.id)
+        ) {
+          addEarnedBadge(badge.id)
+          unlockedMedalIds.push(badge.id)
+          console.log(`🎖️ CATEGORIA DESBLOQUEADA: ${badge.id} - ${badge.name} (${completedCount}/${badge.requirement})`)
+        }
+      })
+    })
   }
 
   return unlockedMedalIds
