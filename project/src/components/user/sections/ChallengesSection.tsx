@@ -105,39 +105,39 @@ export function ChallengesSection() {
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
 
-    // 4. VERIFICAR MEDALHAS
+    // 4. VERIFICAR MEDALHAS (checkAndUnlockMedals já chama addEarnedBadge)
     console.log('\n🎖️ VERIFICANDO MEDALHAS:')
-    const unlockedLevelMedalIds = checkAndUnlockMedals(totalAfterChallenge, previousPoints, user.id)
-    console.log('   checkAndUnlockMedals() retornou:', unlockedLevelMedalIds)
+    const allNewMedals = checkAndUnlockMedals(totalAfterChallenge, previousPoints, user.id)
+    console.log('   checkAndUnlockMedals() retornou:', allNewMedals)
 
-    // 5. DETECTAR NOVAS MEDALHAS
+    // Atualizar previousEarnedBadges para próxima vez
     const currentEarnedBadges = getEarnedBadges()
-    const newUnlockedMedalIds = currentEarnedBadges.filter(id => !previousEarnedBadges.has(id))
     setPreviousEarnedBadges(new Set(currentEarnedBadges))
 
-    console.log('   Novas medalhas detectadas:', newUnlockedMedalIds)
-
-    // 6. COMBINAR TODAS MEDALHAS
-    const allNewMedals = [...unlockedLevelMedalIds, ...newUnlockedMedalIds]
     console.log('   Total de medalhas novas:', allNewMedals)
 
     // 7. CALCULAR PONTOS DAS MEDALHAS
     console.log('\n💎 PONTOS DAS MEDALHAS:')
     let medalPointsAdded = 0
-    allNewMedals.forEach((medalId, index) => {
-      const medalObj = BADGES.find(b => b.id === medalId)
-      console.log(`   [${index + 1}] ${medalId}`)
-      if (medalObj) {
-        console.log(`       Nome: ${medalObj.name}`)
-        console.log(`       Pontos: ${medalObj.points}`)
-        if (medalObj.points) {
-          medalPointsAdded += medalObj.points
-          console.log(`       Somando: medalPointsAdded += ${medalObj.points}`)
+
+    if (allNewMedals.length === 0) {
+      console.log('   (Nenhuma medalha desbloqueada)')
+    } else {
+      allNewMedals.forEach((medalId, index) => {
+        const medalObj = BADGES.find(b => b.id === medalId)
+        console.log(`   [${index + 1}] ${medalId}`)
+        if (medalObj) {
+          console.log(`       Nome: ${medalObj.name}`)
+          console.log(`       Pontos: ${medalObj.points}`)
+          if (medalObj.points) {
+            medalPointsAdded += medalObj.points
+            console.log(`       Somando: medalPointsAdded += ${medalObj.points}`)
+          }
+        } else {
+          console.log(`       ⚠️ MEDALHA NÃO ENCONTRADA EM BADGES!`)
         }
-      } else {
-        console.log(`       ⚠️ MEDALHA NÃO ENCONTRADA EM BADGES!`)
-      }
-    })
+      })
+    }
 
     console.log(`   Total de pontos de medalhas: ${medalPointsAdded}`)
 
