@@ -34,66 +34,69 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
   }
 
   return (
-    <div className="zayia-card p-8 mb-6">
+    <div className="zayia-card p-6 mb-6">
       {/* Título da Categoria */}
       <h3 className="text-lg font-bold text-zayia-deep-violet mb-6 flex items-center gap-2">
         <span className="text-2xl">{categoryIcon}</span>
         {categoryName}
       </h3>
 
-      {/* Carrossel com 1 medalha GRANDE */}
-      <div className="flex items-center justify-center gap-6">
+      {/* Carrossel com 1 medalha - TAMANHO FIXO */}
+      <div className="flex items-stretch justify-center gap-4 min-h-80">
         {/* Botão Esquerda */}
         <button
           onClick={goToPrevious}
           disabled={currentIndex === 0}
-          className="p-3 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors self-center"
         >
           <ChevronLeft className="w-6 h-6 text-zayia-deep-violet" />
         </button>
 
-        {/* MEDALHA GRANDE - Moldura Quadrada */}
-        <div className="w-72 h-96 p-8 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center text-center shadow-lg">
-          {/* Ícone da Medalha - GRANDE MAS ENQUADRADO */}
-          <div className="text-7xl mb-4 flex-shrink-0">
-            {currentMedal.icon ? (
-              (() => {
-                const IconComponent = currentMedal.icon
-                return typeof IconComponent === 'function' ? <IconComponent /> : currentMedal.icon
-              })()
-            ) : '🏅'}
+        {/* MEDALHA - Moldura QUADRADA FIXA */}
+        <div className="w-64 p-6 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center gap-3 shadow-lg">
+
+          {/* ÍCONE - SEMPRE PEQUENO E ENQUADRADO */}
+          <div className="w-24 h-24 flex items-center justify-center flex-shrink-0">
+            <div className="text-5xl">
+              {currentMedal.icon ? (
+                (() => {
+                  const IconComponent = currentMedal.icon
+                  return typeof IconComponent === 'function' ? <IconComponent /> : currentMedal.icon
+                })()
+              ) : '🏅'}
+            </div>
           </div>
 
           {/* Nome da Medalha */}
-          <h4 className="font-bold text-2xl text-zayia-deep-violet mb-4">
+          <h4 className="font-bold text-lg text-zayia-deep-violet text-center line-clamp-2">
             {currentMedal.name}
           </h4>
 
-          {/* Requisitos e Recompensas */}
-          <div className="space-y-3 w-full text-sm">
+          {/* Requisitos */}
+          <div className="w-full space-y-2 text-xs">
             {/* Desafios Necessários */}
-            <div className="p-3 bg-zayia-lilac/20 rounded-lg">
-              <p className="text-zayia-violet-gray text-xs mb-1">Desafios Necessários</p>
-              <p className="font-bold text-zayia-deep-violet text-lg">
-                {typeof currentMedal.requirement === 'number' ? currentMedal.requirement : 0} desafios
+            <div className="p-2 bg-zayia-lilac/20 rounded-lg">
+              <p className="text-zayia-violet-gray text-xs mb-0.5">Desafios</p>
+              <p className="font-bold text-zayia-deep-violet text-sm">
+                {currentMedal.requirement}
               </p>
             </div>
 
             {/* Pontos que Ganha */}
-            <div className="p-3 bg-zayia-soft-purple/20 rounded-lg">
-              <p className="text-zayia-violet-gray text-xs mb-1">Pontos Ganhos</p>
-              <p className="font-bold text-zayia-soft-purple text-lg">
-                +{currentMedal.points || 50} pontos
+            <div className="p-2 bg-zayia-soft-purple/20 rounded-lg">
+              <p className="text-zayia-violet-gray text-xs mb-0.5">Pontos</p>
+              <p className="font-bold text-zayia-soft-purple text-sm">
+                +{currentMedal.points || 0}
               </p>
             </div>
           </div>
 
           {/* Status */}
-          <div className="mt-6 pt-4 border-t border-zayia-lilac/30 w-full">
+          <div className="w-full pt-2 border-t border-zayia-lilac/30">
             {currentMedal.isEarned ? (
-              <p className="text-lg font-bold text-green-600">✅ Conquistada!</p>
+              <p className="text-sm font-bold text-green-600 text-center">✅</p>
             ) : (
-              <p className="text-lg font-bold text-zayia-soft-purple">🔒 Bloqueada</p>
+              <p className="text-sm font-bold text-zayia-soft-purple text-center">🔒</p>
             )}
           </div>
         </div>
@@ -102,14 +105,14 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
         <button
           onClick={goToNext}
           disabled={currentIndex >= medals.length - 1}
-          className="p-3 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-full hover:bg-zayia-lilac/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors self-center"
         >
           <ChevronRight className="w-6 h-6 text-zayia-deep-violet" />
         </button>
       </div>
 
-      {/* Indicador de Posição */}
-      <div className="text-center mt-6 text-sm text-zayia-violet-gray">
+      {/* Indicador de Posição - SEMPRE VISÍVEL EMBAIXO */}
+      <div className="text-center mt-4 text-sm text-zayia-violet-gray">
         {currentIndex + 1} de {medals.length}
       </div>
     </div>
