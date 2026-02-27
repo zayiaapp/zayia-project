@@ -10,7 +10,7 @@ import {
 import { getGreeting } from '../../../lib/utils'
 import { getNextMilestones } from '../../../lib/medals-unlock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
-import { BADGES } from '../../../lib/badges-data-mock'
+import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getDailyCompletedCount, getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
 
 export function DashboardSection() {
@@ -115,8 +115,17 @@ export function DashboardSection() {
       <div className="zayia-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
+            {/* ✅ Ícone dinâmico sincronizado com LEVELS */}
             <div className="w-12 h-12 bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple rounded-full flex items-center justify-center">
-              <Crown className="w-6 h-6 text-white" />
+              {(() => {
+                const currentLevel = profile?.level || 1
+                const levelIcon = LEVELS[currentLevel]?.icon
+                if (levelIcon) {
+                  const IconComponent = levelIcon
+                  return <IconComponent />
+                }
+                return <Crown className="w-6 h-6 text-white" />
+              })()}
             </div>
             <div>
               <h3 className="text-lg font-bold text-zayia-deep-violet">
