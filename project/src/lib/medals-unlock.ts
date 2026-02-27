@@ -41,6 +41,8 @@ export function getNextMilestones(currentPoints: number): Array<{
   medalName: string
   pointsNeeded: number
   level: number
+  medalId: string
+  icon: any
 }> {
   return LEVELS
     .filter(l => l.pointsRequired > currentPoints)
@@ -49,7 +51,9 @@ export function getNextMilestones(currentPoints: number): Array<{
       points: l.pointsRequired,
       medalName: l.name,
       pointsNeeded: l.pointsRequired - currentPoints,
-      level: l.level
+      level: l.level,
+      medalId: `level_${l.level}`,
+      icon: l.icon
     }))
 }
 

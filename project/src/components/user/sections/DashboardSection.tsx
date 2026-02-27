@@ -215,7 +215,7 @@ export function DashboardSection() {
         </div>
       </div>
 
-      {/* ✅ NOVA SEÇÃO: Próximos Milestones */}
+      {/* ✅ NOVA SEÇÃO: Próximos Milestones com ícones sincronizados */}
       <div className="zayia-card p-6">
         <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
           <Target className="w-5 h-5" />
@@ -228,35 +228,58 @@ export function DashboardSection() {
               const progress = (currentPoints / milestone.points) * 100
 
               return (
-                <div key={idx} className="space-y-2">
-                  {/* Nome do milestone */}
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-zayia-deep-violet">
-                      🎯 {milestone.medalName}
-                    </span>
-                    <span className="text-sm font-bold text-zayia-soft-purple">
-                      {milestone.pointsNeeded} pts faltam
-                    </span>
-                  </div>
+                <div key={idx} className="p-4 border-2 border-zayia-lilac/30 rounded-lg">
+                  <div className="flex items-start gap-4">
+                    {/* Ícone do Milestone */}
+                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
+                      {milestone.icon ? (
+                        (() => {
+                          const IconComponent = milestone.icon
+                          return (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <IconComponent />
+                            </div>
+                          )
+                        })()
+                      ) : (
+                        <div className="text-2xl">🎯</div>
+                      )}
+                    </div>
 
-                  {/* Barra de progresso */}
-                  <div className="w-full bg-zayia-lilac/30 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(100, progress)}%` }}
-                    />
-                  </div>
+                    {/* Informações */}
+                    <div className="flex-1">
+                      {/* Nome e pontos faltando */}
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-zayia-deep-violet">
+                          {milestone.medalName}
+                        </h4>
+                        <span className="text-sm font-bold text-zayia-soft-purple whitespace-nowrap ml-2">
+                          {milestone.pointsNeeded} pts
+                        </span>
+                      </div>
 
-                  {/* Progresso em números */}
-                  <div className="text-xs text-zayia-violet-gray">
-                    {currentPoints} / {milestone.points} pontos
+                      {/* Barra de progresso */}
+                      <div className="mb-2">
+                        <div className="w-full bg-zayia-lilac/30 rounded-full h-2.5 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-2.5 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, progress)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Progresso em números */}
+                      <div className="text-xs text-zayia-violet-gray">
+                        {currentPoints} / {milestone.points} pontos
+                      </div>
+                    </div>
                   </div>
                 </div>
               )
             })}
           </div>
         ) : (
-          <div className="text-center py-4 text-zayia-violet-gray">
+          <div className="text-center py-6 text-zayia-violet-gray">
             🎉 Todos os milestones conquistados! Parabéns!
           </div>
         )}
