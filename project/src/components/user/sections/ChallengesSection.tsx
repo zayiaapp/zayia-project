@@ -100,12 +100,21 @@ export function ChallengesSection() {
     console.log('\n🧮 CÁLCULO DO DESAFIO:')
     console.log('   ' + previousPoints + ' + ' + pointsFromChallenge + ' = ' + totalAfterChallenge)
 
-    // 3. Update local state
+    // 3. IMPORTANTE: Marcar desafio como completo ANTES de verificar medalhas globais
+    // Isso incrementa totalCompleted para que checkAndUnlockMedals() leia o valor correto
+    const completeSuccess = ChallengesDataMock.completeChallenge(challengeId, user.id)
+    console.log('\n📝 MARCANDO DESAFIO COMPLETO:')
+    console.log('   ChallengesDataMock.completeChallenge():', completeSuccess)
+    if (!completeSuccess) {
+      console.warn('   ⚠️ Falha ao marcar desafio como completo')
+    }
+
+    // 4. Update local state
     const newCompleted = new Set(completedChallengeIds)
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
 
-    // 4. VERIFICAR MEDALHAS (checkAndUnlockMedals já chama addEarnedBadge)
+    // 5. VERIFICAR MEDALHAS (checkAndUnlockMedals já chama addEarnedBadge)
     console.log('\n🎖️ VERIFICANDO MEDALHAS:')
     const allNewMedals = checkAndUnlockMedals(totalAfterChallenge, previousPoints, user.id)
     console.log('   checkAndUnlockMedals() retornou:', allNewMedals)
@@ -116,7 +125,7 @@ export function ChallengesSection() {
 
     console.log('   Total de medalhas novas:', allNewMedals)
 
-    // 7. CALCULAR PONTOS DAS MEDALHAS
+    // 6. CALCULAR PONTOS DAS MEDALHAS
     console.log('\n💎 PONTOS DAS MEDALHAS:')
     let medalPointsAdded = 0
 
@@ -141,14 +150,14 @@ export function ChallengesSection() {
 
     console.log(`   Total de pontos de medalhas: ${medalPointsAdded}`)
 
-    // 8. CALCULAR TOTAL FINAL
+    // 7. CALCULAR TOTAL FINAL
     const finalTotalPoints = totalAfterChallenge + medalPointsAdded
 
     console.log('\n💰 CÁLCULO FINAL:')
     console.log('   Fórmula: previousPoints + challenge + medals')
     console.log('            ' + previousPoints + ' + ' + pointsFromChallenge + ' + ' + medalPointsAdded + ' = ' + finalTotalPoints)
 
-    // 9. SALVAR APENAS UMA VEZ
+    // 8. SALVAR APENAS UMA VEZ
     localStorage.setItem('user_points', finalTotalPoints.toString())
     const afterStorage = localStorage.getItem('user_points')
 
@@ -157,7 +166,7 @@ export function ChallengesSection() {
     console.log('   Verificação: localStorage.getItem("user_points") =', afterStorage)
     console.log('   Match:', afterStorage === finalTotalPoints.toString() ? '✅ SIM' : '❌ NÃO')
 
-    // 10. MOSTRAR POP-UP
+    // 9. MOSTRAR POP-UP
     if (allNewMedals.length > 0) {
       const newMedalId = allNewMedals[0]
       const medalObj = BADGES.find(b => b.id === newMedalId)
@@ -168,10 +177,10 @@ export function ChallengesSection() {
       }
     }
 
-    // 11. INCREMENTAR DESAFIOS HOJE
+    // 10. INCREMENTAR DESAFIOS HOJE
     incrementDailyCount()
 
-    // 12. DISPARAR EVENTOS
+    // 11. DISPARAR EVENTOS
     console.log('\n📡 DISPARANDO EVENTOS:')
     console.log('   pointsUpdated')
     console.log('   dailyProgressUpdated')
