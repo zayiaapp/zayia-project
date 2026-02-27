@@ -4,8 +4,11 @@ import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-d
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
+import { PopUpMedalUnlocked } from '../modals/PopUpMedalUnlocked'
 import { checkAndUnlockMedals, getMedalById } from '../../../lib/medals-unlock'
+import { getEarnedBadges } from '../../../lib/badges-storage'
 import { incrementDailyCount } from '../../../lib/challenges-storage'
+import { BADGES } from '../../../lib/badges-data-mock'
 
 export function ChallengesSection() {
   const { user } = useAuth()
@@ -17,6 +20,8 @@ export function ChallengesSection() {
   const [subTab, setSubTab] = useState<'desafios' | 'categorias'>('desafios')
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [unlockedMedalPopup, setUnlockedMedalPopup] = useState<any>(null)
+  const [previousEarnedBadges, setPreviousEarnedBadges] = useState<Set<string>>(new Set())
 
   // Initialize on mount
   useEffect(() => {
@@ -28,6 +33,10 @@ export function ChallengesSection() {
     // Load all categories
     const categories = ChallengesDataMock.getCategories()
     setAllCategories(categories)
+
+    // Track previously earned badges to detect new ones
+    const earnedBadges = getEarnedBadges()
+    setPreviousEarnedBadges(new Set(earnedBadges))
 
     // Load user's active category
     const activeCategoryId = ChallengesDataMock.getActiveCategory(user.id)
@@ -73,23 +82,33 @@ export function ChallengesSection() {
     // 3. Save points to localStorage
     localStorage.setItem('user_points', newPoints.toString())
 
-    // 4. ✅ Verificar e desbloquear medalhas
-    const unlockedMedalIds = checkAndUnlockMedals(newPoints, previousPoints)
+    // 4. ✅ Verificar e desbloquear medalhas de nível
+    const unlockedLevelMedalIds = checkAndUnlockMedals(newPoints, previousPoints)
 
-    // 5. Show notification for new medals
-    unlockedMedalIds.forEach(medalId => {
-      const medal = getMedalById(medalId)
-      if (medal) {
-        alert(`🏆 PARABÉNS! Você conquistou: ${medal.name}!`)
+    // 5. ✅ Detectar NOVAS medalhas conquistadas (comparar antes e depois)
+    const currentEarnedBadges = getEarnedBadges()
+    const newUnlockedMedalIds = currentEarnedBadges.filter(id => !previousEarnedBadges.has(id))
+    setPreviousEarnedBadges(new Set(currentEarnedBadges))
+
+    // 6. Combine level medals and other new medals
+    const allNewMedals = [...unlockedLevelMedalIds, ...newUnlockedMedalIds]
+
+    // 7. Show pop-up for first new medal
+    if (allNewMedals.length > 0) {
+      const newMedalId = allNewMedals[0]
+      const medalObj = BADGES.find(b => b.id === newMedalId)
+      if (medalObj) {
+        setUnlockedMedalPopup(medalObj)
       }
-    })
+    }
 
-    // 6. Incrementar contador de desafios hoje
+    // 8. Incrementar contador de desafios hoje
     incrementDailyCount()
 
-    // 7. Dispatch events to update other tabs
+    // 9. Dispatch events to update other tabs
     window.dispatchEvent(new Event('pointsUpdated'))
-    if (unlockedMedalIds.length > 0) {
+    window.dispatchEvent(new Event('dailyProgressUpdated'))
+    if (allNewMedals.length > 0) {
       window.dispatchEvent(new Event('medalsUpdated'))
     }
 
@@ -119,9 +138,26 @@ export function ChallengesSection() {
     )
   }
 
+  // Handler for viewing medal
+  const handleViewMedal = () => {
+    // Close modal and dispatch event so parent can switch to medals tab
+    setUnlockedMedalPopup(null)
+    window.dispatchEvent(new CustomEvent('navigateToMedalTab', {
+      detail: { medalId: unlockedMedalPopup?.id }
+    }))
+  }
+
   // Render with active category
   return (
     <div className="space-y-6">
+      {/* Pop-up para medalha desbloqueada */}
+      <PopUpMedalUnlocked
+        isOpen={!!unlockedMedalPopup}
+        medal={unlockedMedalPopup}
+        onClose={() => setUnlockedMedalPopup(null)}
+        onViewMedal={handleViewMedal}
+      />
+
       {/* Sub-tabs */}
       <div className="flex gap-4 border-b border-zayia-lilac/30">
         <button

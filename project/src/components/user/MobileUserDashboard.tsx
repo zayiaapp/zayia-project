@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { getGreeting } from '../../lib/utils'
 import {
@@ -51,6 +51,18 @@ export function MobileUserDashboard() {
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen)
   }
+
+  // ✅ Listen for navigate to medals event
+  useEffect(() => {
+    const handleNavigateToMedals = (event: any) => {
+      setActiveSection('badges')
+      setIsDrawerOpen(false)
+      console.log('🎖️ Navegando para aba de Medalhas...')
+    }
+
+    window.addEventListener('navigateToMedalTab', handleNavigateToMedals)
+    return () => window.removeEventListener('navigateToMedalTab', handleNavigateToMedals)
+  }, [])
 
   const renderContent = () => {
     switch (activeSection) {
