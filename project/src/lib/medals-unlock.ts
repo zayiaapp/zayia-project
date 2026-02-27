@@ -57,6 +57,31 @@ export function checkAndUnlockMedals(newPoints: number, previousPoints: number, 
         }
       })
     })
+
+    // 3️⃣ Verificar medalhas GLOBAIS (baseado em TOTAL de desafios)
+    console.log('\n🌍 VERIFICANDO MEDALHAS GLOBAIS:')
+    let totalChallengesCompleted = 0
+
+    // Contar TOTAL de desafios de TODAS as categorias
+    categories.forEach(category => {
+      const categoryCompleted = ChallengesDataMock.getUserCompletedChallenges(category.id, userId).length
+      totalChallengesCompleted += categoryCompleted
+    })
+
+    console.log(`   Total de desafios completados (todas categorias): ${totalChallengesCompleted}`)
+
+    // Verificar cada medalha global
+    BADGES.forEach(badge => {
+      if (
+        badge.category === 'Global' &&
+        totalChallengesCompleted >= badge.requirement &&
+        !earnedBadgeIds.includes(badge.id)
+      ) {
+        addEarnedBadge(badge.id)
+        unlockedMedalIds.push(badge.id)
+        console.log(`🌍 GLOBAL DESBLOQUEADA: ${badge.id} - ${badge.name} (${totalChallengesCompleted}/${badge.requirement})`)
+      }
+    })
   }
 
   return unlockedMedalIds
