@@ -20,6 +20,7 @@ import {
   getPrizeMedal,
   getPrizeAmount
 } from '../../../lib/ranking-data-mock'
+import { LEVELS } from '../../../lib/badges-data-mock'
 
 export function RankingSection() {
   const { profile } = useAuth()
@@ -64,7 +65,17 @@ export function RankingSection() {
   const updateRanking = () => {
     const now = new Date()
 
-    // 1. Dados dos outros usuários (mock - não mudar)
+    // 🔧 SINCRONIZAR: Função para calcular nível baseado em pontos
+    const calculateLevelFromPoints = (points: number): number => {
+      for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (points >= LEVELS[i].pointsRequired) {
+          return i
+        }
+      }
+      return 0
+    }
+
+    // 1. Dados dos outros usuários (mock - níveis calculados dinamicamente)
     const otherUsers: RankingUser[] = [
       {
         id: '1',
@@ -72,7 +83,7 @@ export function RankingSection() {
         email: 'ana@exemplo.com',
         points: 5000,
         avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 7,
+        level: calculateLevelFromPoints(5000),
         streak: 67,
         completed_today: 4,
         badges_count: 15,
@@ -100,7 +111,7 @@ export function RankingSection() {
         email: 'maria@exemplo.com',
         points: 4200,
         avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 6,
+        level: calculateLevelFromPoints(4200),
         streak: 50,
         completed_today: 3,
         badges_count: 12,
@@ -128,7 +139,7 @@ export function RankingSection() {
         email: 'julia@exemplo.com',
         points: 3800,
         avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 5,
+        level: calculateLevelFromPoints(3800),
         streak: 45,
         completed_today: 2,
         badges_count: 10,
@@ -156,7 +167,7 @@ export function RankingSection() {
         email: 'carolina@exemplo.com',
         points: 3200,
         avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 5,
+        level: calculateLevelFromPoints(3200),
         streak: 30,
         completed_today: 2,
         badges_count: 8,
@@ -180,7 +191,7 @@ export function RankingSection() {
         email: 'beatriz@exemplo.com',
         points: 2100,
         avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 3,
+        level: calculateLevelFromPoints(2100),
         streak: 20,
         completed_today: 1,
         badges_count: 5,
@@ -204,7 +215,7 @@ export function RankingSection() {
         email: 'fernanda@exemplo.com',
         points: 1800,
         avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: 3,
+        level: calculateLevelFromPoints(1800),
         streak: 15,
         completed_today: 1,
         badges_count: 4,
@@ -224,15 +235,17 @@ export function RankingSection() {
       }
     ]
 
-    // 2. ✅ NOVO: Pegar dados REAIS do usuário logado
+    // 2. ✅ NOVO: Pegar dados REAIS do usuário logado com nível calculado corretamente
     const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
+    const userLevel = calculateLevelFromPoints(userPoints)
+
     const currentUserData: RankingUser = {
       id: profile?.id || 'current-user',
       name: profile?.full_name || 'Você',
       email: profile?.email || 'user@zayia.com',
       points: userPoints,
       avatar_url: profile?.avatar_url || 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      level: profile?.level || 1,
+      level: userLevel,
       streak: profile?.streak || 0,
       completed_today: 0,
       badges_count: 0,
