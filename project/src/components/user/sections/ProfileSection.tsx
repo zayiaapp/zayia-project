@@ -361,7 +361,7 @@ export function ProfileSection() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 zayia-gradient text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
@@ -371,7 +371,7 @@ export function ProfileSection() {
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>💾 Salvar</span>
+                  <span>Salvar</span>
                 </>
               )}
             </button>
