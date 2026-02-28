@@ -8,7 +8,6 @@ import {
   Gift
 } from 'lucide-react'
 import { getGreeting } from '../../../lib/utils'
-import { getNextMilestones } from '../../../lib/medals-unlock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getDailyCompletedCount, getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
@@ -17,19 +16,12 @@ export function DashboardSection() {
   const { profile } = useAuth()
   const greeting = getGreeting()
 
-  // ✅ State para Próximos Milestones e Medalhas
-  const [nextMilestones, setNextMilestones] = useState<any[]>([])
+  // ✅ State para Medalhas e Desafios Diários
   const [recentMedalsEarned, setRecentMedalsEarned] = useState<string[]>([])
-  const [currentPoints, setCurrentPoints] = useState(0)
   const [dailyChallengesCompleted, setDailyChallengesCompleted] = useState(0)
 
   // ✅ Carregar dados iniciais
   useEffect(() => {
-    const points = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
-    setCurrentPoints(points)
-    const milestones = getNextMilestones(points)
-    setNextMilestones(milestones)
-
     const earned = getEarnedBadges()
     setRecentMedalsEarned(earned)
 
@@ -38,24 +30,14 @@ export function DashboardSection() {
   }, [profile?.points])
 
   // ✅ Listener para atualizar quando pontos mudam (em tempo real)
+  // O componente atualiza automaticamente via profile.points do AuthContext
   useEffect(() => {
     const handlePointsUpdated = () => {
-      // ⚠️ IMPORTANTE: Pegar valor DIRETO do localStorage
-      const updatedPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
-      console.log('📊 Dashboard: Recebeu pointsUpdated, novo valor:', updatedPoints)
-      setCurrentPoints(updatedPoints)
-      const milestones = getNextMilestones(updatedPoints)
-      setNextMilestones(milestones)
+      // Força re-render quando pontos mudam
+      console.log('📊 Dashboard: Pontos foram atualizados')
     }
 
-    // Listener
     window.addEventListener('pointsUpdated', handlePointsUpdated)
-
-    // Também atualizar ao montar o componente
-    const initialPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
-    setCurrentPoints(initialPoints)
-    console.log('📊 Dashboard: Inicial points:', initialPoints)
-
     return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
   }, [])
 
@@ -114,19 +96,32 @@ export function DashboardSection() {
         </div>
       </div>
 
-      {/* Data Atual */}
-      <div className="text-right text-sm text-zayia-violet-gray">
-        📅 Dia de hoje: <span className="font-semibold text-zayia-deep-violet">{getFormattedToday()}</span>
+      {/* Data Atual - CORREÇÃO 1: Remover emoji e centralizar */}
+      <div className="flex items-center justify-center">
+        <p className="text-sm text-zayia-deep-violet font-medium">
+          Data: {getFormattedToday()}
+        </p>
       </div>
 
       {/* Card de Nível e Progresso */}
       <div className="zayia-card p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            {/* ✅ Ícone dinâmico sincronizado com LEVELS */}
+            {/* ✅ Ícone dinâmico sincronizado com LEVELS - CORREÇÃO 2: Calcular nível baseado em pontos */}
             <div className="w-12 h-12 bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple rounded-full flex items-center justify-center">
               {(() => {
-                const currentLevel = profile?.level || 1
+                // Calcular nível baseado em pontos reais (não usar profile.level)
+                const calculateLevelFromPoints = (points: number): number => {
+                  for (let i = LEVELS.length - 1; i >= 0; i--) {
+                    if (points >= LEVELS[i].pointsRequired) {
+                      return i
+                    }
+                  }
+                  return 0
+                }
+
+                const userPoints = profile?.points || 0
+                const currentLevel = calculateLevelFromPoints(userPoints)
                 const levelIcon = LEVELS[currentLevel]?.icon
                 if (levelIcon) {
                   const IconComponent = levelIcon
@@ -137,7 +132,17 @@ export function DashboardSection() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-zayia-deep-violet">
-                Nível {profile?.level || 1}
+                {(() => {
+                  const calculateLevelFromPoints = (points: number): number => {
+                    for (let i = LEVELS.length - 1; i >= 0; i--) {
+                      if (points >= LEVELS[i].pointsRequired) {
+                        return i
+                      }
+                    }
+                    return 0
+                  }
+                  return `Nível ${calculateLevelFromPoints(profile?.points || 0)}`
+                })()}
               </h3>
               <p className="text-sm text-zayia-violet-gray">Guerreira em Evolução</p>
             </div>
@@ -150,24 +155,52 @@ export function DashboardSection() {
           </div>
         </div>
 
-        {/* Barra de Progresso do Nível */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm text-zayia-violet-gray mb-2">
-            <span>Progresso para Nível {(profile?.level || 1) + 1}</span>
-            <span>{Math.min(100, ((profile?.points || 0) % 200))}%</span>
-          </div>
-          <div className="w-full bg-zayia-lilac/30 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-1000 relative overflow-hidden"
-              style={{ width: `${Math.min(100, ((profile?.points || 0) % 200) / 2)}%` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+        {/* Barra de Progresso do Nível - CORREÇÃO 3: Cálculo correto com fórmula real */}
+        {(() => {
+          const calculateLevelFromPoints = (points: number): number => {
+            for (let i = LEVELS.length - 1; i >= 0; i--) {
+              if (points >= LEVELS[i].pointsRequired) {
+                return i
+              }
+            }
+            return 0
+          }
+
+          const userPoints = profile?.points || 0
+          const currentLevel = calculateLevelFromPoints(userPoints)
+
+          // Se atingiu o máximo, não mostrar barra
+          if (currentLevel >= LEVELS.length - 1) {
+            return null
+          }
+
+          const currentLevelThreshold = LEVELS[currentLevel].pointsRequired
+          const nextLevelThreshold = LEVELS[currentLevel + 1].pointsRequired
+          const pointsInCurrentLevel = userPoints - currentLevelThreshold
+          const pointsNeededForNextLevel = nextLevelThreshold - currentLevelThreshold
+          const progressPercent = Math.min(100, Math.max(0, (pointsInCurrentLevel / pointsNeededForNextLevel) * 100))
+          const pointsRemainingForNextLevel = Math.max(0, nextLevelThreshold - userPoints)
+
+          return (
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-zayia-violet-gray mb-2">
+                <span>Progresso para Nível {currentLevel + 1} ({LEVELS[currentLevel + 1].name})</span>
+                <span>{Math.round(progressPercent)}%</span>
+              </div>
+              <div className="w-full bg-zayia-lilac/30 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-1000 relative"
+                  style={{ width: `${progressPercent}%` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                </div>
+              </div>
+              <div className="text-xs text-zayia-violet-gray mt-1 text-center">
+                Faltam {pointsRemainingForNextLevel} pontos para alcançar {LEVELS[currentLevel + 1].name}
+              </div>
             </div>
-          </div>
-          <div className="text-xs text-zayia-violet-gray mt-1">
-            Faltam {200 - ((profile?.points || 0) % 200)} pontos para o próximo nível
-          </div>
-        </div>
+          )
+        })()}
       </div>
 
       {/* Progresso de Hoje */}
@@ -232,74 +265,82 @@ export function DashboardSection() {
         </div>
       </div>
 
-      {/* ✅ NOVA SEÇÃO: Próximos Milestones com ícones sincronizados */}
+      {/* ✅ CORREÇÃO 4 & 5: Próximos Níveis com lógica corrigida */}
       <div className="zayia-card p-6">
         <h3 className="text-lg font-bold text-zayia-deep-violet mb-4 flex items-center gap-2">
           <Target className="w-5 h-5" />
-          Próximos Milestones
+          Próximos Níveis
         </h3>
 
-        {nextMilestones.length > 0 ? (
-          <div className="space-y-4">
-            {nextMilestones.map((milestone, idx) => {
-              const progress = (currentPoints / milestone.points) * 100
+        {/* CORREÇÃO 5: Mostrar próximos 3 níveis corretamente */}
+        {(() => {
+          const calculateLevelFromPoints = (points: number): number => {
+            for (let i = LEVELS.length - 1; i >= 0; i--) {
+              if (points >= LEVELS[i].pointsRequired) {
+                return i
+              }
+            }
+            return 0
+          }
 
-              return (
-                <div key={idx} className="p-4 border-2 border-zayia-lilac/30 rounded-lg">
-                  <div className="flex items-start gap-4">
-                    {/* Ícone do Milestone */}
-                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
-                      {milestone.icon ? (
-                        (() => {
-                          const IconComponent = milestone.icon
-                          return (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <IconComponent />
-                            </div>
-                          )
-                        })()
-                      ) : (
-                        <div className="text-2xl">🎯</div>
-                      )}
-                    </div>
+          const userPoints = profile?.points || 0
+          const currentLevel = calculateLevelFromPoints(userPoints)
 
-                    {/* Informações */}
-                    <div className="flex-1">
-                      {/* Nome e pontos faltando */}
-                      <div className="flex justify-between items-start mb-2">
+          // Próximos 3 níveis
+          const nextThreeLevels = []
+          for (let i = currentLevel + 1; i < Math.min(currentLevel + 4, LEVELS.length); i++) {
+            nextThreeLevels.push(LEVELS[i])
+          }
+
+          return nextThreeLevels.length > 0 ? (
+            <div className="space-y-3">
+              {nextThreeLevels.map((level) => {
+                const pointsRemainingForThisLevel = Math.max(0, level.pointsRequired - userPoints)
+
+                return (
+                  <div key={level.level} className="p-4 border-2 border-zayia-lilac/30 rounded-lg">
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Ícone do Nível */}
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-zayia-lilac/20 to-zayia-soft-purple/20 flex items-center justify-center">
+                        {level.icon ? (
+                          (() => {
+                            const IconComponent = level.icon
+                            return <IconComponent />
+                          })()
+                        ) : (
+                          <div>📍</div>
+                        )}
+                      </div>
+
+                      {/* Informações do Nível */}
+                      <div className="flex-1">
                         <h4 className="font-semibold text-zayia-deep-violet">
-                          {milestone.medalName}
+                          Nível {level.level}: {level.name}
                         </h4>
-                        <span className="text-sm font-bold text-zayia-soft-purple whitespace-nowrap ml-2">
-                          {milestone.pointsNeeded} pts
-                        </span>
+                        <p className="text-xs text-zayia-violet-gray">
+                          {pointsRemainingForThisLevel} pontos restantes
+                        </p>
                       </div>
 
-                      {/* Barra de progresso */}
-                      <div className="mb-2">
-                        <div className="w-full bg-zayia-lilac/30 rounded-full h-2.5 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-2.5 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, progress)}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Progresso em números */}
-                      <div className="text-xs text-zayia-violet-gray">
-                        {currentPoints} / {milestone.points} pontos
-                      </div>
+                      {/* Badge de progresso */}
+                      <div className="text-2xl">🎯</div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-6 text-zayia-violet-gray">
-            🎉 Todos os milestones conquistados! Parabéns!
-          </div>
-        )}
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-2xl mb-2">🏆</p>
+              <p className="text-zayia-deep-violet font-semibold">
+                Você atingiu o máximo!
+              </p>
+              <p className="text-sm text-zayia-violet-gray mt-1">
+                Parabéns, Suprema! Você é uma lenda!
+              </p>
+            </div>
+          )
+        })()}
       </div>
 
       {/* ✅ ATUALIZADO: Medalhas Conquistadas com dados reais */}
