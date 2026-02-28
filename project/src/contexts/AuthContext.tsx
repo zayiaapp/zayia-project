@@ -13,6 +13,27 @@ interface Profile extends Partial<SupabaseProfile> {
   updated_at: string
   interests?: string[]
   goals?: string[]
+  cpf?: string
+  phone?: string
+  birth_date?: string
+  avatar_url?: string
+  bio?: string
+  street?: string
+  street_number?: string
+  complement?: string
+  neighborhood?: string
+  city?: string
+  state?: string
+  postal_code?: string
+  address?: {
+    street?: string
+    number?: string
+    complement?: string
+    neighborhood?: string
+    city?: string
+    state?: string
+    zipcode?: string
+  }
 }
 
 interface User {
@@ -426,27 +447,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (profile) {
       try {
+        // ✅ Sempre adicionar updated_at ao atualizar
+        const dataToUpdate = {
+          ...updates,
+          updated_at: new Date().toISOString()
+        }
+
         if (integrationsManager.isSupabaseConfigured()) {
           // Update in Supabase
-          const updatedProfile = await supabaseClient.updateProfile(profile.id, updates)
+          const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate)
           if (updatedProfile) {
             setProfile(updatedProfile)
             localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
+            console.log('✅ Perfil atualizado em Supabase')
           }
         } else {
           // Fallback to local update
-          const updatedProfile = { ...profile, ...updates, updated_at: new Date().toISOString() }
+          const updatedProfile = { ...profile, ...dataToUpdate }
           setProfile(updatedProfile)
           localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
-          
+
           // Update in mock database
           const userIndex = mockUsers.findIndex(u => u.id === profile.id)
           if (userIndex !== -1) {
             mockUsers[userIndex].profile = updatedProfile
           }
+          console.log('✅ Perfil atualizado localmente')
         }
       } catch (error) {
         console.error('Error updating profile:', error)
+        throw error
       }
     }
   }

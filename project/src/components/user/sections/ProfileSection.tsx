@@ -1,28 +1,23 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { 
-  User, 
-  Camera, 
-  Save, 
-  LogOut, 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  User,
+  Save,
+  LogOut,
+  Mail,
+  Phone,
   Edit,
-  CreditCard,
   Home,
-  FileText,
-  Crown,
-  Trophy
+  FileText
 } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
+import { AvatarUpload } from './profile/AvatarUpload'
 
 export function ProfileSection() {
   const { profile, updateProfile, signOut } = useAuth()
   
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
-    nickname: profile?.nickname || '',
     cpf: profile?.cpf || '',
     email: profile?.email || '',
     phone: profile?.phone || '',
@@ -41,15 +36,38 @@ export function ProfileSection() {
 
   const handleSave = async () => {
     setIsSaving(true)
-    
-    // Simular salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Atualizar perfil
-    await updateProfile(formData)
-    
-    setIsSaving(false)
-    setIsEditing(false)
+
+    try {
+      // ✅ Desestruturar endereço para salvar como campos simples
+      const dataToSave = {
+        full_name: formData.full_name,
+        cpf: formData.cpf,
+        email: formData.email,
+        phone: formData.phone,
+        // Endereço desestruturado (para Supabase)
+        street: formData.address.street,
+        street_number: formData.address.number,
+        complement: formData.address.complement,
+        neighborhood: formData.address.neighborhood,
+        city: formData.address.city,
+        state: formData.address.state,
+        postal_code: formData.address.zipcode
+      }
+
+      console.log('💾 Salvando perfil:', dataToSave)
+
+      // Atualizar perfil
+      await updateProfile(dataToSave)
+
+      console.log('✅ Perfil salvo com sucesso')
+
+      setIsEditing(false)
+    } catch (error) {
+      console.error('❌ Erro ao salvar:', error)
+      alert('Erro ao salvar perfil. Tente novamente.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -94,28 +112,11 @@ export function ProfileSection() {
 
       {/* Foto de Perfil */}
       <div className="zayia-card p-6 text-center">
-        <div className="relative inline-block mb-4">
-          <div className="w-24 h-24 bg-gradient-to-r from-zayia-soft-purple to-zayia-lavender rounded-full flex items-center justify-center">
-            <User className="w-12 h-12 text-white" />
-          </div>
-          <button className="absolute bottom-0 right-0 w-8 h-8 bg-zayia-deep-violet text-white rounded-full flex items-center justify-center hover:bg-zayia-soft-purple transition-colors">
-            <Camera className="w-4 h-4" />
-          </button>
-        </div>
-        <h3 className="text-lg font-bold text-zayia-deep-violet mb-1">
+        <AvatarUpload />
+        <h3 className="text-lg font-bold text-zayia-deep-violet mb-1 mt-6">
           {profile?.full_name || 'Usuária ZAYIA'}
         </h3>
-        <p className="text-sm text-zayia-violet-gray mb-2">{profile?.email}</p>
-        <div className="flex items-center justify-center gap-4 text-xs text-zayia-violet-gray">
-          <div className="flex items-center gap-1">
-            <Crown className="w-3 h-3" />
-            <span>Nível {profile?.level || 1}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Trophy className="w-3 h-3" />
-            <span>{profile?.points || 0} pontos</span>
-          </div>
-        </div>
+        <p className="text-sm text-zayia-violet-gray">{profile?.email}</p>
       </div>
 
       {/* Formulário de Dados */}
@@ -149,20 +150,6 @@ export function ProfileSection() {
             />
           </div>
 
-          {/* Apelido */}
-          <div>
-            <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
-              Apelido (para o ranking)
-            </label>
-            <input
-              type="text"
-              value={formData.nickname}
-              onChange={(e) => handleInputChange('nickname', e.target.value)}
-              disabled={!isEditing}
-              className="w-full zayia-input px-4 py-3 rounded-xl border-0 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500"
-              placeholder="Como quer aparecer no ranking"
-            />
-          </div>
 
           {/* CPF */}
           <div>
@@ -395,23 +382,39 @@ export function ProfileSection() {
           <FileText className="w-5 h-5" />
           Informações da Conta
         </h3>
-        
+
         <div className="space-y-3">
+          {/* Membro desde */}
           <div className="flex items-center justify-between p-3 bg-zayia-lilac/20 rounded-xl">
             <span className="text-sm text-zayia-violet-gray">Membro desde:</span>
             <span className="text-sm font-medium text-zayia-deep-violet">
-              {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'N/A'}
+              {profile?.created_at
+                ? new Date(profile.created_at).toLocaleDateString('pt-BR')
+                : '-'}
             </span>
           </div>
+
+          {/* Último acesso com data e hora */}
           <div className="flex items-center justify-between p-3 bg-zayia-lilac/20 rounded-xl">
             <span className="text-sm text-zayia-violet-gray">Último acesso:</span>
             <span className="text-sm font-medium text-zayia-deep-violet">
-              {new Date().toLocaleDateString('pt-BR')}
+              {profile?.updated_at
+                ? new Date(profile.updated_at).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })
+                : '-'}
             </span>
           </div>
+
+          {/* Status da conta */}
           <div className="flex items-center justify-between p-3 bg-zayia-lilac/20 rounded-xl">
             <span className="text-sm text-zayia-violet-gray">Status da conta:</span>
-            <span className="text-sm font-medium text-green-600">Ativa</span>
+            <span className="text-sm font-medium text-green-600">✅ Ativa</span>
           </div>
         </div>
       </div>
