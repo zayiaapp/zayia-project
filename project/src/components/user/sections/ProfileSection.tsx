@@ -349,26 +349,29 @@ export function ProfileSection() {
         {/* Botões de Ação */}
         {isEditing && (
           <div className="flex gap-3 mt-6">
+            {/* Botão Cancelar */}
             <button
               onClick={() => setIsEditing(false)}
-              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 px-6 rounded-xl font-semibold transition-all"
+              className="flex-1 border-2 border-zayia-lilac text-zayia-deep-violet py-3 px-6 rounded-xl font-semibold transition-all hover:bg-zayia-lilac/10 active:bg-zayia-lilac/20"
             >
-              Cancelar
+              ✕ Cancelar
             </button>
+
+            {/* Botão Salvar */}
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex-1 zayia-gradient text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 zayia-gradient text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  Salvando...
+                  <span>Salvando...</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Salvar
+                  <span>💾 Salvar</span>
                 </>
               )}
             </button>
