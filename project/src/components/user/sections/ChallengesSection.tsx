@@ -8,7 +8,7 @@ import { PopUpMedalUnlocked } from '../modals/PopUpMedalUnlocked'
 import { checkAndUnlockMedals } from '../../../lib/medals-unlock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { incrementDailyCount } from '../../../lib/challenges-storage'
-import { BADGES } from '../../../lib/badges-data-mock'
+import { BADGES, type Badge } from '../../../lib/badges-data-mock'
 
 export function ChallengesSection() {
   const { user } = useAuth()

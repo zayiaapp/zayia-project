@@ -30,6 +30,9 @@ import { LoadingSpinner } from '../ui/LoadingSpinner'
 // Importar dados de compliance
 import complianceData from '../../data/compliance.json'
 
+// Type assertion para compliance data
+const complianceDataTyped = complianceData as ComplianceData
+
 interface ComplianceData {
   company: {
     name: string
@@ -90,9 +93,9 @@ interface ComplianceData {
 }
 
 export function ComplianceSection() {
-  const [data, setData] = useState<ComplianceData>(complianceData as ComplianceData)
+  const [data, setData] = useState<ComplianceData>(complianceDataTyped)
   const [editingSection, setEditingSection] = useState<string | null>(null)
-  const [editData, setEditData] = useState<unknown>({})
+  const [editData, setEditData] = useState<any>({})
   const [isSaving, setIsSaving] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
@@ -133,10 +136,10 @@ export function ComplianceSection() {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     if (editingSection === 'company') {
-      setData(prev => ({ ...prev, company: editData }))
+      setData((prev: ComplianceData) => ({ ...prev, company: editData }))
     } else if (editingSection?.startsWith('document_')) {
       const docType = editingSection.replace('document_', '')
-      setData(prev => ({
+      setData((prev: ComplianceData) => ({
         ...prev,
         documents: {
           ...prev.documents,

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { CommunityDataMock, CommunityMessage } from '../../../lib/community-data-mock'
+import { CommunityDataMock, CommunityMessage, MessageReport } from '../../../lib/community-data-mock'
 import { MessageCircle } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { Toast } from '../../ui/Toast'
@@ -30,7 +30,7 @@ export function CommunitySection() {
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [messageForReport, setMessageForReport] = useState<{ id: string; content: string; senderName: string } | null>(null)
   const [reportsListOpen, setReportsListOpen] = useState(false)
-  const [allReports, setAllReports] = useState<unknown[]>([])
+  const [allReports, setAllReports] = useState<MessageReport[]>([])
   const [reportToastMessage, setReportToastMessage] = useState<string | null>(null)
   const [reportCount, setReportCount] = useState(0)
 
@@ -222,7 +222,7 @@ export function CommunitySection() {
       message,
       anonymous ? null : user.id,
       anonymous ? null : profile?.full_name || 'Usuária',
-      reason as unknown,
+      reason as 'disrespectful' | 'inappropriate' | 'spam' | 'discrimination' | 'privacy' | 'other',
       description
     )
 

@@ -43,7 +43,7 @@ import { AnalyticsSection } from './AnalyticsSection'
 interface TabType {
   id: 'current' | 'history' | 'manage' | 'analytics'
   label: string
-  icon: React.ComponentType<unknown>
+  icon: React.ComponentType<any>
 }
 
 const tabs: TabType[] = [

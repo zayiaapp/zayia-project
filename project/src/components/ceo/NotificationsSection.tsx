@@ -91,7 +91,7 @@ export function NotificationsSection() {
     if (Notification.permission !== 'denied') {
       try {
         const permission = await Notification.requestPermission()
-        setPermissionStatus(permission as unknown)
+        setPermissionStatus(permission as "default" | "denied" | "granted")
         localStorage.setItem('notification_permission', permission)
       } catch (error) {
         console.error('Erro ao pedir permissão:', error)
@@ -364,7 +364,7 @@ export function NotificationsSection() {
             </label>
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value as unknown)}
+              onChange={(e) => setFilterType(e.target.value as "all" | "morning" | "evening" | "absence" | "manual")}
               className="w-full border border-zayia-lilac/30 rounded p-2 focus:outline-none focus:ring-2 focus:ring-zayia-soft-purple"
             >
               <option value="all">Todas</option>

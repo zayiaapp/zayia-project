@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Mock data para Community System
  * Sincroniza com localStorage para simular Supabase
@@ -55,6 +54,30 @@ export interface DeletedMessagesLog {
   deletedByAdminId: string
   reason: string
   deletedAt: string
+}
+
+interface ReactionRecord {
+  emoji: string
+  userId: string
+}
+
+// Helper function to convert ReactionRecords to MessageReactions
+function formatReactions(reactions: ReactionRecord[], currentUserId?: string): MessageReaction[] {
+  if (!reactions || reactions.length === 0) return []
+
+  const grouped: Record<string, { emoji: string; userIds: string[] }> = {}
+  reactions.forEach((r) => {
+    if (!grouped[r.emoji]) {
+      grouped[r.emoji] = { emoji: r.emoji, userIds: [] }
+    }
+    grouped[r.emoji].userIds.push(r.userId)
+  })
+
+  return Object.values(grouped).map((g) => ({
+    emoji: g.emoji,
+    count: g.userIds.length,
+    userReacted: currentUserId ? g.userIds.includes(currentUserId) : false
+  }))
 }
 
 export interface MessageReport {
@@ -168,23 +191,23 @@ export class CommunityDataMock {
    * Deletadas são marcadas com deletedByAdmin: true mas ainda incluídas
    */
   static getMessages(limit = 50, offset = 0): CommunityMessage[] {
-    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
-    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
+    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]') as CommunityMessage[]
+    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}') as Record<string, ReactionRecord[]>
 
     return messages
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(offset, offset + limit)
-      .map((msg: any) => ({
+      .map((msg) => ({
         ...msg,
-        reactions: reactions[msg.id] || []
+        reactions: formatReactions(reactions[msg.id] || [])
       }))
   }
 
   /**
    * Enviar nova mensagem
    */
-  static sendMessage(userId: string, userProfile: any, content: string): CommunityMessage {
-    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
+  static sendMessage(userId: string, userProfile: CommunityMessage['userProfile'], content: string): CommunityMessage {
+    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]') as CommunityMessage[]
 
     const newMessage: CommunityMessage = {
       id: `msg-${Date.now()}`,
@@ -207,10 +230,10 @@ export class CommunityDataMock {
    * Deletar mensagem (admin only)
    */
   static deleteMessage(messageId: string, deletedByAdminId: string, reason: string): boolean {
-    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
-    const deletedLog = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.deletedLog) || '[]')
+    const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]') as CommunityMessage[]
+    const deletedLog = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.deletedLog) || '[]') as DeletedMessagesLog[]
 
-    const messageIndex = messages.findIndex((m: any) => m.id === messageId)
+    const messageIndex = messages.findIndex((m) => m.id === messageId)
     if (messageIndex === -1) return false
 
     const message = messages[messageIndex]
@@ -241,7 +264,7 @@ export class CommunityDataMock {
    * Adicionar reação a mensagem
    */
   static addReaction(messageId: string, userId: string, emoji: string): boolean {
-    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
+    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}') as Record<string, ReactionRecord[]>
 
     if (!reactions[messageId]) {
       reactions[messageId] = []
@@ -249,7 +272,7 @@ export class CommunityDataMock {
 
     // Verificar se usuária já reagiu com esse emoji
     const existingReaction = reactions[messageId].find(
-      (r: any) => r.emoji === emoji && r.userId === userId
+      (r) => r.emoji === emoji && r.userId === userId
     )
 
     if (existingReaction) {
@@ -266,13 +289,13 @@ export class CommunityDataMock {
    * Remover reação de mensagem
    */
   static removeReaction(messageId: string, userId: string, emoji: string): boolean {
-    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
+    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}') as Record<string, ReactionRecord[]>
 
     if (!reactions[messageId]) return false
 
     const initialLength = reactions[messageId].length
     reactions[messageId] = reactions[messageId].filter(
-      (r: any) => !(r.emoji === emoji && r.userId === userId)
+      (r) => !(r.emoji === emoji && r.userId === userId)
     )
 
     const removed = reactions[messageId].length < initialLength
@@ -288,11 +311,11 @@ export class CommunityDataMock {
    * Obter reações formatadas para uma mensagem
    */
   static getFormattedReactions(messageId: string, currentUserId: string): MessageReaction[] {
-    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
+    const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}') as Record<string, ReactionRecord[]>
     const messageReactions = reactions[messageId] || []
 
     // Agrupar por emoji e contar
-    const grouped = messageReactions.reduce((acc: any, r: any) => {
+    const grouped = messageReactions.reduce((acc: Record<string, { emoji: string; userIds: string[] }>, r) => {
       if (!acc[r.emoji]) {
         acc[r.emoji] = { emoji: r.emoji, userIds: [] }
       }
@@ -323,7 +346,7 @@ export class CommunityDataMock {
       expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     } else if (banNumber >= 3) {
       banDuration = 'permanent'
-      expiresAt = undefined as unknown
+      expiresAt = undefined
     }
 
     const newBan: CommunityBan = {

@@ -3,20 +3,20 @@ import { supabaseClient, type Profile as SupabaseProfile } from '../lib/supabase
 import { integrationsManager } from '../lib/integrations-manager'
 import { isSupabaseConfigured } from '../lib/supabase'
 
-interface Profile extends Partial<SupabaseProfile> {
-  // Extends SupabaseProfile with additional UI-only fields
+interface Profile {
   id: string
   email: string
   full_name: string
   role: 'user' | 'ceo'
   created_at: string
   updated_at: string
+  avatar_url?: string
+  // User-specific fields (optional for CEO)
   interests?: string[]
   goals?: string[]
   cpf?: string
   phone?: string
   birth_date?: string
-  avatar_url?: string
   bio?: string
   street?: string
   street_number?: string
@@ -25,6 +25,19 @@ interface Profile extends Partial<SupabaseProfile> {
   city?: string
   state?: string
   postal_code?: string
+  location?: string
+  profession?: string
+  education?: string
+  streak?: number
+  total_sessions?: number
+  points?: number
+  level?: number
+  completed_challenges?: number
+  subscription_plan?: string
+  subscription_status?: string
+  notifications_enabled?: boolean
+  community_access?: boolean
+  mentor_status?: string
   address?: {
     street?: string
     number?: string
@@ -318,10 +331,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           ])
 
           if (newProfile) {
-            const user = { id: newProfile.id, email: newProfile.email }
+            const newProfileTyped = newProfile as any
+            const user = { id: newProfileTyped.id, email: newProfileTyped.email }
 
             setUser(user)
-            setProfile(newProfile)
+            setProfile(newProfileTyped as Profile)
 
             // Save to localStorage
             localStorage.setItem('zayia_user', JSON.stringify(user))
@@ -379,10 +393,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      mockUsers.push(newUser)
+      mockUsers.push(newUser as any)
 
       const user = { id: newUser.id, email: newUser.email }
-      const profile = newUser.profile
+      const profile = newUser.profile as Profile
 
       setUser(user)
       setProfile(profile)
@@ -410,11 +424,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const quickCEOLogin = async () => {
     setLoading(true)
-    
+
     const ceoUser = mockUsers[0] // CEO is first user
     const user = { id: ceoUser.id, email: ceoUser.email }
-    const profile = ceoUser.profile
-    
+    const profile = ceoUser.profile as Profile
+
     setUser(user)
     setProfile(profile)
     
@@ -428,11 +442,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const quickUserLogin = async () => {
     setLoading(true)
-    
+
     const demoUser = mockUsers[1] // Demo user is second
     const user = { id: demoUser.id, email: demoUser.email }
-    const profile = demoUser.profile
-    
+    const profile = demoUser.profile as Profile
+
     setUser(user)
     setProfile(profile)
     
@@ -451,11 +465,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const dataToUpdate = {
           ...updates,
           updated_at: new Date().toISOString()
-        }
+        } as Partial<Profile>
 
         if (integrationsManager.isSupabaseConfigured()) {
           // Update in Supabase
-          const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate)
+          const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate as any)
           if (updatedProfile) {
             setProfile(updatedProfile)
             localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
@@ -470,7 +484,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Update in mock database
           const userIndex = mockUsers.findIndex(u => u.id === profile.id)
           if (userIndex !== -1) {
-            mockUsers[userIndex].profile = updatedProfile
+            mockUsers[userIndex].profile = updatedProfile as any
           }
           console.log('✅ Perfil atualizado localmente')
         }

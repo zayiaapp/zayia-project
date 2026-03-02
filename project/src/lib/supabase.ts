@@ -30,9 +30,7 @@ const getSupabaseConfig = () => {
   }
 
   // Get from environment variables
-  // @ts-ignore - Vite injects import.meta.env variables at runtime
   const envUrl = import.meta.env.VITE_SUPABASE_URL || ''
-  // @ts-ignore - Vite injects import.meta.env variables at runtime
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
   // Validate that we have real credentials (not placeholders)

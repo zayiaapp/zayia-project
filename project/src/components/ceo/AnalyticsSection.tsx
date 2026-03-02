@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { TrendingUp, Trophy, DollarSign, Users } from 'lucide-react'
 
 interface AnalyticsSectionProps {
-  monthlyWinnersState?: unknown[]
+  monthlyWinnersState?: any[]
 }
 
 export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionProps) {
@@ -146,9 +146,9 @@ export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionP
 
   // Dados para tabela (agregados por vencedora)
   const tableData = useMemo(() => {
-    const grouped: Record<string, unknown> = {}
+    const grouped: Record<string, any> = {}
 
-    filteredWinners.forEach(winner => {
+    filteredWinners.forEach((winner: any) => {
       if (!grouped[winner.id]) {
         grouped[winner.id] = {
           id: winner.id,
@@ -164,7 +164,7 @@ export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionP
       grouped[winner.id].positions.push(winner.position)
     })
 
-    return Object.values(grouped).sort((a, b) => b.totalAmount - a.totalAmount)
+    return Object.values(grouped).sort((a: any, b: any) => b.totalAmount - a.totalAmount)
   }, [filteredWinners])
 
   const monthNames = [
@@ -346,7 +346,7 @@ export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionP
                 </tr>
               </thead>
               <tbody>
-                {tableData.map((winner) => (
+                {tableData.map((winner: any) => (
                   <tr
                     key={winner.id}
                     className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/5 transition"

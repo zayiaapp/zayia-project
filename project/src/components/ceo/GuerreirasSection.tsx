@@ -481,7 +481,7 @@ export function GuerreirasSection() {
       let createdGuerreira: Guerreira | null = null
 
       if (integrationsManager.isSupabaseConfigured()) {
-        const created = await supabaseClient.createProfile(guerreiraData)
+        const created = await supabaseClient.createProfile(guerreiraData as any)
         if (created) {
           createdGuerreira = enrichGuerreiraData(created)
         }

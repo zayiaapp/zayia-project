@@ -817,7 +817,7 @@ export function QuizzSection() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Dificuldade</label>
                     <select
                       value={formData.difficulty || 'medio'}
-                      onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value as unknown }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value as "facil" | "medio" | "dificil" }))}
                       className="w-full zayia-input px-4 py-3 rounded-xl border-0 focus:outline-none"
                     >
                       <option value="facil">Fácil</option>

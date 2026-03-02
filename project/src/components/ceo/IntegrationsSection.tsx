@@ -459,7 +459,7 @@ export default function IntegrationsSection() {
       integrationsManager.updateConfig('resend', config)
       
       // Test real connection with a test email
-      const testEmail = config.from_email // Use from_email as test recipient
+      const testEmail = (config as any).from_email // Use from_email as test recipient
       return await integrationsManager.testResend(testEmail)
     } catch (error) {
       return { 

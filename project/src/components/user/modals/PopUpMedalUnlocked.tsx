@@ -89,7 +89,7 @@ export function PopUpMedalUnlocked({
           <div className="text-6xl mb-3 flex justify-center">
             {medal.icon ? (
               (() => {
-                const IconComponent = medal.icon as unknown
+                const IconComponent = medal.icon as React.ComponentType<any>
                 if (typeof IconComponent === 'function') {
                   return <IconComponent />
                 } else {

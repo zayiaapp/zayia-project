@@ -91,7 +91,7 @@ export function SubscriptionsSection() {
     description: '',
     features: '',
     stripe_link: '',
-    status: 'active' as const
+    status: 'active' as 'active' | 'inactive'
   })
 
   // Plan handlers
