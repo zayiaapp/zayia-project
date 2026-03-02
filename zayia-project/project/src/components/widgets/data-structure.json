@@ -1,0 +1,333 @@
+{
+  "challenge_stats_response": {
+    "description": "Estrutura completa de resposta da API para estatísticas de desafios",
+    "example": {
+      "meta": {
+        "timestamp": "2024-01-15T10:30:00Z",
+        "version": "1.0",
+        "total_records": 180,
+        "period": "6_months"
+      },
+      "summary": {
+        "total_completed": 1247,
+        "today_completed": 12,
+        "yesterday_completed": 8,
+        "average_daily": 8.2,
+        "current_streak": 15,
+        "best_streak": 23,
+        "total_points": 15680,
+        "level": 8,
+        "next_level_points": 2000
+      },
+      "weekly_data": [
+        {
+          "week_number": 1,
+          "week_start": "2024-01-08",
+          "week_end": "2024-01-14",
+          "week_label": "Semana 1",
+          "completed": 45,
+          "target": 50,
+          "completion_rate": 90,
+          "growth_percentage": 12.5,
+          "points_earned": 560,
+          "daily_breakdown": [
+            {
+              "date": "2024-01-08",
+              "day_name": "Segunda",
+              "completed": 8,
+              "types": {
+                "mindfulness": 2,
+                "fitness": 2,
+                "learning": 3,
+                "creativity": 1,
+                "social": 0
+              },
+              "points": 80,
+              "streak_maintained": true
+            },
+            {
+              "date": "2024-01-09",
+              "day_name": "Terça",
+              "completed": 6,
+              "types": {
+                "mindfulness": 1,
+                "fitness": 1,
+                "learning": 2,
+                "creativity": 2,
+                "social": 0
+              },
+              "points": 60,
+              "streak_maintained": true
+            }
+          ]
+        }
+      ],
+      "monthly_data": [
+        {
+          "month": "2024-01",
+          "month_name": "Janeiro",
+          "month_label": "Jan 2024",
+          "completed": 234,
+          "target": 250,
+          "completion_rate": 93.6,
+          "growth_percentage": 8.3,
+          "points_earned": 2940,
+          "categories_breakdown": {
+            "mindfulness": {
+              "completed": 45,
+              "percentage": 19.2,
+              "growth": 12.3,
+              "points": 675,
+              "average_per_day": 1.5
+            },
+            "fitness": {
+              "completed": 38,
+              "percentage": 16.2,
+              "growth": -2.1,
+              "points": 570,
+              "average_per_day": 1.2
+            },
+            "learning": {
+              "completed": 52,
+              "percentage": 22.2,
+              "growth": 15.8,
+              "points": 780,
+              "average_per_day": 1.7
+            },
+            "creativity": {
+              "completed": 29,
+              "percentage": 12.4,
+              "growth": 5.2,
+              "points": 435,
+              "average_per_day": 0.9
+            },
+            "social": {
+              "completed": 33,
+              "percentage": 14.1,
+              "growth": 8.9,
+              "points": 495,
+              "average_per_day": 1.1
+            }
+          },
+          "weekly_distribution": [
+            {"week": 1, "completed": 45},
+            {"week": 2, "completed": 52},
+            {"week": 3, "completed": 48},
+            {"week": 4, "completed": 41},
+            {"week": 5, "completed": 48}
+          ]
+        }
+      ],
+      "categories": [
+        {
+          "type": "mindfulness",
+          "label": "Mindfulness",
+          "description": "Meditação, respiração e atenção plena",
+          "icon": "🧘‍♀️",
+          "color": "#8B5CF6",
+          "total_completed": 145,
+          "percentage_of_total": 11.6,
+          "growth_30d": 12.3,
+          "average_points": 15,
+          "difficulty_distribution": {
+            "easy": 89,
+            "medium": 45,
+            "hard": 11
+          },
+          "popular_times": [
+            {"hour": 7, "count": 23},
+            {"hour": 12, "count": 18},
+            {"hour": 20, "count": 31}
+          ]
+        },
+        {
+          "type": "fitness",
+          "label": "Fitness",
+          "description": "Exercícios físicos e movimento",
+          "icon": "💪",
+          "color": "#10B981",
+          "total_completed": 128,
+          "percentage_of_total": 10.3,
+          "growth_30d": -2.1,
+          "average_points": 20,
+          "difficulty_distribution": {
+            "easy": 45,
+            "medium": 58,
+            "hard": 25
+          },
+          "popular_times": [
+            {"hour": 6, "count": 35},
+            {"hour": 18, "count": 42},
+            {"hour": 19, "count": 28}
+          ]
+        }
+      ],
+      "achievements": [
+        {
+          "id": "streak_7",
+          "name": "Semana Perfeita",
+          "description": "7 dias consecutivos completando desafios",
+          "icon": "🌟",
+          "unlocked": true,
+          "unlocked_at": "2024-01-10T15:30:00Z",
+          "rarity": "common",
+          "points_reward": 100
+        },
+        {
+          "id": "mindfulness_master",
+          "name": "Mestra Zen",
+          "description": "Complete 50 desafios de mindfulness",
+          "icon": "🧘‍♀️",
+          "unlocked": false,
+          "progress": 45,
+          "target": 50,
+          "rarity": "rare",
+          "points_reward": 250
+        }
+      ],
+      "real_time_events": [
+        {
+          "type": "challenge_completed",
+          "timestamp": "2024-01-15T10:25:00Z",
+          "user_id": "user-123",
+          "challenge": {
+            "id": "mindfulness-001",
+            "type": "mindfulness",
+            "name": "Respiração Consciente",
+            "points": 15
+          },
+          "new_totals": {
+            "daily": 13,
+            "weekly": 46,
+            "monthly": 235,
+            "total": 1248
+          }
+        }
+      ],
+      "trends": {
+        "most_popular_category": "learning",
+        "fastest_growing_category": "creativity",
+        "best_day_of_week": "tuesday",
+        "best_time_of_day": "07:00",
+        "completion_rate_trend": "increasing",
+        "difficulty_preference": "medium"
+      }
+    }
+  },
+  "websocket_message_types": {
+    "challenge_completed": {
+      "description": "Enviado quando um usuário completa um desafio",
+      "example": {
+        "type": "challenge_completed",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "payload": {
+          "user_id": "user-123",
+          "user_name": "Maria Silva",
+          "challenge": {
+            "id": "fitness-045",
+            "type": "fitness",
+            "name": "10 Flexões",
+            "difficulty": "medium",
+            "points": 20
+          },
+          "completion_time": 180,
+          "streak_updated": true,
+          "new_streak": 16,
+          "level_up": false,
+          "achievements_unlocked": []
+        }
+      }
+    },
+    "stats_update": {
+      "description": "Atualização periódica das estatísticas gerais",
+      "example": {
+        "type": "stats_update",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "payload": {
+          "total_completed": 1248,
+          "today_completed": 13,
+          "active_users": 892,
+          "challenges_in_progress": 156,
+          "top_categories": [
+            {"type": "learning", "count": 52},
+            {"type": "mindfulness", "count": 45},
+            {"type": "fitness", "count": 38}
+          ]
+        }
+      }
+    },
+    "achievement_unlocked": {
+      "description": "Enviado quando um usuário desbloqueia uma conquista",
+      "example": {
+        "type": "achievement_unlocked",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "payload": {
+          "user_id": "user-123",
+          "achievement": {
+            "id": "streak_30",
+            "name": "Mês Perfeito",
+            "description": "30 dias consecutivos",
+            "icon": "💎",
+            "rarity": "epic",
+            "points_reward": 500
+          },
+          "total_achievements": 15
+        }
+      }
+    },
+    "leaderboard_update": {
+      "description": "Atualização do ranking de usuários",
+      "example": {
+        "type": "leaderboard_update",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "payload": {
+          "period": "weekly",
+          "top_users": [
+            {
+              "rank": 1,
+              "user_id": "user-456",
+              "name": "Ana Costa",
+              "points": 890,
+              "challenges_completed": 67,
+              "streak": 25
+            },
+            {
+              "rank": 2,
+              "user_id": "user-123",
+              "name": "Maria Silva",
+              "points": 850,
+              "challenges_completed": 62,
+              "streak": 16
+            }
+          ]
+        }
+      }
+    }
+  },
+  "error_responses": {
+    "api_error": {
+      "description": "Estrutura padrão para erros da API",
+      "example": {
+        "error": true,
+        "code": "INVALID_PERIOD",
+        "message": "Período inválido. Use: 7d, 30d, 6m",
+        "details": {
+          "field": "period",
+          "received": "invalid_period",
+          "expected": ["7d", "30d", "6m"]
+        },
+        "timestamp": "2024-01-15T10:30:00Z"
+      }
+    },
+    "rate_limit": {
+      "description": "Erro de limite de requisições",
+      "example": {
+        "error": true,
+        "code": "RATE_LIMIT_EXCEEDED",
+        "message": "Muitas requisições. Tente novamente em 60 segundos",
+        "retry_after": 60,
+        "timestamp": "2024-01-15T10:30:00Z"
+      }
+    }
+  }
+}

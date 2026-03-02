@@ -1,0 +1,92 @@
+{
+  "company": {
+    "name": "ZAYIA LTDA",
+    "cnpj": "00.000.000/0001-00",
+    "address": {
+      "street": "Rua das Flores, 123",
+      "neighborhood": "Vila Madalena",
+      "city": "São Paulo",
+      "state": "SP",
+      "zipcode": "05432-000"
+    },
+    "contact": {
+      "email": "contato@zayia.com",
+      "phone": "(11) 3000-0000",
+      "support_email": "suporte@zayia.com",
+      "dpo_email": "privacidade@zayia.com"
+    },
+    "website": "https://zayia.com"
+  },
+  "documents": {
+    "privacy_policy": {
+      "title": "Política de Privacidade",
+      "last_updated": "2024-01-15",
+      "version": "1.0",
+      "content": "Esta Política de Privacidade descreve como a ZAYIA coleta, usa e protege suas informações pessoais.\n\n1. DADOS COLETADOS\nColetamos: nome, email, telefone, dados de uso do aplicativo, preferências e progresso.\n\n2. FINALIDADE\nUsamos seus dados para: funcionamento do app, personalização da experiência, comunicação e melhorias.\n\n3. BASE LEGAL\nTratamento baseado em consentimento e interesse legítimo para melhorar nossos serviços.\n\n4. COMPARTILHAMENTO\nNão compartilhamos dados com terceiros, exceto prestadores de serviços essenciais.\n\n5. SEUS DIREITOS\nVocê pode: acessar, corrigir, excluir, portar seus dados ou revogar consentimento.\n\n6. CONTATO\nDúvidas: privacidade@zayia.com"
+    },
+    "terms_of_use": {
+      "title": "Termos de Uso",
+      "last_updated": "2024-01-15",
+      "version": "1.0",
+      "content": "Bem-vinda aos Termos de Uso da ZAYIA.\n\n1. ACEITAÇÃO\nAo usar nosso app, você aceita estes termos.\n\n2. SERVIÇO\nA ZAYIA oferece coaching pessoal com IA para desenvolvimento feminino.\n\n3. RESPONSABILIDADES\nVocê deve: usar o app adequadamente, não compartilhar sua conta, respeitar outras usuárias.\n\n4. LIMITAÇÕES\nNosso serviço não substitui terapia profissional ou aconselhamento médico.\n\n5. PAGAMENTOS\nAssinaturas são cobradas mensalmente. Cancelamento a qualquer momento.\n\n6. MODIFICAÇÕES\nPodemos atualizar estes termos. Você será notificada.\n\n7. CONTATO\nDúvidas: contato@zayia.com"
+    },
+    "cookie_policy": {
+      "title": "Política de Cookies",
+      "last_updated": "2024-01-15",
+      "version": "1.0",
+      "content": "Usamos cookies para melhorar sua experiência.\n\n1. O QUE SÃO COOKIES\nPequenos arquivos armazenados no seu dispositivo.\n\n2. TIPOS USADOS\n- Essenciais: funcionamento básico\n- Analíticos: melhorar o app\n- Preferências: lembrar suas escolhas\n\n3. CONTROLE\nVocê pode desabilitar cookies nas configurações do navegador.\n\n4. MAIS INFORMAÇÕES\nContato: privacidade@zayia.com"
+    }
+  },
+  "compliance_status": {
+    "lgpd_compliant": true,
+    "terms_updated": true,
+    "privacy_updated": true,
+    "cookie_policy_updated": true,
+    "dpo_assigned": true,
+    "data_requests_handled": true,
+    "last_audit": "2024-01-15"
+  },
+  "metrics": {
+    "total_users": 1247,
+    "terms_accepted": 1247,
+    "privacy_accepted": 1247,
+    "data_requests": 3,
+    "account_deletions": 8,
+    "cookie_consents": 1156,
+    "last_updated": "2024-01-20T10:30:00Z"
+  },
+  "legal_requirements": {
+    "lgpd": {
+      "name": "LGPD",
+      "description": "Lei Geral de Proteção de Dados",
+      "status": "compliant",
+      "requirements": [
+        "Política de Privacidade atualizada",
+        "Consentimento explícito para dados",
+        "DPO designado",
+        "Processo para exercer direitos"
+      ]
+    },
+    "cdc": {
+      "name": "CDC",
+      "description": "Código de Defesa do Consumidor",
+      "status": "compliant",
+      "requirements": [
+        "Informações claras sobre preços",
+        "Política de cancelamento",
+        "Direito de arrependimento",
+        "Contato para suporte"
+      ]
+    },
+    "marco_civil": {
+      "name": "Marco Civil",
+      "description": "Marco Civil da Internet",
+      "status": "compliant",
+      "requirements": [
+        "Transparência sobre moderação",
+        "Processo para denúncias",
+        "Guarda responsável de dados"
+      ]
+    }
+  }
+}
