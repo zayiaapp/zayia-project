@@ -20,10 +20,38 @@ export function DashboardSection() {
   const [recentMedalsEarned, setRecentMedalsEarned] = useState<string[]>([])
   const [dailyChallengesCompleted, setDailyChallengesCompleted] = useState(0)
 
+  // ✅ Sincronizar medalhas com pontos reais
+  const getSyncedMedals = (userPoints: number) => {
+    const allEarned = getEarnedBadges()
+
+    // Filtrar apenas medalhas que o user realmente desbloqueou baseado em pontos
+    const validMedals = allEarned.filter(medalId => {
+      const medal = BADGES.find(b => b.id === medalId)
+      if (!medal) return false
+
+      // Verificar se o user tem pontos suficientes para essa medalha
+      if (medal.category === 'Global') {
+        // Medalhas globais baseadas em pontos
+        return userPoints >= medal.requirement
+      } else if (medalId.startsWith('level_')) {
+        // Medalhas de nível
+        const levelNum = parseInt(medalId.replace('level_', ''), 10)
+        const level = LEVELS[levelNum]
+        return level && userPoints >= level.pointsRequired
+      }
+
+      // Para medalhas de categoria, validar
+      return true
+    })
+
+    return validMedals
+  }
+
   // ✅ Carregar dados iniciais
   useEffect(() => {
-    const earned = getEarnedBadges()
-    setRecentMedalsEarned(earned)
+    const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
+    const syncedMedals = getSyncedMedals(userPoints)
+    setRecentMedalsEarned(syncedMedals)
 
     // Carregar contador de desafios de hoje
     setDailyChallengesCompleted(getDailyCompletedCount())
@@ -44,14 +72,15 @@ export function DashboardSection() {
   // ✅ Listener para atualizar quando medalhas mudam
   useEffect(() => {
     const handleMedalsUpdated = () => {
-      const earned = getEarnedBadges()
-      setRecentMedalsEarned(earned)
-      console.log('🏆 Dashboard - medalhas atualizadas:', earned)
+      const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
+      const syncedMedals = getSyncedMedals(userPoints)
+      setRecentMedalsEarned(syncedMedals)
+      console.log('🏆 Dashboard - medalhas atualizadas:', syncedMedals)
     }
 
     window.addEventListener('medalsUpdated', handleMedalsUpdated)
     return () => window.removeEventListener('medalsUpdated', handleMedalsUpdated)
-  }, [])
+  }, [profile?.points])
 
   // ✅ Listener para atualizar quando desafios diários mudam
   useEffect(() => {
