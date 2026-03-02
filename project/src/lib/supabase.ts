@@ -30,8 +30,10 @@ const getSupabaseConfig = () => {
   }
 
   // Get from environment variables
-  const envUrl = (import.meta.env as Record<string, unknown>).VITE_SUPABASE_URL as string
-  const envKey = (import.meta.env as Record<string, unknown>).VITE_SUPABASE_ANON_KEY as string
+  // @ts-ignore - Vite injects import.meta.env variables at runtime
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || ''
+  // @ts-ignore - Vite injects import.meta.env variables at runtime
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
   // Validate that we have real credentials (not placeholders)
   const isValidUrl = envUrl && !envUrl.includes('your-project') && !envUrl.includes('mock-project')

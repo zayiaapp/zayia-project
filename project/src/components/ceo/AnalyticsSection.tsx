@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { TrendingUp, Trophy, DollarSign, Users } from 'lucide-react'
 
 interface AnalyticsSectionProps {
-  monthlyWinnersState?: unknown[]
+  monthlyWinnersState?: any[]
 }
 
 export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionProps) {

@@ -104,12 +104,12 @@ export function BadgesSection() {
         </h2>
 
         {categories.map(({ key, name, icon, badges }) => {
-          const sortedMedals = badges.sort((a: unknown, b: unknown) => (a.requirement || 0) - (b.requirement || 0))
+          const sortedMedals = badges.sort((a: any, b: any) => (a.requirement || 0) - (b.requirement || 0))
 
           return sortedMedals.length > 0 ? (
             <MedalCarousel
               key={key}
-              medals={sortedMedals.map((medal: unknown) => ({
+              medals={sortedMedals.map((medal: any) => ({
                 id: medal.id,
                 name: medal.name,
                 icon: medal.icon,
@@ -127,7 +127,7 @@ export function BadgesSection() {
       {/* ===== SEÇÃO: MEDALHAS ESPECIAIS (GLOBAIS) - CARROSSEL ===== */}
       {globalMedals.length > 0 && (
         <MedalCarousel
-          medals={globalMedals.map((medal: unknown) => ({
+          medals={globalMedals.map((medal: any) => ({
             id: medal.id,
             name: medal.name,
             icon: medal.icon,

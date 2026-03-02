@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app'
 import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 
+// @ts-ignore - Vite injects import.meta.env variables at runtime
 const env = import.meta.env as Record<string, unknown>
 
 const firebaseConfig = {

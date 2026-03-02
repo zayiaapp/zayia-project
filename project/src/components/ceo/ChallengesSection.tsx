@@ -30,7 +30,7 @@ interface LegacyCategory {
   label: string
   icon: string
   color: string
-  data: unknown
+  data: any
   iconComponent: React.ComponentType<unknown>
 }
 
@@ -279,7 +279,7 @@ export function ChallengesSection() {
             Desafios Fáceis ({category.data.facil.length})
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-            {category.data.facil.slice(0, 20).map((challenge: unknown, index: number) => (
+            {category.data.facil.slice(0, 20).map((challenge: any, index: number) => (
               <div key={challenge.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-green-50/50">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="font-semibold text-zayia-deep-violet text-sm">
@@ -315,7 +315,7 @@ export function ChallengesSection() {
             Desafios Difíceis ({category.data.dificil.length})
           </h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-            {category.data.dificil.slice(0, 20).map((challenge: unknown, index: number) => (
+            {category.data.dificil.slice(0, 20).map((challenge: any, index: number) => (
               <div key={challenge.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-orange-50/50">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="font-semibold text-zayia-deep-violet text-sm">

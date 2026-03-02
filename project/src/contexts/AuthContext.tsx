@@ -45,8 +45,8 @@ interface AuthContextType {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: unknown }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: unknown }>
+  signIn: (email: string, password: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>
   signOut: () => Promise<void>
   quickCEOLogin: () => Promise<void>
   quickUserLogin: () => Promise<void>

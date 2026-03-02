@@ -1,6 +1,6 @@
 import React from 'react'
 
-const LeadshipIcon = ({ initiate = false, practitioner = false, master = false }: unknown) => {
+const LeadshipIcon = ({ initiate = false, practitioner = false, master = false }: any) => {
   const opacity = initiate ? 0.6 : practitioner ? 0.8 : 0.95
   return <circle cx="0" cy="0" r="2.5" fill="#FBBF24" opacity={opacity} />
 }

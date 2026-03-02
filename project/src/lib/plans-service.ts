@@ -61,7 +61,7 @@ export function subscribeToPlansChanges(callback: (plans: Plan[]) => void): () =
         schema: 'public',
         table: 'plans'
       },
-      async (payload: unknown) => {
+      async (payload: any) => {
         console.log('📢 Mudança em planos detectada:', payload)
         // Recarregar planos quando há mudança
         const plans = await getActivePlans()

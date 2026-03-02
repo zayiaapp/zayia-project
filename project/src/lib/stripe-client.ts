@@ -32,7 +32,7 @@ export class StripeClient {
     this.config = config
   }
 
-  async createProduct(product: Omit<Product, 'id'>): Promise<{ success: boolean, product?: unknown, error?: string }> {
+  async createProduct(product: Omit<Product, 'id'>): Promise<{ success: boolean, product?: any, error?: string }> {
     try {
       if (!this.config) {
         throw new Error('Stripe not configured')
@@ -144,7 +144,7 @@ export class StripeClient {
     }
   }
 
-  async getProducts(): Promise<{ success: boolean, products?: unknown[], error?: string }> {
+  async getProducts(): Promise<{ success: boolean, products?: any[], error?: string }> {
     try {
       if (!this.config) {
         throw new Error('Stripe not configured')
@@ -176,7 +176,7 @@ export class StripeClient {
     }
   }
 
-  async testConnection(): Promise<{ success: boolean, message: string, details?: unknown }> {
+  async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
     try {
       if (!this.config) {
         return {
@@ -196,12 +196,15 @@ export class StripeClient {
 
       if (testProduct.success) {
         // Clean up test product
-        await fetch(`https://api.stripe.com/v1/products/${testProduct.product.id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${this.config.secret_key}`
-          }
-        })
+        const productId = (testProduct.product as { id: string })?.id
+        if (productId) {
+          await fetch(`https://api.stripe.com/v1/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${this.config.secret_key}`
+            }
+          })
+        }
 
         return {
           success: true,

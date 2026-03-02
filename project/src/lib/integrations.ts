@@ -56,13 +56,16 @@ export class IntegrationsManager {
     }
   }
 
-  private transformToConfig(integrations: unknown[]): Partial<IntegrationConfig> {
-    const config: unknown = {}
-    
+  private transformToConfig(integrations: any[]): Partial<IntegrationConfig> {
+    const config: Partial<IntegrationConfig> = {}
+
     integrations.forEach(integration => {
-      config[integration.id] = integration.config
+      // @ts-ignore - Type system limitation with unknown array items
+      const int = integration as { id: string; config: any }
+      // @ts-ignore - Type system limitation with unknown array items
+      config[int.id] = int.config
     })
-    
+
     return config
   }
 

@@ -486,7 +486,7 @@ export class SupabaseClient {
   }
 
   // TEST CONNECTION
-  async testConnection(): Promise<{ success: boolean, message: string, details?: unknown }> {
+  async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
     try {
       const { error } = await supabase
         .from('profiles')
