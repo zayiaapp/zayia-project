@@ -217,7 +217,11 @@ export function ChallengesSection() {
     return (
       <div>
         {showCategoryModal && (
-          <CategorySelectionModal userId={user?.id || ''} onCategorySelected={handleCategorySelected} />
+          <CategorySelectionModal
+            userId={user?.id || ''}
+            onCategorySelected={handleCategorySelected}
+            onClose={() => setShowCategoryModal(false)}
+          />
         )}
       </div>
     )

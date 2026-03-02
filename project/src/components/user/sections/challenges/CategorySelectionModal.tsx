@@ -5,11 +5,13 @@ import ChallengesDataMock, { ChallengeCategory } from '../../../../lib/challenge
 interface CategorySelectionModalProps {
   userId: string
   onCategorySelected: (category: ChallengeCategory) => void
+  onClose: () => void
 }
 
 export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
   userId,
   onCategorySelected,
+  onClose,
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -40,7 +42,13 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
           <h2 className="text-2xl font-bold text-gray-900">
             Escolha Sua Categoria de Desafios
           </h2>
-          <X size={24} className="text-gray-500 cursor-pointer" />
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 transition p-1 rounded hover:bg-gray-100"
+            title="Fechar modal"
+          >
+            <X size={24} />
+          </button>
         </div>
 
         {/* Content */}
@@ -75,6 +83,7 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
         {/* Footer */}
         <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
           <button
+            onClick={onClose}
             disabled={isLoading}
             className={`flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold transition ${
               isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
