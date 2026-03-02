@@ -56,8 +56,8 @@ export class IntegrationsManager {
     }
   }
 
-  private transformToConfig(integrations: any[]): Partial<IntegrationConfig> {
-    const config: any = {}
+  private transformToConfig(integrations: unknown[]): Partial<IntegrationConfig> {
+    const config: unknown = {}
     
     integrations.forEach(integration => {
       config[integration.id] = integration.config

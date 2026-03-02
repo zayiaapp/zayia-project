@@ -171,9 +171,9 @@ export class CommunityDataMock {
     const reactions = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reactions) || '{}')
 
     return messages
-      .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a: unknown, b: unknown) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(offset, offset + limit)
-      .map((msg: any) => ({
+      .map((msg: unknown) => ({
         ...msg,
         reactions: reactions[msg.id] || []
       }))
@@ -182,7 +182,7 @@ export class CommunityDataMock {
   /**
    * Enviar nova mensagem
    */
-  static sendMessage(userId: string, userProfile: any, content: string): CommunityMessage {
+  static sendMessage(userId: string, userProfile: unknown, content: string): CommunityMessage {
     const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
 
     const newMessage: CommunityMessage = {
@@ -209,7 +209,7 @@ export class CommunityDataMock {
     const messages = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.messages) || '[]')
     const deletedLog = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.deletedLog) || '[]')
 
-    const messageIndex = messages.findIndex((m: any) => m.id === messageId)
+    const messageIndex = messages.findIndex((m: unknown) => m.id === messageId)
     if (messageIndex === -1) return false
 
     const message = messages[messageIndex]
@@ -248,7 +248,7 @@ export class CommunityDataMock {
 
     // Verificar se usuária já reagiu com esse emoji
     const existingReaction = reactions[messageId].find(
-      (r: any) => r.emoji === emoji && r.userId === userId
+      (r: unknown) => r.emoji === emoji && r.userId === userId
     )
 
     if (existingReaction) {
@@ -271,7 +271,7 @@ export class CommunityDataMock {
 
     const initialLength = reactions[messageId].length
     reactions[messageId] = reactions[messageId].filter(
-      (r: any) => !(r.emoji === emoji && r.userId === userId)
+      (r: unknown) => !(r.emoji === emoji && r.userId === userId)
     )
 
     const removed = reactions[messageId].length < initialLength
@@ -291,7 +291,7 @@ export class CommunityDataMock {
     const messageReactions = reactions[messageId] || []
 
     // Agrupar por emoji e contar
-    const grouped = messageReactions.reduce((acc: any, r: any) => {
+    const grouped = messageReactions.reduce((acc: unknown, r: unknown) => {
       if (!acc[r.emoji]) {
         acc[r.emoji] = { emoji: r.emoji, userIds: [] }
       }
@@ -299,7 +299,7 @@ export class CommunityDataMock {
       return acc
     }, {})
 
-    return Object.values(grouped).map((group: any) => ({
+    return Object.values(grouped).map((group: unknown) => ({
       emoji: group.emoji,
       count: group.userIds.length,
       userReacted: group.userIds.includes(currentUserId)
@@ -311,7 +311,7 @@ export class CommunityDataMock {
    */
   static banUser(userId: string, _bannedByAdminId: string, reason: string): CommunityBan {
     const bans = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.bans) || '[]')
-    const activeBans = bans.filter((b: any) => b.userId === userId && b.status === 'active')
+    const activeBans = bans.filter((b: unknown) => b.userId === userId && b.status === 'active')
 
     const banNumber = activeBans.length + 1
     let banDuration: '1_day' | '7_days' | 'permanent' = '1_day'
@@ -322,7 +322,7 @@ export class CommunityDataMock {
       expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     } else if (banNumber >= 3) {
       banDuration = 'permanent'
-      expiresAt = undefined as any
+      expiresAt = undefined as unknown
     }
 
     const newBan: CommunityBan = {
@@ -359,8 +359,8 @@ export class CommunityDataMock {
   static checkIfUserIsBanned(userId: string): { isBanned: boolean; expiresAt?: string; banNumber?: number } {
     const bans = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.bans) || '[]')
     const activeBans = bans
-      .filter((b: any) => b.userId === userId && b.status === 'active')
-      .sort((a: any, b: any) => new Date(b.bannedAt).getTime() - new Date(a.bannedAt).getTime())
+      .filter((b: unknown) => b.userId === userId && b.status === 'active')
+      .sort((a: unknown, b: unknown) => new Date(b.bannedAt).getTime() - new Date(a.bannedAt).getTime())
 
     if (activeBans.length === 0) {
       return { isBanned: false }
@@ -394,8 +394,8 @@ export class CommunityDataMock {
   static getUserBanHistory(userId: string): CommunityBan[] {
     const bans = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.bans) || '[]')
     return bans
-      .filter((b: any) => b.userId === userId)
-      .sort((a: any, b: any) => new Date(b.bannedAt).getTime() - new Date(a.bannedAt).getTime())
+      .filter((b: unknown) => b.userId === userId)
+      .sort((a: unknown, b: unknown) => new Date(b.bannedAt).getTime() - new Date(a.bannedAt).getTime())
   }
 
   /**
@@ -436,7 +436,7 @@ export class CommunityDataMock {
    */
   static getDeletedMessagesLog(): DeletedMessagesLog[] {
     return JSON.parse(localStorage.getItem(this.STORAGE_KEYS.deletedLog) || '[]').sort(
-      (a: any, b: any) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime()
+      (a: unknown, b: unknown) => new Date(b.deletedAt).getTime() - new Date(a.deletedAt).getTime()
     )
   }
 
@@ -480,13 +480,13 @@ export class CommunityDataMock {
     const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
 
     if (status) {
-      return reports.filter((r: any) => r.status === status).sort(
-        (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return reports.filter((r: unknown) => r.status === status).sort(
+        (a: unknown, b: unknown) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
     }
 
     return reports.sort(
-      (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a: unknown, b: unknown) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
   }
 
@@ -495,7 +495,7 @@ export class CommunityDataMock {
    */
   static updateReportStatus(reportId: string, newStatus: 'pending' | 'resolved' | 'archived'): boolean {
     const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
-    const reportIndex = reports.findIndex((r: any) => r.id === reportId)
+    const reportIndex = reports.findIndex((r: unknown) => r.id === reportId)
 
     if (reportIndex === -1) return false
 
@@ -510,7 +510,7 @@ export class CommunityDataMock {
    */
   static getPendingReportCount(): number {
     const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
-    return reports.filter((r: any) => r.status === 'pending').length
+    return reports.filter((r: unknown) => r.status === 'pending').length
   }
 
   /**
@@ -518,7 +518,7 @@ export class CommunityDataMock {
    */
   static getReportById(reportId: string): MessageReport | null {
     const reports = JSON.parse(localStorage.getItem(this.STORAGE_KEYS.reports) || '[]')
-    return reports.find((r: any) => r.id === reportId) || null
+    return reports.find((r: unknown) => r.id === reportId) || null
   }
 }
 

@@ -179,7 +179,7 @@ export class ResendClient {
     }
   }
 
-  async testConnection(testEmail: string): Promise<{ success: boolean, message: string, details?: any }> {
+  async testConnection(testEmail: string): Promise<{ success: boolean, message: string, details?: unknown }> {
     try {
       if (!this.config) {
         return {

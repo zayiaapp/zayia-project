@@ -20,7 +20,7 @@ export function ChallengesSection() {
   const [subTab, setSubTab] = useState<'desafios' | 'categorias'>('desafios')
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [unlockedMedalPopup, setUnlockedMedalPopup] = useState<any>(null)
+  const [unlockedMedalPopup, setUnlockedMedalPopup] = useState<Badge | null>(null)
   const [previousEarnedBadges, setPreviousEarnedBadges] = useState<Set<string>>(new Set())
 
   // Initialize on mount
@@ -78,15 +78,10 @@ export function ChallengesSection() {
   const handleChallengeCompleted = (challengeId: string) => {
     if (!activeCategory || !user?.id) return
 
-    console.clear() // LIMPAR console para clareza
-    console.log('╔═══════════════════════════════════════════╗')
-    console.log('║ 🚀 PROCESSAMENTO DE DESAFIO               ║')
-    console.log('╚═══════════════════════════════════════════╝')
 
     // 1. PEGAR VALORES INICIAIS
     const challenge = ChallengesDataMock.getChallengeById(challengeId)
     if (!challenge) {
-      console.error('❌ DESAFIO NÃO ENCONTRADO:', challengeId)
       return
     }
 
@@ -94,31 +89,16 @@ export function ChallengesSection() {
     const beforeStorage = localStorage.getItem('user_points')
     const previousPoints = beforeStorage ? parseInt(beforeStorage, 10) : 0
 
-    console.log('\n📊 LEITURA DO STORAGE:')
-    console.log('   localStorage.getItem("user_points"):', beforeStorage)
-    console.log('   Interpretado como número:', previousPoints)
-    console.log('   Tipo:', typeof previousPoints)
 
-    console.log('\n📋 DESAFIO:')
-    console.log('   ID:', challengeId)
-    console.log('   Pontos:', challenge.points)
-    console.log('   Tipo:', typeof challenge.points)
 
     // 2. CALCULAR PONTOS DO DESAFIO
     const pointsFromChallenge = challenge.points
     const totalAfterChallenge = previousPoints + pointsFromChallenge
 
-    console.log('\n🧮 CÁLCULO DO DESAFIO:')
-    console.log('   ' + previousPoints + ' + ' + pointsFromChallenge + ' = ' + totalAfterChallenge)
 
     // 3. IMPORTANTE: Marcar desafio como completo ANTES de verificar medalhas globais
     // Isso incrementa totalCompleted para que checkAndUnlockMedals() leia o valor correto
     const completeSuccess = ChallengesDataMock.completeChallenge(challengeId, user.id)
-    console.log('\n📝 MARCANDO DESAFIO COMPLETO:')
-    console.log('   ChallengesDataMock.completeChallenge():', completeSuccess)
-    if (!completeSuccess) {
-      console.warn('   ⚠️ Falha ao marcar desafio como completo')
-    }
 
     // 4. Update local state
     const newCompleted = new Set(completedChallengeIds)
@@ -126,64 +106,42 @@ export function ChallengesSection() {
     setCompletedChallengeIds(newCompleted)
 
     // 5. VERIFICAR MEDALHAS (checkAndUnlockMedals já chama addEarnedBadge)
-    console.log('\n🎖️ VERIFICANDO MEDALHAS:')
     const allNewMedals = checkAndUnlockMedals(totalAfterChallenge, previousPoints, user.id)
-    console.log('   checkAndUnlockMedals() retornou:', allNewMedals)
 
     // Atualizar previousEarnedBadges para próxima vez
     const currentEarnedBadges = getEarnedBadges()
     setPreviousEarnedBadges(new Set(currentEarnedBadges))
 
-    console.log('   Total de medalhas novas:', allNewMedals)
 
     // 6. CALCULAR PONTOS DAS MEDALHAS
-    console.log('\n💎 PONTOS DAS MEDALHAS:')
     let medalPointsAdded = 0
 
-    if (allNewMedals.length === 0) {
-      console.log('   (Nenhuma medalha desbloqueada)')
-    } else {
+    if (allNewMedals.length > 0) {
       allNewMedals.forEach((medalId, index) => {
         const medalObj = BADGES.find(b => b.id === medalId)
-        console.log(`   [${index + 1}] ${medalId}`)
         if (medalObj) {
-          console.log(`       Nome: ${medalObj.name}`)
-          console.log(`       Pontos: ${medalObj.points}`)
           if (medalObj.points) {
             medalPointsAdded += medalObj.points
-            console.log(`       Somando: medalPointsAdded += ${medalObj.points}`)
           }
-        } else {
-          console.log(`       ⚠️ MEDALHA NÃO ENCONTRADA EM BADGES!`)
         }
       })
     }
 
-    console.log(`   Total de pontos de medalhas: ${medalPointsAdded}`)
 
     // 7. CALCULAR TOTAL FINAL
     const finalTotalPoints = totalAfterChallenge + medalPointsAdded
 
-    console.log('\n💰 CÁLCULO FINAL:')
-    console.log('   Fórmula: previousPoints + challenge + medals')
-    console.log('            ' + previousPoints + ' + ' + pointsFromChallenge + ' + ' + medalPointsAdded + ' = ' + finalTotalPoints)
 
     // 8. SALVAR APENAS UMA VEZ
     localStorage.setItem('user_points', finalTotalPoints.toString())
     const afterStorage = localStorage.getItem('user_points')
 
-    console.log('\n✅ SALVANDO EM STORAGE:')
-    console.log('   localStorage.setItem("user_points", "' + finalTotalPoints + '")')
-    console.log('   Verificação: localStorage.getItem("user_points") =', afterStorage)
-    console.log('   Match:', afterStorage === finalTotalPoints.toString() ? '✅ SIM' : '❌ NÃO')
 
     // 9. MOSTRAR POP-UP
     if (allNewMedals.length > 0) {
       const newMedalId = allNewMedals[0]
       const medalObj = BADGES.find(b => b.id === newMedalId)
       if (medalObj) {
-        console.log('\n🎪 EXIBINDO POP-UP:')
-        console.log('   ' + medalObj.name + ' (+' + medalObj.points + ' pts)')
         setUnlockedMedalPopup(medalObj)
       }
     }
@@ -192,23 +150,12 @@ export function ChallengesSection() {
     incrementDailyCount()
 
     // 11. DISPARAR EVENTOS
-    console.log('\n📡 DISPARANDO EVENTOS:')
-    console.log('   pointsUpdated')
-    console.log('   dailyProgressUpdated')
-    if (allNewMedals.length > 0) {
-      console.log('   medalsUpdated')
-    }
-
     window.dispatchEvent(new Event('pointsUpdated'))
     window.dispatchEvent(new Event('dailyProgressUpdated'))
     if (allNewMedals.length > 0) {
       window.dispatchEvent(new Event('medalsUpdated'))
     }
 
-    console.log('\n╔═══════════════════════════════════════════╗')
-    console.log('║ ✅ PROCESSAMENTO CONCLUÍDO                ║')
-    console.log('║ Dashboard deve mostrar: ' + finalTotalPoints + ' pts            ║')
-    console.log('╚═══════════════════════════════════════════╝\n')
   }
 
   // Loading state

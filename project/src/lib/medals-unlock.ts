@@ -3,6 +3,7 @@
  * Verifica quando usuário atinge milestones de pontos
  */
 
+import { FC } from 'react'
 import { addEarnedBadge, getEarnedBadges } from './badges-storage'
 import { LEVELS, BADGES } from './badges-data-mock'
 import ChallengesDataMock from './challenges-data-mock'
@@ -91,7 +92,7 @@ export function getNextMilestones(currentPoints: number): Array<{
   pointsNeeded: number
   level: number
   medalId: string
-  icon: any
+  icon: FC
 }> {
   return LEVELS
     .filter(l => l.pointsRequired > currentPoints)

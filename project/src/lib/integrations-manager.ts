@@ -61,8 +61,8 @@ export class IntegrationsManager {
     }
   }
 
-  private transformToConfig(integrations: any[]): IntegrationConfig {
-    const config: any = {}
+  private transformToConfig(integrations: unknown[]): IntegrationConfig {
+    const config: unknown = {}
     
     integrations.forEach(integration => {
       if (integration.config && Object.keys(integration.config).length > 0) {
@@ -90,7 +90,7 @@ export class IntegrationsManager {
     }
   }
 
-  updateConfig(integrationId: string, config: any) {
+  updateConfig(integrationId: string, config: unknown) {
     this.config[integrationId as keyof IntegrationConfig] = config
     this.initializeClients()
   }
@@ -100,7 +100,7 @@ export class IntegrationsManager {
     return !!(this.config.supabase?.url && this.config.supabase?.anon_key)
   }
 
-  async testSupabase(): Promise<{ success: boolean, message: string, details?: any }> {
+  async testSupabase(): Promise<{ success: boolean, message: string, details?: unknown }> {
     if (!this.isSupabaseConfigured()) {
       return { success: false, message: 'Supabase não configurado' }
     }
@@ -114,7 +114,7 @@ export class IntegrationsManager {
     return !!(config?.api_key && config?.project_id && config?.vapid_key)
   }
 
-  async testFirebase(): Promise<{ success: boolean, message: string, details?: any }> {
+  async testFirebase(): Promise<{ success: boolean, message: string, details?: unknown }> {
     if (!this.isFirebaseConfigured()) {
       return { success: false, message: 'Firebase não configurado' }
     }
@@ -128,7 +128,7 @@ export class IntegrationsManager {
     return !!(config?.api_key && config?.from_email)
   }
 
-  async testResend(testEmail: string): Promise<{ success: boolean, message: string, details?: any }> {
+  async testResend(testEmail: string): Promise<{ success: boolean, message: string, details?: unknown }> {
     if (!this.isResendConfigured()) {
       return { success: false, message: 'Resend não configurado' }
     }
@@ -155,7 +155,7 @@ export class IntegrationsManager {
     return !!(config?.publishable_key && config?.secret_key)
   }
 
-  async testStripe(): Promise<{ success: boolean, message: string, details?: any }> {
+  async testStripe(): Promise<{ success: boolean, message: string, details?: unknown }> {
     if (!this.isStripeConfigured()) {
       return { success: false, message: 'Stripe não configurado' }
     }

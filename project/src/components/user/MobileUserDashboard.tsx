@@ -54,7 +54,7 @@ export function MobileUserDashboard() {
 
   // ✅ Listen for navigate to medals event
   useEffect(() => {
-    const handleNavigateToMedals = (event: any) => {
+    const handleNavigateToMedals = (event: unknown) => {
       setActiveSection('badges')
       setIsDrawerOpen(false)
       console.log('🎖️ Navegando para aba de Medalhas...')
@@ -66,7 +66,7 @@ export function MobileUserDashboard() {
 
   // ✅ Listen for navigate to dashboard event
   useEffect(() => {
-    const handleNavigateToDashboard = (event: any) => {
+    const handleNavigateToDashboard = (event: unknown) => {
       setActiveSection('dashboard')
       setIsDrawerOpen(false)
       console.log('🏠 Navegando para Dashboard...')

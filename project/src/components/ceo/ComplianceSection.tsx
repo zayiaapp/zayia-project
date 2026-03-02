@@ -92,7 +92,7 @@ interface ComplianceData {
 export function ComplianceSection() {
   const [data, setData] = useState<ComplianceData>(complianceData as ComplianceData)
   const [editingSection, setEditingSection] = useState<string | null>(null)
-  const [editData, setEditData] = useState<any>({})
+  const [editData, setEditData] = useState<unknown>({})
   const [isSaving, setIsSaving] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 

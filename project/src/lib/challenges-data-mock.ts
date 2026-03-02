@@ -48,14 +48,14 @@ class ChallengesDataMock {
     if (this.initialized) return
 
     const categoryMaps: Record<string, RawCategoryData> = {
-      autoestima: autoestimaData as any,
-      rotina: rotinaData as any,
-      digital_detox: digitalDetoxData as any,
-      mindfulness: mindfulnessData as any,
-      relacionamentos: relacionamentosData as any,
-      corpo_saude: corpoSaudeData as any,
-      carreira: carreiraData as any,
-      compliance: complianceData as any,
+      autoestima: autoestimaData as unknown,
+      rotina: rotinaData as unknown,
+      digital_detox: digitalDetoxData as unknown,
+      mindfulness: mindfulnessData as unknown,
+      relacionamentos: relacionamentosData as unknown,
+      corpo_saude: corpoSaudeData as unknown,
+      carreira: carreiraData as unknown,
+      compliance: complianceData as unknown,
     }
 
     // Load categories and challenges

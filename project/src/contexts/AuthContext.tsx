@@ -45,8 +45,8 @@ interface AuthContextType {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>
+  signIn: (email: string, password: string) => Promise<{ error: unknown }>
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: unknown }>
   signOut: () => Promise<void>
   quickCEOLogin: () => Promise<void>
   quickUserLogin: () => Promise<void>
@@ -295,7 +295,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (isSupabaseConfigured && integrationsManager.isSupabaseConfigured()) {
         try {
           // Use Promise.race to add a timeout to Supabase calls
-          const newProfile = await Promise.race<any>([
+          const newProfile = await Promise.race<unknown>([
             supabaseClient.createProfile({
               email,
               full_name: fullName,

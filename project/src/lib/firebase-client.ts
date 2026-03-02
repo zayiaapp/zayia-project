@@ -20,8 +20,8 @@ export interface NotificationPayload {
 }
 
 export class FirebaseClient {
-  private app: any = null
-  private messaging: any = null
+  private app: unknown = null
+  private messaging: unknown = null
   private config: FirebaseConfig | null = null
 
   initialize(config: FirebaseConfig) {
@@ -118,7 +118,7 @@ export class FirebaseClient {
     localStorage.setItem('notification_history', JSON.stringify(history))
   }
 
-  setupForegroundListener(callback: (payload: any) => void) {
+  setupForegroundListener(callback: (payload: unknown) => void) {
     if (!this.messaging) return
 
     onMessage(this.messaging, (payload) => {
@@ -127,7 +127,7 @@ export class FirebaseClient {
     })
   }
 
-  async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
+  async testConnection(): Promise<{ success: boolean, message: string, details?: unknown }> {
     try {
       if (!this.config) {
         return {

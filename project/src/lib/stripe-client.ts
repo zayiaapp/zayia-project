@@ -32,7 +32,7 @@ export class StripeClient {
     this.config = config
   }
 
-  async createProduct(product: Omit<Product, 'id'>): Promise<{ success: boolean, product?: any, error?: string }> {
+  async createProduct(product: Omit<Product, 'id'>): Promise<{ success: boolean, product?: unknown, error?: string }> {
     try {
       if (!this.config) {
         throw new Error('Stripe not configured')
@@ -144,7 +144,7 @@ export class StripeClient {
     }
   }
 
-  async getProducts(): Promise<{ success: boolean, products?: any[], error?: string }> {
+  async getProducts(): Promise<{ success: boolean, products?: unknown[], error?: string }> {
     try {
       if (!this.config) {
         throw new Error('Stripe not configured')
@@ -176,7 +176,7 @@ export class StripeClient {
     }
   }
 
-  async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
+  async testConnection(): Promise<{ success: boolean, message: string, details?: unknown }> {
     try {
       if (!this.config) {
         return {

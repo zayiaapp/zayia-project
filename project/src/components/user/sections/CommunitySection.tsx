@@ -30,7 +30,7 @@ export function CommunitySection() {
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [messageForReport, setMessageForReport] = useState<{ id: string; content: string; senderName: string } | null>(null)
   const [reportsListOpen, setReportsListOpen] = useState(false)
-  const [allReports, setAllReports] = useState<any[]>([])
+  const [allReports, setAllReports] = useState<unknown[]>([])
   const [reportToastMessage, setReportToastMessage] = useState<string | null>(null)
   const [reportCount, setReportCount] = useState(0)
 
@@ -222,7 +222,7 @@ export function CommunitySection() {
       message,
       anonymous ? null : user.id,
       anonymous ? null : profile?.full_name || 'Usuária',
-      reason as any,
+      reason as unknown,
       description
     )
 

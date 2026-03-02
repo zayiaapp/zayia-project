@@ -164,7 +164,7 @@ export const emailTemplates = {
     `
   }),
 
-  weeklyReport: (userName: string, stats: any): EmailTemplate => ({
+  weeklyReport: (userName: string, stats: unknown): EmailTemplate => ({
     subject: 'Seu relatório semanal ZAYIA 📊💜',
     html: `
       <!DOCTYPE html>

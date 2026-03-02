@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface MedalCarouselProps {
-  medals: any[]
+  medals: unknown[]
   categoryName: string
   categoryIcon?: string
 }
