@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-data-mock'
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
@@ -11,6 +12,7 @@ import { incrementDailyCount } from '../../../lib/challenges-storage'
 import { BADGES } from '../../../lib/badges-data-mock'
 
 export function ChallengesSection() {
+  const navigate = useNavigate()
   const { user } = useAuth()
 
   // State
@@ -62,6 +64,11 @@ export function ChallengesSection() {
     setActiveCategory(category)
     setShowCategoryModal(false)
     setCompletedChallengeIds(new Set())
+
+    // Redirecionar para dashboard após selecionar categoria
+    setTimeout(() => {
+      navigate('/dashboard')
+    }, 300)
   }
 
   const handleChallengeCompleted = (challengeId: string) => {
@@ -220,7 +227,13 @@ export function ChallengesSection() {
           <CategorySelectionModal
             userId={user?.id || ''}
             onCategorySelected={handleCategorySelected}
-            onClose={() => setShowCategoryModal(false)}
+            onClose={() => {
+              setShowCategoryModal(false)
+              // Redirecionar para dashboard após fechar a modal
+              setTimeout(() => {
+                navigate('/dashboard')
+              }, 300)
+            }}
           />
         )}
       </div>
