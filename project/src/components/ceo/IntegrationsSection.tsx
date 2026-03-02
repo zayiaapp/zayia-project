@@ -58,7 +58,7 @@ interface Integration {
 interface TestResult {
   success: boolean
   message: string
-  details?: any
+  details?: unknown
 }
 
 export default function IntegrationsSection() {
@@ -423,7 +423,7 @@ export default function IntegrationsSection() {
   }
 
   // Funções de teste para cada integração
-  const testSupabase = async (config: any): Promise<TestResult> => {
+  const testSupabase = async (config: unknown): Promise<TestResult> => {
     try {
       // Update integrations manager with new config
       integrationsManager.updateConfig('supabase', config)
@@ -438,7 +438,7 @@ export default function IntegrationsSection() {
     }
   }
 
-  const testFirebase = async (config: any): Promise<TestResult> => {
+  const testFirebase = async (config: unknown): Promise<TestResult> => {
     try {
       // Update integrations manager with new config
       integrationsManager.updateConfig('firebase', config)
@@ -453,7 +453,7 @@ export default function IntegrationsSection() {
     }
   }
 
-  const testResend = async (config: any): Promise<TestResult> => {
+  const testResend = async (config: unknown): Promise<TestResult> => {
     try {
       // Update integrations manager with new config
       integrationsManager.updateConfig('resend', config)
@@ -469,7 +469,7 @@ export default function IntegrationsSection() {
     }
   }
 
-  const testStripe = async (config: any): Promise<TestResult> => {
+  const testStripe = async (config: unknown): Promise<TestResult> => {
     try {
       // Update integrations manager with new config
       integrationsManager.updateConfig('stripe', config)
