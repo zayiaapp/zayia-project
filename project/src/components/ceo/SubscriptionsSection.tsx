@@ -10,6 +10,7 @@ import {
   Pause,
   Play
 } from 'lucide-react'
+import { createPlan, updatePlan, deletePlan } from '../../../lib/plans-service'
 
 interface Plan {
   id: string
@@ -155,36 +156,66 @@ export function SubscriptionsSection() {
     setShowPlanModal(true)
   }
 
-  const handleSavePlan = () => {
+  const handleSavePlan = async () => {
     if (!planForm.name || !planForm.price || !planForm.description) {
       alert('Preencha todos os campos obrigatórios')
       return
     }
 
-    const newPlan: Plan = {
-      id: selectedPlan?.id || `plan-${Date.now()}`,
+    const planData = {
       name: planForm.name,
       price: parseFloat(planForm.price),
       description: planForm.description,
       features: planForm.features.split('\n').filter(f => f.trim()),
       stripe_link: planForm.stripe_link,
-      status: planForm.status,
-      active_subscribers: selectedPlan?.active_subscribers || 0,
-      monthly_revenue: selectedPlan?.monthly_revenue || 0
+      status: planForm.status
     }
 
-    if (selectedPlan) {
-      setPlans(plans.map(p => p.id === selectedPlan.id ? newPlan : p))
-    } else {
-      setPlans([...plans, newPlan])
-    }
+    try {
+      if (selectedPlan) {
+        // Atualizar plano existente
+        const result = await updatePlan(selectedPlan.id, planData)
+        if (result) {
+          setPlans(plans.map(p => p.id === selectedPlan.id ? result : p))
+          alert('✅ Plano atualizado com sucesso!')
+          console.log('✅ Plano sincronizado com Supabase')
+        } else {
+          throw new Error('Erro ao atualizar plano no Supabase')
+        }
+      } else {
+        // Criar novo plano
+        const result = await createPlan(planData)
+        if (result) {
+          setPlans([...plans, result])
+          alert('✅ Plano criado com sucesso!')
+          console.log('✅ Plano sincronizado com Supabase')
+        } else {
+          throw new Error('Erro ao criar plano no Supabase')
+        }
+      }
 
-    setShowPlanModal(false)
+      setShowPlanModal(false)
+    } catch (error) {
+      console.error('❌ Erro ao salvar plano:', error)
+      alert('Erro ao salvar plano. Tente novamente.')
+    }
   }
 
-  const handleDeletePlan = (planId: string) => {
+  const handleDeletePlan = async (planId: string) => {
     if (confirm('Tem certeza que deseja deletar este plano?')) {
-      setPlans(plans.filter(p => p.id !== planId))
+      try {
+        const success = await deletePlan(planId)
+        if (success) {
+          setPlans(plans.filter(p => p.id !== planId))
+          alert('✅ Plano deletado com sucesso!')
+          console.log('✅ Plano removido de Supabase')
+        } else {
+          throw new Error('Erro ao deletar plano no Supabase')
+        }
+      } catch (error) {
+        console.error('❌ Erro ao deletar plano:', error)
+        alert('Erro ao deletar plano. Tente novamente.')
+      }
     }
   }
 

@@ -3,12 +3,15 @@ import { ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { createStripePortalSession } from '../../../lib/stripe-service'
-import type { Subscription } from '../../../types/subscription'
+import { getActivePlans, subscribeToPlansChanges } from '../../../lib/plans-service'
+import type { Subscription, Plan } from '../../../types/subscription'
 
 export function SubscriptionSection() {
   const { profile } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
+  const [availablePlans, setAvailablePlans] = useState<Plan[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [plansLoading, setPlansLoading] = useState(true)
   const [isLoadingPortal, setIsLoadingPortal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -16,6 +19,14 @@ export function SubscriptionSection() {
   useEffect(() => {
     if (profile?.id) {
       loadSubscriptionData()
+
+      // Observar mudanças em planos em tempo real
+      const unsubscribe = subscribeToPlansChanges((plans) => {
+        setAvailablePlans(plans)
+        console.log('✅ Planos atualizados em tempo real')
+      })
+
+      return () => unsubscribe()
     }
   }, [profile?.id])
 
@@ -26,9 +37,14 @@ export function SubscriptionSection() {
     setError(null)
 
     try {
-      // Buscar subscription do user
+      // 1. Buscar subscription do user
       const subscriptionData = await fetchUserSubscription(profile.id)
       setSubscription(subscriptionData)
+
+      // 2. Buscar planos disponíveis
+      const plans = await getActivePlans()
+      setAvailablePlans(plans)
+      setPlansLoading(false)
 
       console.log('✅ Dados de assinatura carregados:', subscriptionData)
     } catch (err) {
@@ -180,23 +196,69 @@ export function SubscriptionSection() {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold text-zayia-deep-violet">💳 Assinatura</h1>
 
-        <div className="zayia-card p-8 text-center space-y-4 border-2 border-zayia-lilac/30">
-          <p className="text-2xl">🎉</p>
-          <h2 className="text-2xl font-bold text-zayia-deep-violet">
-            Você não tem assinatura ativa
-          </h2>
-          <p className="text-zayia-violet-gray">
-            Assine para desbloquear acesso completo ao ZAYIA
-          </p>
-          <a
-            href="https://buy.stripe.com/xxxxx"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition"
-          >
-            Assinar Agora
-          </a>
-        </div>
+        {plansLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner />
+            <p className="ml-4 text-zayia-violet-gray">Carregando planos...</p>
+          </div>
+        ) : availablePlans.length === 0 ? (
+          <div className="zayia-card p-8 text-center space-y-4">
+            <p className="text-zayia-violet-gray">Nenhum plano disponível no momento</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-zayia-deep-violet">Escolha seu plano</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {availablePlans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className="zayia-card p-8 space-y-4 border-2 border-zayia-lilac/30 hover:border-zayia-lilac/50 transition"
+                >
+                  {/* Nome e Descrição */}
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-zayia-deep-violet">{plan.name}</h3>
+                    <p className="text-sm text-zayia-violet-gray">{plan.description}</p>
+                  </div>
+
+                  {/* Preço */}
+                  <div className="bg-zayia-lilac/10 p-4 rounded-lg">
+                    <p className="text-xs text-zayia-violet-gray mb-1">Preço Mensal</p>
+                    <p className="text-4xl font-bold text-zayia-soft-purple">
+                      R$ {plan.price.toFixed(2)}
+                    </p>
+                  </div>
+
+                  {/* Features */}
+                  <div>
+                    <p className="text-xs font-semibold text-zayia-deep-violet mb-2">Inclusos:</p>
+                    <ul className="space-y-1">
+                      {plan.features?.map((feature, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-center gap-2 text-sm text-zayia-violet-gray"
+                        >
+                          <span className="text-green-500 font-bold">✓</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Botão Assinar */}
+                  <a
+                    href={plan.stripe_link || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple text-white py-3 rounded-xl font-semibold hover:shadow-lg transition block text-center"
+                  >
+                    Alterar Plano
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
