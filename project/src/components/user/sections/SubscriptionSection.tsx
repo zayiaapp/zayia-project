@@ -66,9 +66,36 @@ export function SubscriptionSection() {
       //   .eq('status', 'active')
       //   .single()
 
-      // Por enquanto: usuário NÃO tem subscription (mockada)
-      // Isso permite ver a lista de planos disponíveis do contexto
-      // Quando Supabase estiver pronto, descomentar código acima
+      // MODO TESTE: Descomente abaixo para testar "Gerenciar Assinatura"
+      // return {
+      //   id: 'sub_123',
+      //   user_id: userId,
+      //   plan_id: 'plan_premium',
+      //   plan: {
+      //     id: 'plan_premium',
+      //     name: 'ZAYIA Premium',
+      //     price: 13.90,
+      //     description: 'Acesso completo a desafios, medalhas e comunidade',
+      //     features: [
+      //       'Acesso a todos os 840 desafios',
+      //       'Sistema completo de medalhas e níveis',
+      //       'Comunidade exclusiva no WhatsApp',
+      //       'Suporte prioritário via SOS',
+      //       'Atualizações e novos conteúdos',
+      //       'Ranking em tempo real'
+      //     ],
+      //     status: 'active'
+      //   },
+      //   status: 'active',
+      //   current_period_start: '2026-02-14',
+      //   current_period_end: '2026-03-14',
+      //   cancel_at_period_end: false,
+      //   stripe_subscription_id: 'sub_stripe_123',
+      //   stripe_customer_id: 'cus_stripe_123'  // ← Mock customer ID
+      // }
+
+      // MODO PRODUÇÃO: Usuário NÃO tem subscription
+      // Mostra lista de planos disponíveis do contexto
       return null
     } catch (err) {
       console.error('Erro ao buscar subscription:', err)
