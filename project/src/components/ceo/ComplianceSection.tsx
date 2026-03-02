@@ -327,7 +327,7 @@ export function ComplianceSection() {
       </div>
 
       {/* Documentos Legais */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Política de Privacidade */}
         <div className="zayia-card p-6">
           <div className="flex items-center justify-between mb-4">
@@ -438,60 +438,6 @@ export function ComplianceSection() {
           </div>
         </div>
 
-        {/* Política de Cookies */}
-        <div className="zayia-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-bold text-zayia-deep-violet">Política de Cookies</h4>
-                <p className="text-sm text-zayia-violet-gray">Marco Civil</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {data.compliance_status.cookie_policy_updated ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              ) : (
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-3 mb-4">
-            <div className="text-sm">
-              <span className="text-zayia-violet-gray">Versão:</span>
-              <span className="font-medium text-zayia-deep-violet ml-2">{data.documents.cookie_policy.version}</span>
-            </div>
-            <div className="text-sm">
-              <span className="text-zayia-violet-gray">Atualizada em:</span>
-              <span className="font-medium text-zayia-deep-violet ml-2">
-                {new Date(data.documents.cookie_policy.last_updated).toLocaleDateString('pt-BR')}
-              </span>
-            </div>
-            <div className="text-sm">
-              <span className="text-zayia-violet-gray">Aceites:</span>
-              <span className="font-medium text-green-600 ml-2">{data.metrics.cookie_consents} usuárias</span>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => openEditor('document_cookie_policy')}
-              className="flex-1 zayia-button py-2 rounded-xl text-white font-medium flex items-center justify-center gap-2"
-            >
-              <Edit className="w-4 h-4" />
-              Editar
-            </button>
-            <button
-              onClick={() => generateDocument('cookies')}
-              className="bg-zayia-lilac text-zayia-deep-violet px-3 py-2 rounded-xl hover:bg-zayia-lavender transition-colors"
-            >
-              <Download className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       </div>
 
 
