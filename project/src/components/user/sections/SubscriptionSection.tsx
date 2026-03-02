@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Download, ExternalLink, Shield } from 'lucide-react'
+import { ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
-import type { Subscription, Invoice } from '../../../types/subscription'
+import type { Subscription } from '../../../types/subscription'
 
 export function SubscriptionSection() {
   const { profile } = useAuth()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingPortal, setIsLoadingPortal] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,15 +25,9 @@ export function SubscriptionSection() {
     setError(null)
 
     try {
-      // 1. Buscar subscription do user
+      // Buscar subscription do user
       const subscriptionData = await fetchUserSubscription(profile.id)
       setSubscription(subscriptionData)
-
-      // 2. Se tem subscription ativa, buscar faturas
-      if (subscriptionData?.status === 'active' && subscriptionData.stripe_customer_id) {
-        const invoicesData = await fetchUserInvoices(subscriptionData.stripe_customer_id)
-        setInvoices(invoicesData)
-      }
 
       console.log('✅ Dados de assinatura carregados:', subscriptionData)
     } catch (err) {
@@ -90,43 +83,6 @@ export function SubscriptionSection() {
     }
   }
 
-  const fetchUserInvoices = async (customerId: string): Promise<Invoice[]> => {
-    try {
-      // TODO: Integrar com Stripe API via backend
-      // const response = await fetch('/api/stripe/invoices', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ customerId })
-      // })
-      // const { invoices } = await response.json()
-
-      // Mock data - substitua com fetch real
-      return [
-        {
-          id: 'inv_001',
-          date: '2026-02-14',
-          amount: 13.90,
-          status: 'paid',
-          description: 'ZAYIA Premium - Fevereiro 2026',
-          invoice_url: 'https://stripe.com/invoice/xxx',
-          stripe_invoice_id: 'in_stripe_001'
-        },
-        {
-          id: 'inv_002',
-          date: '2026-01-14',
-          amount: 13.90,
-          status: 'paid',
-          description: 'ZAYIA Premium - Janeiro 2026',
-          invoice_url: 'https://stripe.com/invoice/xxx',
-          stripe_invoice_id: 'in_stripe_002'
-        }
-      ]
-    } catch (err) {
-      console.error('Erro ao buscar faturas:', err)
-      return []
-    }
-  }
-
   // ===== AÇÕES =====
 
   const handleManageSubscription = async () => {
@@ -159,16 +115,6 @@ export function SubscriptionSection() {
       setError('Não foi possível abrir o portal Stripe. Tente novamente.')
     } finally {
       setIsLoadingPortal(false)
-    }
-  }
-
-  const handleDownloadInvoice = async (invoice: Invoice) => {
-    try {
-      window.open(invoice.invoice_url, '_blank')
-      console.log('✅ Fatura baixada:', invoice.id)
-    } catch (err) {
-      console.error('❌ Erro ao baixar fatura:', err)
-      setError('Erro ao baixar fatura. Tente novamente.')
     }
   }
 
@@ -271,7 +217,7 @@ export function SubscriptionSection() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-zayia-deep-violet">💳 Sua Assinatura ZAYIA</h1>
+        <h1 className="text-3xl font-bold text-zayia-deep-violet">Sua Assinatura ZAYIA</h1>
       </div>
 
       {/* Card da Assinatura */}
@@ -302,14 +248,14 @@ export function SubscriptionSection() {
         {/* Próxima Cobrança */}
         <div className="grid grid-cols-2 gap-4 p-4 bg-zayia-lilac/10 rounded-lg">
           <div>
-            <p className="text-xs text-zayia-violet-gray mb-1">📅 Próxima Cobrança</p>
+            <p className="text-xs text-zayia-violet-gray mb-1">Próxima Cobrança</p>
             <p className="font-bold text-zayia-deep-violet">
               {formatDate(subscription.current_period_end)}
             </p>
             <p className="text-xs text-zayia-violet-gray mt-1">Em {daysRemaining} dias</p>
           </div>
           <div>
-            <p className="text-xs text-zayia-violet-gray mb-1">💎 Tipo de Plano</p>
+            <p className="text-xs text-zayia-violet-gray mb-1">Tipo de Plano</p>
             <p className="font-bold text-zayia-deep-violet">Único</p>
             <p className="text-xs text-zayia-violet-gray mt-1">Sem limitações</p>
           </div>
@@ -317,7 +263,7 @@ export function SubscriptionSection() {
 
         {/* Benefícios */}
         <div>
-          <h3 className="font-bold text-zayia-deep-violet mb-3">✨ Seus Benefícios:</h3>
+          <h3 className="font-bold text-zayia-deep-violet mb-3">Seus Benefícios:</h3>
           <ul className="space-y-2">
             {subscription.plan?.features.map((feature, idx) => (
               <li key={idx} className="flex items-center gap-3 text-sm text-zayia-violet-gray">
@@ -348,64 +294,12 @@ export function SubscriptionSection() {
         </button>
       </div>
 
-      {/* Histórico de Faturas */}
-      {invoices.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold text-zayia-deep-violet">📋 Histórico de Faturas</h3>
-
-          <div className="space-y-3">
-            {invoices.map((invoice) => (
-              <div key={invoice.id} className="zayia-card p-4 border-l-4 border-zayia-lilac">
-                <div className="flex items-center justify-between gap-4">
-                  {/* Info */}
-                  <div className="flex-1">
-                    <p className="font-semibold text-zayia-deep-violet">{invoice.description}</p>
-                    <p className="text-sm text-zayia-violet-gray">{formatDate(invoice.date)}</p>
-                  </div>
-
-                  {/* Valor e Status */}
-                  <div className="text-right">
-                    <p className="font-bold text-zayia-soft-purple">
-                      R$ {invoice.amount.toFixed(2)}
-                    </p>
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full inline-block mt-1 ${
-                        invoice.status === 'paid'
-                          ? 'bg-green-100 text-green-700'
-                          : invoice.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {invoice.status === 'paid'
-                        ? '✅ Pago'
-                        : invoice.status === 'pending'
-                          ? '⏳ Pendente'
-                          : '❌ Falhou'}
-                    </span>
-                  </div>
-
-                  {/* Download */}
-                  <button
-                    onClick={() => handleDownloadInvoice(invoice)}
-                    className="text-zayia-soft-purple hover:text-zayia-deep-violet transition"
-                    title="Baixar fatura"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Informações Importantes */}
       <div className="zayia-card p-6 border-l-4 border-blue-500 bg-blue-50">
         <div className="flex gap-3">
           <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
           <div className="space-y-2">
-            <h4 className="font-semibold text-blue-700">ℹ️ Informações Importantes:</h4>
+            <h4 className="font-semibold text-blue-700">Informações Importantes:</h4>
             <ul className="text-sm text-blue-600 space-y-1">
               <li>• Cobrança automática todo dia 15 do mês</li>
               <li>• Cancele a qualquer momento sem multa</li>
