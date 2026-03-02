@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { usePlans } from '../../../contexts/PlansContext'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { createStripePortalSession } from '../../../lib/stripe-service'
 // TODO: Descomentar quando Supabase estiver configurado
 // import { getActivePlans, subscribeToPlansChanges } from '../../../lib/plans-service'
-import type { Subscription, Plan } from '../../../types/subscription'
+import type { Subscription } from '../../../types/subscription'
 
 export function SubscriptionSection() {
   const { profile } = useAuth()
+  const { plans: availablePlans } = usePlans()
   const [subscription, setSubscription] = useState<Subscription | null>(null)
-  const [availablePlans, setAvailablePlans] = useState<Plan[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [plansLoading, setPlansLoading] = useState(true)
   const [isLoadingPortal, setIsLoadingPortal] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,32 +42,10 @@ export function SubscriptionSection() {
       const subscriptionData = await fetchUserSubscription(profile.id)
       setSubscription(subscriptionData)
 
-      // 2. Buscar planos disponíveis (mock data por enquanto)
-      const mockPlans: Plan[] = [
-        {
-          id: 'plan_basic',
-          name: 'Básico',
-          price: 14.97,
-          description: 'Acesso a conteúdo básico de coaching',
-          features: ['Acesso a 5 desafios/mês', 'Dashboard básico', 'Email support'],
-          stripe_link: 'https://buy.stripe.com/basic',
-          status: 'active'
-        },
-        {
-          id: 'plan_premium',
-          name: 'Premium',
-          price: 29.97,
-          description: 'Acesso completo com mentoria',
-          features: ['Desafios ilimitados', 'Mentoria 1:1', 'Dashboard avançado', 'Priority support'],
-          stripe_link: 'https://buy.stripe.com/premium',
-          status: 'active'
-        }
-      ]
+      // 2. Planos já vêm do Context (usePlans)
+      // Não precisa mais fazer setState aqui!
 
-      setAvailablePlans(mockPlans)
-      setPlansLoading(false)
-
-      console.log('✅ Dados de assinatura carregados (usando mock data):', subscriptionData)
+      console.log('✅ Dados de assinatura carregados')
     } catch (err) {
       console.error('❌ Erro ao carregar assinatura:', err)
       setError('Erro ao carregar dados de assinatura. Tente novamente.')
@@ -88,33 +66,10 @@ export function SubscriptionSection() {
       //   .eq('status', 'active')
       //   .single()
 
-      // Mock data - substitua com fetch real
-      return {
-        id: 'sub_123',
-        user_id: userId,
-        plan_id: 'plan_premium',
-        plan: {
-          id: 'plan_premium',
-          name: 'ZAYIA Premium',
-          price: 13.90,
-          description: 'Acesso completo a desafios, medalhas e comunidade',
-          features: [
-            'Acesso a todos os 840 desafios',
-            'Sistema completo de medalhas e níveis',
-            'Comunidade exclusiva no WhatsApp',
-            'Suporte prioritário via SOS',
-            'Atualizações e novos conteúdos',
-            'Ranking em tempo real'
-          ],
-          status: 'active'
-        },
-        status: 'active',
-        current_period_start: '2026-02-14',
-        current_period_end: '2026-03-14',
-        cancel_at_period_end: false,
-        stripe_subscription_id: 'sub_stripe_123',
-        stripe_customer_id: 'cus_stripe_123'
-      }
+      // Por enquanto: usuário NÃO tem subscription (mockada)
+      // Isso permite ver a lista de planos disponíveis do contexto
+      // Quando Supabase estiver pronto, descomentar código acima
+      return null
     } catch (err) {
       console.error('Erro ao buscar subscription:', err)
       return null
@@ -215,14 +170,7 @@ export function SubscriptionSection() {
   if (!subscription) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-zayia-deep-violet">💳 Assinatura</h1>
-
-        {plansLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner />
-            <p className="ml-4 text-zayia-violet-gray">Carregando planos...</p>
-          </div>
-        ) : availablePlans.length === 0 ? (
+        {availablePlans.length === 0 ? (
           <div className="zayia-card p-8 text-center space-y-4">
             <p className="text-zayia-violet-gray">Nenhum plano disponível no momento</p>
           </div>
@@ -230,7 +178,7 @@ export function SubscriptionSection() {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-zayia-deep-violet">Escolha seu plano</h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {availablePlans.map((plan) => (
                 <div
                   key={plan.id}

@@ -10,20 +10,9 @@ import {
   Pause,
   Play
 } from 'lucide-react'
+import { usePlans, type Plan } from '../../contexts/PlansContext'
 // TODO: Descomentar quando Supabase estiver configurado
 // import { createPlan, updatePlan, deletePlan } from '../../lib/plans-service'
-
-interface Plan {
-  id: string
-  name: string
-  price: number
-  description: string
-  features: string[]
-  stripe_link?: string
-  status: 'active' | 'inactive'
-  active_subscribers: number
-  monthly_revenue: number
-}
 
 interface Subscriber {
   id: string
@@ -38,33 +27,8 @@ interface Subscriber {
 }
 
 export function SubscriptionsSection() {
+  const { plans, addPlan, updatePlan, deletePlan } = usePlans()
   const [activeTab, setActiveTab] = useState<'plans' | 'subscribers'>('plans')
-
-  // Plans state
-  const [plans, setPlans] = useState<Plan[]>([
-    {
-      id: 'plan-1',
-      name: 'Básico',
-      price: 14.97,
-      description: 'Acesso a conteúdo básico de coaching',
-      features: ['Acesso a 5 desafios/mês', 'Dashboard básico', 'Email support'],
-      stripe_link: 'https://stripe.com/basic',
-      status: 'active',
-      active_subscribers: 45,
-      monthly_revenue: 674.65
-    },
-    {
-      id: 'plan-2',
-      name: 'Premium',
-      price: 29.97,
-      description: 'Acesso completo com mentoria',
-      features: ['Desafios ilimitados', 'Mentoria 1:1', 'Dashboard avançado', 'Priority support'],
-      stripe_link: 'https://stripe.com/premium',
-      status: 'active',
-      active_subscribers: 23,
-      monthly_revenue: 689.31
-    }
-  ])
 
   const [subscribers, setSubscribers] = useState<Subscriber[]>([
     {
@@ -187,13 +151,14 @@ export function SubscriptionsSection() {
         monthly_revenue: selectedPlan?.monthly_revenue || 0
       }
 
-      // FALLBACK: Salvar no state (funciona sem Supabase)
       if (selectedPlan) {
-        setPlans(plans.map(p => p.id === selectedPlan.id ? newPlan : p))
-        console.log('✅ Plano atualizado (mock data)')
+        // ✅ USAR updatePlan do Context
+        updatePlan(selectedPlan.id, newPlan)
+        console.log('✅ Plano atualizado (sincronizado)')
       } else {
-        setPlans([...plans, newPlan])
-        console.log('✅ Plano criado (mock data)')
+        // ✅ USAR addPlan do Context
+        addPlan(newPlan)
+        console.log('✅ Plano criado (sincronizado)')
       }
 
       // LIMPAR FORM E FECHAR MODAL
@@ -220,9 +185,9 @@ export function SubscriptionsSection() {
   const handleDeletePlan = (planId: string) => {
     if (confirm('Tem certeza que deseja deletar este plano?')) {
       try {
-        // FALLBACK: Deletar do state (funciona sem Supabase)
-        setPlans(plans.filter(p => p.id !== planId))
-        console.log('✅ Plano deletado (mock data)')
+        // ✅ USAR deletePlan do Context
+        deletePlan(planId)
+        console.log('✅ Plano deletado (sincronizado)')
 
         // MENSAGEM DE SUCESSO
         alert('✅ Plano deletado com sucesso!')

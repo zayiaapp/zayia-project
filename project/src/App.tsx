@@ -1,5 +1,6 @@
 import React from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { PlansProvider } from './contexts/PlansContext'
 import { AuthPage } from './components/auth/AuthPage'
 import { CEODashboard } from './components/ceo/CEODashboard'
 import { MobileUserDashboard } from './components/user/MobileUserDashboard'
@@ -33,7 +34,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <PlansProvider>
+        <AppContent />
+      </PlansProvider>
     </AuthProvider>
   )
 }
