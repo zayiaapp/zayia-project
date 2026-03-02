@@ -298,24 +298,38 @@ export function SubscriptionSection() {
           </ul>
         </div>
 
-        {/* Botão Gerenciar */}
-        <button
-          onClick={handleManageSubscription}
-          disabled={isLoadingPortal}
-          className="w-full bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple text-white py-3 rounded-xl font-semibold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isLoadingPortal ? (
-            <>
-              <LoadingSpinner />
-              Abrindo...
-            </>
-          ) : (
-            <>
-              <ExternalLink className="w-4 h-4" />
-              Gerenciar Assinatura
-            </>
-          )}
-        </button>
+        {/* ===== BOTÕES IMPORTANTES ===== */}
+        <div className="space-y-3 border-t border-zayia-lilac/30 pt-6">
+          {/* BOTÃO 1: Alterar Plano (trocar de plano via Checkout) */}
+          <a
+            href={subscription.plan?.stripe_link || '#'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-zayia-lilac/20 text-zayia-deep-violet py-3 rounded-xl font-semibold hover:bg-zayia-lilac/40 transition flex items-center justify-center gap-2"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Alterar Plano
+          </a>
+
+          {/* BOTÃO 2: Gerenciar Assinatura (portal do Stripe) */}
+          <button
+            onClick={handleManageSubscription}
+            disabled={isLoadingPortal}
+            className="w-full bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple text-white py-3 rounded-xl font-semibold hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isLoadingPortal ? (
+              <>
+                <LoadingSpinner size="sm" />
+                Abrindo...
+              </>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4" />
+                Gerenciar Assinatura
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Informações Importantes */}
