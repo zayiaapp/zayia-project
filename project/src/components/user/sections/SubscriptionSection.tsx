@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
+import { createStripePortalSession } from '../../../lib/stripe-service'
 import type { Subscription } from '../../../types/subscription'
 
 export function SubscriptionSection() {
@@ -92,27 +93,19 @@ export function SubscriptionSection() {
     }
 
     setIsLoadingPortal(true)
+    setError(null)
 
     try {
-      // Criar sessão personalizada do Stripe Customer Portal
-      const response = await fetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerId: subscription.stripe_customer_id
-        })
-      })
+      // Criar sessão do Stripe Customer Portal
+      const portalUrl = await createStripePortalSession(subscription.stripe_customer_id)
 
-      if (!response.ok) {
-        throw new Error('Erro ao conectar ao Stripe')
-      }
-
-      const { url } = await response.json()
-      window.open(url, '_blank')
-      console.log('✅ Portal Stripe aberto')
+      // Abrir em nova aba
+      window.open(portalUrl, '_blank')
+      console.log('✅ Portal Stripe aberto:', portalUrl)
     } catch (err) {
       console.error('❌ Erro ao abrir portal:', err)
-      setError('Não foi possível abrir o portal Stripe. Tente novamente.')
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido'
+      setError(`Não foi possível abrir o portal Stripe: ${errorMessage}`)
     } finally {
       setIsLoadingPortal(false)
     }
