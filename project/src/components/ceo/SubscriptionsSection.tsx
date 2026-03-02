@@ -10,7 +10,7 @@ import {
   Pause,
   Play
 } from 'lucide-react'
-import { createPlan, updatePlan, deletePlan } from '../../../lib/plans-service'
+import { createPlan, updatePlan, deletePlan } from '../../lib/plans-service'
 
 interface Plan {
   id: string
