@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Download, ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { LoadingSpinner } from '../ui/LoadingSpinner'
+import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import type { Subscription, Invoice } from '../../../types/subscription'
 
 export function SubscriptionSection() {
