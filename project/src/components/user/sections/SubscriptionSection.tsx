@@ -3,7 +3,8 @@ import { ExternalLink, Shield } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { createStripePortalSession } from '../../../lib/stripe-service'
-import { getActivePlans, subscribeToPlansChanges } from '../../../lib/plans-service'
+// TODO: Descomentar quando Supabase estiver configurado
+// import { getActivePlans, subscribeToPlansChanges } from '../../../lib/plans-service'
 import type { Subscription, Plan } from '../../../types/subscription'
 
 export function SubscriptionSection() {
@@ -20,13 +21,13 @@ export function SubscriptionSection() {
     if (profile?.id) {
       loadSubscriptionData()
 
+      // TODO: Descomentar quando Supabase estiver configurado
       // Observar mudanças em planos em tempo real
-      const unsubscribe = subscribeToPlansChanges((plans) => {
-        setAvailablePlans(plans)
-        console.log('✅ Planos atualizados em tempo real')
-      })
-
-      return () => unsubscribe()
+      // const unsubscribe = subscribeToPlansChanges((plans) => {
+      //   setAvailablePlans(plans)
+      //   console.log('✅ Planos atualizados em tempo real')
+      // })
+      // return () => unsubscribe()
     }
   }, [profile?.id])
 
@@ -41,12 +42,32 @@ export function SubscriptionSection() {
       const subscriptionData = await fetchUserSubscription(profile.id)
       setSubscription(subscriptionData)
 
-      // 2. Buscar planos disponíveis
-      const plans = await getActivePlans()
-      setAvailablePlans(plans)
+      // 2. Buscar planos disponíveis (mock data por enquanto)
+      const mockPlans: Plan[] = [
+        {
+          id: 'plan_basic',
+          name: 'Básico',
+          price: 14.97,
+          description: 'Acesso a conteúdo básico de coaching',
+          features: ['Acesso a 5 desafios/mês', 'Dashboard básico', 'Email support'],
+          stripe_link: 'https://buy.stripe.com/basic',
+          status: 'active'
+        },
+        {
+          id: 'plan_premium',
+          name: 'Premium',
+          price: 29.97,
+          description: 'Acesso completo com mentoria',
+          features: ['Desafios ilimitados', 'Mentoria 1:1', 'Dashboard avançado', 'Priority support'],
+          stripe_link: 'https://buy.stripe.com/premium',
+          status: 'active'
+        }
+      ]
+
+      setAvailablePlans(mockPlans)
       setPlansLoading(false)
 
-      console.log('✅ Dados de assinatura carregados:', subscriptionData)
+      console.log('✅ Dados de assinatura carregados (usando mock data):', subscriptionData)
     } catch (err) {
       console.error('❌ Erro ao carregar assinatura:', err)
       setError('Erro ao carregar dados de assinatura. Tente novamente.')
