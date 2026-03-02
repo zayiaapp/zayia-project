@@ -64,6 +64,18 @@ export function MobileUserDashboard() {
     return () => window.removeEventListener('navigateToMedalTab', handleNavigateToMedals)
   }, [])
 
+  // ✅ Listen for navigate to dashboard event
+  useEffect(() => {
+    const handleNavigateToDashboard = (event: any) => {
+      setActiveSection('dashboard')
+      setIsDrawerOpen(false)
+      console.log('🏠 Navegando para Dashboard...')
+    }
+
+    window.addEventListener('navigateToDashboard', handleNavigateToDashboard)
+    return () => window.removeEventListener('navigateToDashboard', handleNavigateToDashboard)
+  }, [])
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard': return <DashboardSection />

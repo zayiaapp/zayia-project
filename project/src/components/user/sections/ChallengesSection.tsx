@@ -64,6 +64,17 @@ export function ChallengesSection() {
     setCompletedChallengeIds(new Set())
   }
 
+  const handleCloseModal = () => {
+    // 1. Fechar modal
+    setShowCategoryModal(false)
+
+    // 2. Aguardar animação de fechamento
+    setTimeout(() => {
+      // 3. Disparar evento para voltar ao Dashboard
+      window.dispatchEvent(new Event('navigateToDashboard'))
+    }, 300)
+  }
+
   const handleChallengeCompleted = (challengeId: string) => {
     if (!activeCategory || !user?.id) return
 
@@ -220,7 +231,7 @@ export function ChallengesSection() {
           <CategorySelectionModal
             userId={user?.id || ''}
             onCategorySelected={handleCategorySelected}
-            onClose={() => setShowCategoryModal(false)}
+            onClose={handleCloseModal}
           />
         )}
       </div>
