@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { CommunityDataMock, CommunityMessage, MessageReport } from '../../../lib/community-data-mock'
+import { supabaseClient, type CommunityMessage, type CommunityBan } from '../../../lib/supabase-client'
+import { CommunityDataMock, type MessageReport } from '../../../lib/community-data-mock'
 import { MessageCircle } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { Toast } from '../../ui/Toast'
@@ -34,53 +35,80 @@ export function CommunitySection() {
   const [reportToastMessage, setReportToastMessage] = useState<string | null>(null)
   const [reportCount, setReportCount] = useState(0)
 
-  // Verificar se usuária está banida
+  // Check if user is banned
   useEffect(() => {
     if (user?.id) {
-      const status = CommunityDataMock.checkIfUserIsBanned(user.id)
-      setBanStatus(status)
+      checkUserBanStatus()
     }
   }, [user?.id])
 
-  // Carregar mensagens e regras
+  // Load messages and setup real-time listener
   useEffect(() => {
     loadCommunityData()
-    const interval = setInterval(loadCommunityData, 3000) // Sincronizar a cada 3 segundos
 
-    return () => clearInterval(interval)
-  }, [])
+    // Setup real-time listener for messages
+    const unsubscribeMessages = supabaseClient.onMessagesChange((change: any) => {
+      console.log('📱 Message change:', change.eventType)
+      // Reload messages on any change
+      loadCommunityData()
+    })
 
-  const loadCommunityData = () => {
+    // Setup real-time listener for ban status
+    let unsubscribeBan: (() => void) | undefined
+    if (user?.id) {
+      unsubscribeBan = supabaseClient.onUserBanChange(user.id, (_change: any) => {
+        checkUserBanStatus()
+      })
+    }
+
+    return () => {
+      unsubscribeMessages()
+      if (unsubscribeBan) unsubscribeBan()
+    }
+  }, [user?.id])
+
+  const checkUserBanStatus = async () => {
+    if (!user?.id) return
+
+    try {
+      const ban = await supabaseClient.getUserBanStatus(user.id)
+      const isBanned = ban !== null && ban.status === 'active'
+      const expiresAt = ban?.expires_at
+
+      setBanStatus(prevStatus => {
+        // If changed from not banned to banned, show notification
+        if (!prevStatus.isBanned && isBanned) {
+          const message = expiresAt
+            ? `🚫 Você foi banida até ${new Date(expiresAt).toLocaleDateString('pt-BR')}`
+            : '🚫 Você foi permanentemente banida da comunidade'
+          setBanToastMessage(message)
+        } else if (prevStatus.isBanned && !isBanned) {
+          // Ban expired
+          setBanToastMessage('✅ Seu ban expirou! Bem-vinda de volta à comunidade!')
+        }
+        return { isBanned, expiresAt }
+      })
+    } catch (error) {
+      console.error('Error checking ban status:', error)
+    }
+  }
+
+  const loadCommunityData = async () => {
     try {
       setLoading(true)
-      const communityMessages = CommunityDataMock.getMessages(50, 0)
+
+      // Load messages from Supabase
+      const communityMessages = await supabaseClient.getMessages(50, 0)
       setMessages(communityMessages)
 
+      // Load rules from mock (TODO: migrate to Supabase in Phase 3)
       const communityRules = CommunityDataMock.getRules()
       setRules(communityRules.content)
 
-      // Carregar reports pendentes
+      // Load pending reports (TODO: migrate to Supabase in Phase 3)
       const reports = CommunityDataMock.getReports()
       setAllReports(reports)
       setReportCount(CommunityDataMock.getPendingReportCount())
-
-      // Verificar ban status a cada reload (para detectar bans em tempo real)
-      if (user?.id) {
-        const currentBanStatus = CommunityDataMock.checkIfUserIsBanned(user.id)
-        setBanStatus(prevStatus => {
-          // Se mudou de não banido para banido, mostrar notificação
-          if (!prevStatus.isBanned && currentBanStatus.isBanned) {
-            const message = currentBanStatus.expiresAt
-              ? `🚫 Você foi banida até ${new Date(currentBanStatus.expiresAt).toLocaleDateString('pt-BR')}`
-              : '🚫 Você foi permanentemente banida da comunidade'
-            setBanToastMessage(message)
-          } else if (prevStatus.isBanned && !currentBanStatus.isBanned) {
-            // Ban expirou
-            setBanToastMessage('✅ Seu ban expirou! Bem-vinda de volta à comunidade!')
-          }
-          return currentBanStatus
-        })
-      }
     } catch (error) {
       console.error('Error loading community data:', error)
     } finally {
@@ -88,34 +116,43 @@ export function CommunitySection() {
     }
   }
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!user || !profile) return
 
-    const newMessage = CommunityDataMock.sendMessage(user.id, {
-      id: profile.id,
-      fullName: profile.full_name,
-      email: profile.email,
-      avatarUrl: profile.avatar_url
-    }, content)
+    // Check if user is banned
+    const ban = await supabaseClient.getUserBanStatus(user.id)
+    if (ban && ban.status === 'active') {
+      setBanToastMessage('🚫 Você não pode enviar mensagens enquanto está banida')
+      return
+    }
 
-    setMessages(prev => [newMessage, ...prev])
-  }
-
-  const handleAddReaction = (messageId: string, emoji: string) => {
-    if (!user) return
-
-    const success = CommunityDataMock.addReaction(messageId, user.id, emoji)
-    if (success) {
-      loadCommunityData()
+    // Post message to Supabase
+    const newMessage = await supabaseClient.postMessage(user.id, content)
+    if (newMessage) {
+      // Message will be loaded via real-time listener
+      console.log('✅ Message posted:', newMessage.id)
+    } else {
+      console.error('Failed to post message')
     }
   }
 
-  const handleRemoveReaction = (messageId: string, emoji: string) => {
+  const handleAddReaction = async (messageId: string, emoji: string) => {
     if (!user) return
 
-    const success = CommunityDataMock.removeReaction(messageId, user.id, emoji)
+    const success = await supabaseClient.addReaction(messageId, user.id, emoji)
     if (success) {
-      loadCommunityData()
+      console.log('✅ Reaction added')
+      // Will be updated via real-time listener
+    }
+  }
+
+  const handleRemoveReaction = async (messageId: string, emoji: string) => {
+    if (!user) return
+
+    const success = await supabaseClient.removeReaction(messageId, user.id, emoji)
+    if (success) {
+      console.log('✅ Reaction removed')
+      // Will be updated via real-time listener
     }
   }
 
@@ -127,14 +164,15 @@ export function CommunitySection() {
     }
   }
 
-  const handleConfirmDelete = (reason: string) => {
+  const handleConfirmDelete = async (reason: string) => {
     if (!messageToDelete || !user) return
 
-    const success = CommunityDataMock.deleteMessage(messageToDelete.id, user.id, reason)
+    const success = await supabaseClient.deleteMessage(messageToDelete.id, user.id, reason)
     if (success) {
-      loadCommunityData()
       setDeleteModalOpen(false)
       setMessageToDelete(null)
+      console.log('✅ Message deleted')
+      // Will be updated via real-time listener
     }
   }
 
@@ -143,49 +181,51 @@ export function CommunitySection() {
     if (message) {
       setMessageForQuickBan({
         id: messageId,
-        userId: message.userId,
-        userName: message.userProfile.fullName,
+        userId: message.user_id,
+        userName: message.user_profile.full_name,
         content: message.content
       })
       setQuickBanModalOpen(true)
     }
   }
 
-  const handleConfirmQuickBan = (_duration: '1_day' | '7_days' | 'permanent', reason: string) => {
+  const handleConfirmQuickBan = async (duration: '1_day' | '7_days' | 'permanent', reason: string) => {
     if (!messageForQuickBan || !user) return
 
     // Delete message
-    const deleteSuccess = CommunityDataMock.deleteMessage(messageForQuickBan.id, user.id, 'Deletada por quick-ban')
+    const deleteSuccess = await supabaseClient.deleteMessage(messageForQuickBan.id, user.id, 'Deletada por quick-ban')
 
-    // Ban user (banNumber is determined by existing bans)
+    // Ban user
     if (deleteSuccess) {
-      CommunityDataMock.banUser(messageForQuickBan.userId, user.id, reason)
-      loadCommunityData()
+      await supabaseClient.banUser(messageForQuickBan.userId, duration, reason)
       setQuickBanModalOpen(false)
       setMessageForQuickBan(null)
+      console.log('✅ User banned and message deleted')
+      // Will be updated via real-time listener
     }
   }
 
-  const handleBanUser = (_duration: '1_day' | '7_days' | 'permanent', reason: string) => {
+  const handleBanUser = async (duration: '1_day' | '7_days' | 'permanent', reason: string) => {
     if (!selectedUserForBan || !user) return
 
-    CommunityDataMock.banUser(selectedUserForBan.id, user.id, reason)
+    await supabaseClient.banUser(selectedUserForBan.id, duration, reason)
     setSelectedUserForBan(null)
-    loadCommunityData()
+    console.log('✅ User banned')
+    // Will be updated via real-time listener
   }
 
   const handleClickUser = (userId: string, userName: string) => {
     // Apenas admin (CEO) pode banir
     if (profile?.role !== 'ceo') return
 
-    const userMessages = messages.filter(m => m.userId === userId)
+    const userMessages = messages.filter(m => m.user_id === userId)
     if (userMessages.length > 0) {
-      const userProfile = userMessages[0].userProfile
+      const userProfile = userMessages[0].user_profile
       setSelectedUserForBan({
         id: userId,
         name: userName,
-        email: userProfile.email,
-        avatar: userProfile.avatarUrl
+        email: userProfile?.email || '',
+        avatar: userProfile?.avatar_url
       })
     }
   }
@@ -205,55 +245,51 @@ export function CommunitySection() {
       setMessageForReport({
         id: messageId,
         content: message.content,
-        senderName: message.userProfile.fullName
+        senderName: message.user_profile.full_name
       })
       setReportModalOpen(true)
     }
   }
 
-  const handleSubmitReport = (reason: string, description: string, anonymous: boolean) => {
+  const handleSubmitReport = async (reason: string, description: string, anonymous: boolean) => {
     if (!messageForReport || !user) return
 
-    const message = messages.find(m => m.id === messageForReport.id)
-    if (!message) return
-
-    const report = CommunityDataMock.submitReport(
+    const success = await supabaseClient.reportMessage(
       messageForReport.id,
-      message,
-      anonymous ? null : user.id,
-      anonymous ? null : profile?.full_name || 'Usuária',
+      anonymous ? undefined : user.id,
       reason as 'disrespectful' | 'inappropriate' | 'spam' | 'discrimination' | 'privacy' | 'other',
       description
     )
 
-    if (report) {
+    if (success) {
       setReportToastMessage('✅ Report enviado com sucesso')
       setReportModalOpen(false)
       setMessageForReport(null)
-      loadCommunityData()
+      console.log('✅ Report submitted')
     }
   }
 
-  const handleReportAction = (action: 'ban' | 'delete' | 'archive', reportId: string, messageId?: string) => {
+  const handleReportAction = async (action: 'ban' | 'delete' | 'archive', reportId: string, messageId?: string) => {
     if (action === 'archive') {
       const success = CommunityDataMock.updateReportStatus(reportId, 'resolved')
       if (success) {
-        loadCommunityData()
+        console.log('✅ Report archived')
       }
     } else if (action === 'delete' && messageId) {
       const message = messages.find(m => m.id === messageId)
       if (message && user) {
-        CommunityDataMock.deleteMessage(messageId, user.id, 'Deletada por report')
+        await supabaseClient.deleteMessage(messageId, user.id, 'Deletada por report')
         CommunityDataMock.updateReportStatus(reportId, 'resolved')
-        loadCommunityData()
+        console.log('✅ Message deleted and report archived')
+        // Will be updated via real-time listener
       }
     } else if (action === 'ban' && messageId) {
       const message = messages.find(m => m.id === messageId)
       if (message) {
         setMessageForQuickBan({
           id: messageId,
-          userId: message.userId,
-          userName: message.userProfile.fullName,
+          userId: message.user_id,
+          userName: message.user_profile.full_name,
           content: message.content
         })
         setQuickBanModalOpen(true)
@@ -267,6 +303,31 @@ export function CommunitySection() {
   }
 
   const isAdmin = profile?.role === 'ceo'
+
+  // Helper function to convert Supabase reactions to mock format
+  const formatReactionsForUI = (supabaseReactions: any[] | undefined, currentUserId: string) => {
+    if (!supabaseReactions || supabaseReactions.length === 0) {
+      return []
+    }
+
+    // Group by emoji
+    const grouped = supabaseReactions.reduce((acc: any, reaction: any) => {
+      const emoji = reaction.emoji
+      if (!acc[emoji]) {
+        acc[emoji] = { emoji, count: 0, userIds: [] }
+      }
+      acc[emoji].count++
+      acc[emoji].userIds.push(reaction.user_id)
+      return acc
+    }, {})
+
+    // Convert to mock format
+    return Object.values(grouped).map((group: any) => ({
+      emoji: group.emoji,
+      count: group.count,
+      userReacted: group.userIds.includes(currentUserId)
+    }))
+  }
 
   // Determinar mensagem de banimento
   let banMessage = ''
@@ -365,7 +426,7 @@ export function CommunitySection() {
             ) : (
               <div className="space-y-2">
                 {messages.map(message => {
-                  const reactions = CommunityDataMock.getFormattedReactions(message.id, user?.id || '')
+                  const reactions = formatReactionsForUI(message.reactions, user?.id || '')
                   return (
                     <MessageWithHover
                       key={message.id}

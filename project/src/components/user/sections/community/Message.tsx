@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react'
-import { CommunityMessage, MessageReaction } from '../../../../lib/community-data-mock'
+import { CommunityMessage } from '../../../../lib/supabase-client'
+import { MessageReaction } from '../../../../lib/community-data-mock'
 import { ReactionButtons } from './ReactionButtons'
 import { ReportButton } from './ReportButton'
 
@@ -45,23 +46,23 @@ export function Message({
   onReport,
   onClickUser
 }: MessageProps) {
-  const avatar = message.userProfile.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.userProfile.fullName}`
-  const timeAgo = formatTimeAgo(message.createdAt)
+  const avatar = message.user_profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${message.user_profile?.full_name || 'User'}`
+  const timeAgo = formatTimeAgo(message.created_at)
 
   // Render deleted message placeholder
-  if (message.deletedByAdmin) {
+  if (message.deleted_by_admin) {
     return (
       <div className="border-b border-gray-100 pb-4 mb-4 last:border-b-0">
         <div className="flex items-start gap-3">
           <img
             src={avatar}
-            alt={message.userProfile.fullName}
+            alt={message.user_profile?.full_name || 'User'}
             className="w-10 h-10 rounded-full object-cover opacity-50"
           />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-600">{message.userProfile.fullName}</span>
+              <span className="font-semibold text-gray-600">{message.user_profile?.full_name || 'User'}</span>
               <span className="text-xs text-gray-400">{timeAgo}</span>
             </div>
 
@@ -102,19 +103,19 @@ export function Message({
       <div className="flex items-start gap-3">
         <img
           src={avatar}
-          alt={message.userProfile.fullName}
+          alt={message.user_profile?.full_name || 'User'}
           className="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition"
-          onClick={() => onClickUser(message.userId, message.userProfile.fullName)}
+          onClick={() => onClickUser(message.user_id, message.user_profile?.full_name || 'User')}
         />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <button
-                onClick={() => onClickUser(message.userId, message.userProfile.fullName)}
+                onClick={() => onClickUser(message.user_id, message.user_profile?.full_name || 'User')}
                 className="font-semibold text-gray-900 hover:text-zayia-pink transition"
               >
-                {message.userProfile.fullName}
+                {message.user_profile?.full_name || 'User'}
               </button>
               <span className="text-xs text-gray-500">{timeAgo}</span>
             </div>
@@ -125,8 +126,8 @@ export function Message({
               {!isAdmin && (
                 <ReportButton
                   messageId={message.id}
-                  isOwnMessage={message.userId === currentUserId}
-                  isDeleted={message.deletedByAdmin}
+                  isOwnMessage={message.user_id === currentUserId}
+                  isDeleted={!!message.deleted_by_admin}
                   onReport={onReport}
                 />
               )}
