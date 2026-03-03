@@ -245,58 +245,62 @@ export function ComplianceSection() {
     setIsSaving(true)
 
     try {
+      let updatedData: ComplianceData = { ...data }
+
       if (editingSection === 'company') {
         // Atualizar dados da empresa
-        setData((prev: ComplianceData) => ({ ...prev, company: editData }))
+        updatedData = { ...data, company: editData }
       } else if (editingSection?.startsWith('document_')) {
         const docType = editingSection.replace('document_', '')
-        setData((prev: ComplianceData) => ({
-          ...prev,
+        updatedData = {
+          ...data,
           documents: {
-            ...prev.documents,
+            ...data.documents,
             [docType]: {
               ...editData,
               last_updated: new Date().toISOString().split('T')[0]
             }
           }
-        }))
+        }
       }
 
+      // Salvar no localStorage SINCRONAMENTE (antes de atualizar o state)
+      console.log('Saving to localStorage:', updatedData)
+      localStorage.setItem('zayia_compliance_data', JSON.stringify(updatedData))
+      console.log('✅ Data saved to localStorage')
+
+      // DEPOIS atualizar o state
+      setData(updatedData)
       setIsSaving(false)
       setEditingSection(null)
       setEditData({})
 
-      // Salvar no localStorage
-      setTimeout(() => {
-        saveData()
+      // Notificar outras abas sobre a mudança (múltiplos métodos para garantir)
+      console.log('Broadcasting compliance data update...')
 
-        // Notificar outras abas sobre a mudança (múltiplos métodos para garantir)
-        console.log('Broadcasting compliance data update...')
+      // Método 1: BroadcastChannel API (mais confiável)
+      try {
+        const channel = new BroadcastChannel('zayia_compliance_updates')
+        channel.postMessage({
+          type: 'COMPLIANCE_DATA_UPDATED',
+          timestamp: Date.now(),
+          data: updatedData
+        })
+        channel.close()
+        console.log('✅ BroadcastChannel message sent')
+      } catch (e) {
+        console.log('BroadcastChannel not available')
+      }
 
-        // Método 1: BroadcastChannel API (mais confiável)
-        try {
-          const channel = new BroadcastChannel('zayia_compliance_updates')
-          channel.postMessage({
-            type: 'COMPLIANCE_DATA_UPDATED',
-            timestamp: Date.now(),
-            data: data
-          })
-          channel.close()
-          console.log('BroadcastChannel message sent')
-        } catch (e) {
-          console.log('BroadcastChannel not available')
-        }
+      // Método 2: Storage event (para outras abas do mesmo domínio)
+      window.localStorage.setItem('compliance_data_updated', Date.now().toString())
+      console.log('✅ Storage event triggered')
 
-        // Método 2: Storage event (para outras abas do mesmo domínio)
-        window.localStorage.setItem('compliance_data_updated', Date.now().toString())
-        console.log('Storage event triggered')
-
-        // Método 3: Custom event (para a mesma aba)
-        window.dispatchEvent(new CustomEvent('complianceDataUpdated', {
-          detail: { timestamp: Date.now() }
-        }))
-        console.log('Custom event dispatched')
-      }, 100)
+      // Método 3: Custom event (para a mesma aba)
+      window.dispatchEvent(new CustomEvent('complianceDataUpdated', {
+        detail: { timestamp: Date.now() }
+      }))
+      console.log('✅ Custom event dispatched')
 
       // Feedback visual
       alert('✅ Alterações salvas com sucesso!')
