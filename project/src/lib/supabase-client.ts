@@ -824,18 +824,32 @@ export class SupabaseClient {
     }
   }
 
-  async deleteMessage(messageId: string, userId: string, reason?: string): Promise<boolean> {
+  async deleteMessage(messageId: string, userId: string, userRole: 'user' | 'ceo', reason?: string): Promise<boolean> {
     try {
+      // Application-level validation: only CEOs can delete messages
+      if (userRole !== 'ceo') {
+        console.error('❌ Unauthorized: only admins can delete messages')
+        return false
+      }
+
+      console.log(`🗑️ Deleting message ${messageId}`)
+
+      // Soft delete: mark as deleted without removing data
       const { error } = await supabase
         .from('community_messages')
         .update({
           deleted_at: new Date().toISOString(),
           deleted_by_admin: userId,
-          deletion_reason: reason
+          deletion_reason: reason || 'Deletada pelo administrador'
         })
         .eq('id', messageId)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Delete error:', error.message)
+        return false
+      }
+
+      console.log('✅ Message marked as deleted')
       return true
     } catch (error) {
       console.error('Error deleting message:', error)
@@ -921,7 +935,8 @@ export class SupabaseClient {
 
   async banUser(userId: string, duration: '1_day' | '7_days' | 'permanent', reason: string): Promise<boolean> {
     try {
-      // Get current ban count
+      console.log(`🔨 Banning user ${userId} for ${duration}`)
+
       const { data: existingBans } = await supabase
         .from('community_bans')
         .select('ban_number')
@@ -940,7 +955,12 @@ export class SupabaseClient {
           reason
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('Error banning user:', error)
+        return false
+      }
+
+      console.log('✅ User banned')
       return true
     } catch (error) {
       console.error('Error banning user:', error)
@@ -1041,6 +1061,8 @@ export class SupabaseClient {
 
   // REAL-TIME LISTENERS
   onMessagesChange(callback: (change: any) => void) {
+    console.log('🔌 Setting up real-time listener for community_messages')
+
     const subscription = supabase
       .channel('community_messages')
       .on(
@@ -1050,11 +1072,17 @@ export class SupabaseClient {
           schema: 'public',
           table: 'community_messages'
         },
-        callback
+        (payload) => {
+          console.log('📱 Real-time message change received:', payload.eventType, payload)
+          callback(payload)
+        }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('🔗 Listener status:', status)
+      })
 
     return () => {
+      console.log('🔓 Unsubscribing from community_messages listener')
       subscription.unsubscribe()
     }
   }

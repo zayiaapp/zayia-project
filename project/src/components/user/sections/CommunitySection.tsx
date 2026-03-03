@@ -44,14 +44,17 @@ export function CommunitySection() {
 
   // Load messages and setup real-time listener
   useEffect(() => {
+    console.log('🎯 CommunitySection useEffect running, user.id:', user?.id)
     loadCommunityData()
 
     // Setup real-time listener for messages
+    console.log('🔌 About to create onMessagesChange listener')
     const unsubscribeMessages = supabaseClient.onMessagesChange((change: any) => {
       console.log('📱 Message change:', change.eventType)
       // Reload messages on any change
       loadCommunityData()
     })
+    console.log('✅ Listener created, unsubscribe function type:', typeof unsubscribeMessages)
 
     // Setup real-time listener for ban status
     let unsubscribeBan: (() => void) | undefined
@@ -165,14 +168,27 @@ export function CommunitySection() {
   }
 
   const handleConfirmDelete = async (reason: string) => {
-    if (!messageToDelete || !user) return
+    if (!messageToDelete || !user || !profile) return
 
-    const success = await supabaseClient.deleteMessage(messageToDelete.id, user.id, reason)
+    const success = await supabaseClient.deleteMessage(messageToDelete.id, user.id, profile.role, reason)
     if (success) {
       setDeleteModalOpen(false)
       setMessageToDelete(null)
       console.log('✅ Message deleted')
-      // Will be updated via real-time listener
+
+      // Imediatamente atualizar a mensagem no estado (não esperar por real-time)
+      setMessages(prevMessages =>
+        prevMessages.map(m =>
+          m.id === messageToDelete.id
+            ? {
+                ...m,
+                deleted_at: new Date().toISOString(),
+                deleted_by_admin: user.id,
+                deletion_reason: reason
+              }
+            : m
+        )
+      )
     }
   }
 
@@ -190,10 +206,10 @@ export function CommunitySection() {
   }
 
   const handleConfirmQuickBan = async (duration: '1_day' | '7_days' | 'permanent', reason: string) => {
-    if (!messageForQuickBan || !user) return
+    if (!messageForQuickBan || !user || !profile) return
 
     // Delete message
-    const deleteSuccess = await supabaseClient.deleteMessage(messageForQuickBan.id, user.id, 'Deletada por quick-ban')
+    const deleteSuccess = await supabaseClient.deleteMessage(messageForQuickBan.id, user.id, profile.role, 'Deletada por quick-ban')
 
     // Ban user
     if (deleteSuccess) {
@@ -277,8 +293,8 @@ export function CommunitySection() {
       }
     } else if (action === 'delete' && messageId) {
       const message = messages.find(m => m.id === messageId)
-      if (message && user) {
-        await supabaseClient.deleteMessage(messageId, user.id, 'Deletada por report')
+      if (message && user && profile) {
+        await supabaseClient.deleteMessage(messageId, user.id, profile.role, 'Deletada por report')
         CommunityDataMock.updateReportStatus(reportId, 'resolved')
         console.log('✅ Message deleted and report archived')
         // Will be updated via real-time listener
