@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabaseClient, type Profile } from '../../lib/supabase-client'
+import { supabase } from '../../lib/supabase'
 import { integrationsManager } from '../../lib/integrations-manager'
 import { 
   Plus, 
@@ -144,7 +145,45 @@ export function GuerreirasSection() {
 
   // Carregar guerreiras ao montar componente
   useEffect(() => {
-    loadGuerreiras()
+    let unsubscribe: (() => void) | null = null
+
+    const initLoad = async () => {
+      setLoading(true)
+      try {
+        if (integrationsManager.isSupabaseConfigured()) {
+          const profiles = await supabaseClient.getProfiles()
+
+          // Filtrar apenas usuárias COM subscription ativa
+          const guerreirasData = profiles
+            .filter(p =>
+              p.role === 'user' &&
+              p.subscription_status === 'active'
+            )
+            .map(enrichGuerreiraData)
+
+          setGuerreiras(guerreirasData)
+
+          // Setup real-time listener
+          unsubscribe = setupRealtimeListener(guerreirasData)
+        } else {
+          setGuerreiras(generateMockGuerreiras())
+        }
+      } catch (error) {
+        console.error('Error loading guerreiras:', error)
+        setGuerreiras(generateMockGuerreiras())
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initLoad()
+
+    // Cleanup ao desmontar
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+      }
+    }
   }, [])
 
   // Filtrar guerreiras por busca
@@ -161,22 +200,72 @@ export function GuerreirasSection() {
   }, [guerreiras, searchTerm])
 
   // Carregar dados das guerreiras
-  const loadGuerreiras = async () => {
-    setLoading(true)
+
+  // Setup real-time listener para sincronizar novas usuárias
+  const setupRealtimeListener = (initialGuerreiras: Guerreira[]) => {
     try {
-      if (integrationsManager.isSupabaseConfigured()) {
-        const profiles = await supabaseClient.getProfiles()
-        const guerreirasData = profiles.filter(p => p.role === 'user').map(enrichGuerreiraData)
-        setGuerreiras(guerreirasData)
-      } else {
-        // Dados mock de exemplo
-        setGuerreiras(generateMockGuerreiras())
+      const channel = supabase
+        .channel('public:profiles:changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // INSERT, UPDATE, DELETE
+            schema: 'public',
+            table: 'profiles'
+          },
+          async (payload: any) => {
+            console.log('🔄 Real-time update received:', payload.eventType, payload.new?.email)
+
+            if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              const newProfile = payload.new as Profile
+
+              // Verificar se é usuária com subscription ativa
+              if (
+                newProfile.role === 'user' &&
+                newProfile.subscription_status === 'active'
+              ) {
+                setGuerreiras(prev => {
+                  // Verificar se já existe na lista
+                  const exists = prev.some(g => g.id === newProfile.id)
+
+                  if (!exists) {
+                    // Nova usuária! Adicionar à lista
+                    console.log('✨ Nova guerreira adicionada:', newProfile.full_name)
+                    const enriched = enrichGuerreiraData(newProfile)
+                    return [...prev, enriched]
+                  } else {
+                    // Usuária já existe - atualizar dados
+                    console.log('🔄 Guerreira atualizada:', newProfile.full_name)
+                    return prev.map(g =>
+                      g.id === newProfile.id ? enrichGuerreiraData(newProfile) : g
+                    )
+                  }
+                })
+              } else if (newProfile.subscription_status === 'cancelled') {
+                // Subscription foi cancelada - remover da lista
+                console.log('❌ Subscription cancelada:', newProfile.full_name)
+                setGuerreiras(prev => prev.filter(g => g.id !== newProfile.id))
+              }
+            } else if (payload.eventType === 'DELETE') {
+              // Usuária deletada
+              const deletedId = payload.old?.id
+              console.log('❌ Guerreira removida:', deletedId)
+              setGuerreiras(prev => prev.filter(g => g.id !== deletedId))
+            }
+          }
+        )
+        .subscribe((status: string) => {
+          console.log('📡 Real-time subscription status:', status)
+        })
+
+      // Retornar função para desinscrever
+      return () => {
+        console.log('🛑 Desinscrever do real-time listener')
+        channel.unsubscribe()
       }
     } catch (error) {
-      console.error('Error loading guerreiras:', error)
-      setGuerreiras(generateMockGuerreiras())
-    } finally {
-      setLoading(false)
+      console.error('Error setting up real-time listener:', error)
+      return () => {}
     }
   }
 
