@@ -57,7 +57,7 @@ export class ResendClient {
     }
   }
 
-  generateWelcomeEmail(userName: string): EmailTemplate {
+  generateWelcomeEmail(userName: string, resetLink?: string): EmailTemplate {
     return {
       subject: 'Bem-vinda à ZAYIA! 💜 Sua jornada de transformação começa agora',
       html: `
@@ -70,21 +70,21 @@ export class ResendClient {
           </head>
           <body style="font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #FEFBFF, #E9D5FF); margin: 0; padding: 20px;">
             <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1);">
-              
+
               <!-- Header -->
               <div style="background: linear-gradient(135deg, #7C3AED, #A855F7); padding: 40px 30px; text-align: center;">
                 <h1 style="color: white; font-size: 32px; margin: 0; font-weight: bold;">ZAYIA</h1>
                 <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 18px;">Sua mentora de transformação pessoal</p>
               </div>
-              
+
               <!-- Content -->
               <div style="padding: 40px 30px;">
                 <h2 style="color: #7C3AED; font-size: 24px; margin: 0 0 20px 0;">Olá, ${userName}! ✨</h2>
-                
+
                 <p style="color: #6B7280; line-height: 1.6; margin: 0 0 20px 0;">
                   Que alegria ter você conosco! Sua jornada de transformação e crescimento pessoal começa agora.
                 </p>
-                
+
                 <div style="background: linear-gradient(135deg, #E9D5FF, #FEFBFF); padding: 25px; border-radius: 15px; margin: 20px 0;">
                   <h3 style="color: #7C3AED; margin: 0 0 15px 0; font-size: 18px;">🎯 O que te espera na ZAYIA:</h3>
                   <ul style="color: #6B7280; margin: 0; padding-left: 20px; line-height: 1.8;">
@@ -95,18 +95,28 @@ export class ResendClient {
                     <li>Acompanhamento de progresso e celebração de vitórias</li>
                   </ul>
                 </div>
-                
+
+                ${resetLink ? `
+                  <div style="background: #FEF3C7; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #FBBF24;">
+                    <p style="color: #92400E; margin: 0 0 10px 0; font-weight: bold;">🔑 Definir sua senha</p>
+                    <p style="color: #92400E; margin: 0 0 15px 0; font-size: 14px;">Clique no botão abaixo para criar sua senha e acessar sua conta:</p>
+                    <a href="${resetLink}" style="background: linear-gradient(135deg, #7C3AED, #A855F7); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+                      Definir Senha
+                    </a>
+                  </div>
+                ` : ''}
+
                 <div style="text-align: center; margin: 30px 0;">
                   <a href="https://zayia.com/dashboard" style="background: linear-gradient(135deg, #7C3AED, #A855F7); color: white; padding: 15px 30px; border-radius: 12px; text-decoration: none; font-weight: bold; display: inline-block;">
                     Começar Minha Jornada 💜
                   </a>
                 </div>
-                
+
                 <p style="color: #6B7280; line-height: 1.6; margin: 20px 0 0 0; font-size: 14px;">
                   Lembre-se: cada pequeno passo conta. Você é mais forte do que imagina! 💪
                 </p>
               </div>
-              
+
               <!-- Footer -->
               <div style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E9D5FF;">
                 <p style="color: #6B7280; margin: 0; font-size: 12px;">
@@ -119,22 +129,109 @@ export class ResendClient {
       `,
       text: `
         Olá, ${userName}!
-        
+
         Bem-vinda à ZAYIA! 💜
-        
+
         Que alegria ter você conosco! Sua jornada de transformação e crescimento pessoal começa agora.
-        
+
         O que te espera na ZAYIA:
         • Chat personalizado com IA especializada em empoderamento feminino
-        • Desafios diários para fortalecer autoestima e confiança  
+        • Desafios diários para fortalecer autoestima e confiança
         • Sistema de gamificação com níveis e conquistas
         • Comunidade acolhedora de mulheres em transformação
         • Acompanhamento de progresso e celebração de vitórias
-        
+
+        ${resetLink ? `Definir sua senha: ${resetLink}\n\n` : ''}
         Acesse: https://zayia.com/dashboard
-        
+
         Lembre-se: cada pequeno passo conta. Você é mais forte do que imagina! 💪
-        
+
+        Com amor,
+        Equipe ZAYIA
+      `
+    }
+  }
+
+  generatePlanChangeEmail(userName: string, newPlan: string): EmailTemplate {
+    const planNames: { [key: string]: string } = {
+      'basic': 'Plano Básico',
+      'premium': 'Plano Premium',
+      'vip': 'Plano VIP'
+    }
+
+    return {
+      subject: `Seu plano foi atualizado para ${planNames[newPlan]} 🎉`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <body style="font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #FEFBFF, #E9D5FF); margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1);">
+              <div style="background: linear-gradient(135deg, #7C3AED, #A855F7); padding: 40px 30px; text-align: center;">
+                <h1 style="color: white; font-size: 28px; margin: 0;">✨ Plano Atualizado!</h1>
+              </div>
+              <div style="padding: 40px 30px;">
+                <h2 style="color: #7C3AED; font-size: 22px; margin: 0 0 20px 0;">Olá, ${userName}!</h2>
+                <p style="color: #6B7280; line-height: 1.6; margin: 0 0 20px 0;">
+                  Sua assinatura foi atualizada para <strong>${planNames[newPlan]}</strong>! 🚀
+                </p>
+                <p style="color: #6B7280; line-height: 1.6;">
+                  Aproveite todos os novos benefícios e continue sua jornada de transformação com a ZAYIA.
+                </p>
+              </div>
+              <div style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E9D5FF;">
+                <p style="color: #6B7280; margin: 0; font-size: 12px;">© 2024 ZAYIA - Feito com 💜 para mulheres que querem transformar suas vidas</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+        Olá, ${userName}!
+
+        Sua assinatura foi atualizada para ${planNames[newPlan]}! 🚀
+
+        Aproveite todos os novos benefícios e continue sua jornada de transformação com a ZAYIA.
+
+        Com amor,
+        Equipe ZAYIA
+      `
+    }
+  }
+
+  generateDeactivationEmail(userName: string): EmailTemplate {
+    return {
+      subject: 'Sua conta ZAYIA foi desativada',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <body style="font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #FEFBFF, #E9D5FF); margin: 0; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1);">
+              <div style="background: linear-gradient(135deg, #7C3AED, #A855F7); padding: 40px 30px; text-align: center;">
+                <h1 style="color: white; font-size: 28px; margin: 0;">🔒 Conta Desativada</h1>
+              </div>
+              <div style="padding: 40px 30px;">
+                <h2 style="color: #7C3AED; font-size: 22px; margin: 0 0 20px 0;">Olá, ${userName}!</h2>
+                <p style="color: #6B7280; line-height: 1.6; margin: 0 0 20px 0;">
+                  Sua conta ZAYIA foi desativada. Você não poderá fazer login no momento.
+                </p>
+                <p style="color: #6B7280; line-height: 1.6;">
+                  Se isso foi um erro ou se você gostaria de reativar sua conta, entre em contato com nosso suporte.
+                </p>
+              </div>
+              <div style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E9D5FF;">
+                <p style="color: #6B7280; margin: 0; font-size: 12px;">© 2024 ZAYIA - Feito com 💜 para mulheres que querem transformar suas vidas</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+      text: `
+        Olá, ${userName}!
+
+        Sua conta ZAYIA foi desativada. Você não poderá fazer login no momento.
+
+        Se isso foi um erro ou se você gostaria de reativar sua conta, entre em contato com nosso suporte.
+
         Com amor,
         Equipe ZAYIA
       `
