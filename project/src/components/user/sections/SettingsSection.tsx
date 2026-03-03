@@ -1,6 +1,9 @@
+import React, { useState } from 'react'
 import { ExportDataSection } from './ExportDataSection'
+import CompanyInfoModal from '../CompanyInfoModal'
 
 export function SettingsSection() {
+  const [showCompanyModal, setShowCompanyModal] = useState(false)
   return (
     <div className="space-y-6">
       <div className="mb-6">
@@ -49,7 +52,20 @@ export function SettingsSection() {
             <span className="font-semibold text-zayia-deep-violet">2026-02-25</span>
           </div>
         </div>
+
+        {/* Botão Ver Informações da Empresa */}
+        <button
+          onClick={() => setShowCompanyModal(true)}
+          className="mt-4 text-zayia-soft-purple hover:text-zayia-deep-violet underline font-semibold text-sm transition"
+        >
+          Ver informações da empresa
+        </button>
       </div>
+
+      {/* Modal */}
+      {showCompanyModal && (
+        <CompanyInfoModal onClose={() => setShowCompanyModal(false)} />
+      )}
     </div>
   )
 }
