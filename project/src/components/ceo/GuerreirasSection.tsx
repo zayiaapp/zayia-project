@@ -1060,301 +1060,97 @@ export function GuerreirasSection() {
         </div>
       )}
 
-      {/* Modal de Detalhes Completos */}
+      {/* Modal de Perfil Simplificado */}
       {showDetailsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-6xl h-[90vh] overflow-y-auto">
+          <div className="bg-slate-900 rounded-2xl max-w-md w-full border border-purple-500/30 overflow-hidden">
             {(() => {
               const guerreira = guerreiras.find(g => g.id === showDetailsModal)
               if (!guerreira) return null
 
-              const levelInfo = getLevelInfo(guerreira.level || 1)
-              const LevelIcon = levelInfo.icon
-
-              // Calcular percentuais das categorias
-              if (guerreira.category_progress) {
-                Object.keys(guerreira.category_progress).forEach(key => {
-                  const category = guerreira.category_progress![key as keyof typeof guerreira.category_progress]
-                  category.percentage = Math.round((category.completed / category.total) * 100)
-                })
-              }
-
               return (
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-bold text-zayia-deep-violet">
-                      👑 Perfil Completo da Guerreira
-                    </h3>
+                <>
+                  {/* HEADER */}
+                  <div className="bg-gradient-to-r from-purple-900/30 to-violet-900/30 border-b border-purple-500/20 p-6 flex items-center justify-between">
+                    <h2 className="text-xl font-bold text-purple-300">Perfil da Guerreira</h2>
                     <button
                       onClick={() => setShowDetailsModal(null)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-gray-400 hover:text-gray-300 transition"
                     >
                       <X className="w-6 h-6" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Coluna 1: Dados Pessoais */}
-                    <div className="space-y-6">
-                      {/* Foto e Info Básica */}
-                      <div className="zayia-card p-6 text-center">
-                        <img
-                          src={guerreira.avatar_url || 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'}
-                          alt={guerreira.full_name || 'Guerreira'}
-                          className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-zayia-lilac/40"
-                        />
-                        <h4 className="text-xl font-bold text-zayia-deep-violet mb-2">
-                          {guerreira.full_name}
-                        </h4>
-                        <p className="text-zayia-violet-gray mb-4">{guerreira.email}</p>
-                        
-                        {/* Nível */}
-                        <div className="mb-4">
-                          <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${levelInfo.color} flex items-center justify-center mx-auto mb-2`}>
-                            <LevelIcon className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="text-lg font-bold text-zayia-deep-violet">Nível {guerreira.level}</div>
-                          <div className="text-sm text-zayia-violet-gray">{levelInfo.name}</div>
-                        </div>
-
-                        {/* Status */}
-                        <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                          guerreira.subscription_status === 'active' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {guerreira.subscription_status === 'active' ? '✅ Ativa' : '❌ Inativa'}
-                        </span>
+                  {/* CONTEÚDO */}
+                  <div className="p-6 space-y-6">
+                    {/* Avatar e Nome */}
+                    <div className="text-center space-y-3">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center text-white text-3xl font-bold mx-auto">
+                        {guerreira.full_name?.[0] || 'G'}
                       </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-purple-300">
+                          {guerreira.full_name}
+                        </h3>
+                        <p className="text-gray-400">{guerreira.email}</p>
+                      </div>
+                    </div>
 
-                      {/* Dados Pessoais */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Dados Pessoais</h5>
-                        <div className="space-y-3 text-sm">
-                          {guerreira.cpf && (
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-zayia-soft-purple" />
-                              <span className="text-zayia-violet-gray">CPF:</span>
-                              <span className="font-medium">{guerreira.cpf}</span>
-                            </div>
-                          )}
-                          {guerreira.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-zayia-soft-purple" />
-                              <span className="text-zayia-violet-gray">Telefone:</span>
-                              <span className="font-medium">{guerreira.phone}</span>
-                            </div>
-                          )}
-                          {guerreira.birth_date && (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-zayia-soft-purple" />
-                              <span className="text-zayia-violet-gray">Nascimento:</span>
-                              <span className="font-medium">
-                                {new Date(guerreira.birth_date).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                          )}
-                          {guerreira.profession && (
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="w-4 h-4 text-zayia-soft-purple" />
-                              <span className="text-zayia-violet-gray">Profissão:</span>
-                              <span className="font-medium">{guerreira.profession}</span>
-                            </div>
-                          )}
-                          {guerreira.education && (
-                            <div className="flex items-center gap-2">
-                              <GraduationCap className="w-4 h-4 text-zayia-soft-purple" />
-                              <span className="text-zayia-violet-gray">Educação:</span>
-                              <span className="font-medium">{guerreira.education}</span>
-                            </div>
-                          )}
+                    {/* Dados Essenciais */}
+                    <div className="space-y-4 border-t border-purple-500/20 pt-6">
+                      {/* Nível e Pontos */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-purple-900/20 rounded-lg p-4">
+                          <p className="text-sm text-gray-400 mb-1">Nível</p>
+                          <p className="text-2xl font-bold text-purple-300">
+                            {guerreira.level || 1}
+                          </p>
+                        </div>
+                        <div className="bg-purple-900/20 rounded-lg p-4">
+                          <p className="text-sm text-gray-400 mb-1">Pontos</p>
+                          <p className="text-2xl font-bold text-purple-300">
+                            {guerreira.points || 0}
+                          </p>
                         </div>
                       </div>
 
                       {/* Endereço */}
                       {guerreira.address && (
-                        <div className="zayia-card p-6">
-                          <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Endereço</h5>
-                          <div className="text-sm space-y-1">
-                            <div>{guerreira.address.street}, {guerreira.address.number}</div>
-                            <div>{guerreira.address.neighborhood}</div>
-                            <div>{guerreira.address.city}, {guerreira.address.state}</div>
-                            <div>CEP: {guerreira.address.zipcode}</div>
+                        <div className="bg-purple-900/10 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="w-4 h-4 text-purple-400" />
+                            <p className="text-sm text-gray-400 font-semibold">Endereço</p>
+                          </div>
+                          <div className="text-gray-300 text-sm space-y-1">
+                            <p>{guerreira.address.street}, {guerreira.address.number}</p>
+                            <p>{guerreira.address.neighborhood}, {guerreira.address.city}</p>
+                            <p>{guerreira.address.state}, {guerreira.address.zipcode}</p>
                           </div>
                         </div>
                       )}
-                    </div>
 
-                    {/* Coluna 2: Progresso e Estatísticas */}
-                    <div className="space-y-6">
-                      {/* Estatísticas Principais */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Estatísticas</h5>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-3 bg-zayia-lilac/20 rounded-lg">
-                            <div className="text-xl font-bold text-zayia-deep-violet">{guerreira.points || 0}</div>
-                            <div className="text-xs text-zayia-violet-gray">Pontos Totais</div>
+                      {!guerreira.address && (
+                        <div className="bg-purple-900/10 rounded-lg p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-400 font-semibold">Endereço</p>
                           </div>
-                          <div className="text-center p-3 bg-zayia-lilac/20 rounded-lg">
-                            <div className="text-xl font-bold text-zayia-soft-purple">{guerreira.streak || 0}</div>
-                            <div className="text-xs text-zayia-violet-gray">Dias Seguidos</div>
-                          </div>
-                          <div className="text-center p-3 bg-zayia-lilac/20 rounded-lg">
-                            <div className="text-xl font-bold text-zayia-lavender">{guerreira.total_sessions || 0}</div>
-                            <div className="text-xs text-zayia-violet-gray">Sessões</div>
-                          </div>
-                          <div className="text-center p-3 bg-zayia-lilac/20 rounded-lg">
-                            <div className="text-xl font-bold text-zayia-orchid">{guerreira.completed_challenges || 0}</div>
-                            <div className="text-xs text-zayia-violet-gray">Desafios</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Progresso por Categoria */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Progresso por Categoria</h5>
-                        <div className="space-y-4">
-                          {categories.map((category) => {
-                            const progress = guerreira.category_progress?.[category.id as keyof typeof guerreira.category_progress]
-                            const Icon = category.icon
-                            
-                            return (
-                              <div key={category.id} className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Icon className={`w-4 h-4 ${category.color}`} />
-                                    <span className="text-sm font-medium text-zayia-deep-violet">
-                                      {category.name}
-                                    </span>
-                                  </div>
-                                  <span className="text-sm text-zayia-violet-gray">
-                                    {progress?.completed || 0}/{progress?.total || 120}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-zayia-lilac/30 rounded-full h-2">
-                                  <div 
-                                    className={`h-2 rounded-full bg-gradient-to-r ${category.color.replace('text-', 'from-').replace('-500', '-400')} to-${category.color.split('-')[1]}-600`}
-                                    style={{ width: `${progress?.percentage || 0}%` }}
-                                  ></div>
-                                </div>
-                                <div className="text-xs text-zayia-violet-gray">
-                                  {progress?.percentage || 0}% completo
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Dados da Conta */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Dados da Conta</h5>
-                        <div className="space-y-3 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-zayia-violet-gray">Cadastro:</span>
-                            <span className="font-medium">{formatDate(guerreira.created_at)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-zayia-violet-gray">Último acesso:</span>
-                            <span className="font-medium">{formatDate(guerreira.updated_at)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-zayia-violet-gray">Plano:</span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              guerreira.subscription_plan === 'vip' ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800' :
-                              guerreira.subscription_plan === 'premium' ? 'bg-purple-100 text-purple-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {(guerreira.subscription_plan || 'basic').toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Coluna 3: Medalhas e Conquistas */}
-                    <div className="space-y-6">
-                      {/* Medalhas Conquistadas */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">
-                          Medalhas Conquistadas ({guerreira.badges_earned?.length || 0})
-                        </h5>
-                        {guerreira.badges_earned && guerreira.badges_earned.length > 0 ? (
-                          <div className="grid grid-cols-1 gap-3">
-                            {guerreira.badges_earned.map((badge) => (
-                              <div key={badge.id} className="p-3 border border-zayia-lilac/30 rounded-xl bg-gradient-to-r from-yellow-50 to-orange-50">
-                                <div className="flex items-center gap-3">
-                                  <div className="text-2xl">{badge.icon}</div>
-                                  <div className="flex-1">
-                                    <div className="font-semibold text-zayia-deep-violet text-sm">
-                                      {badge.name}
-                                    </div>
-                                    <div className="text-xs text-zayia-violet-gray">
-                                      {badge.description}
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRarityColor(badge.rarity)}`}>
-                                        {badge.rarity.toUpperCase()}
-                                      </span>
-                                      <span className="text-xs text-zayia-violet-gray">
-                                        {badge.category}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8">
-                            <Trophy className="w-12 h-12 text-zayia-violet-gray mx-auto mb-2" />
-                            <p className="text-zayia-violet-gray text-sm">Nenhuma medalha conquistada ainda</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Progresso do Nível */}
-                      <div className="zayia-card p-6">
-                        <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Progresso do Nível</h5>
-                        <div className="text-center mb-4">
-                          <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${levelInfo.color} flex items-center justify-center mx-auto mb-3`}>
-                            <LevelIcon className="w-8 h-8 text-white" />
-                          </div>
-                          <div className="text-xl font-bold text-zayia-deep-violet">
-                            Nível {guerreira.level} - {levelInfo.name}
-                          </div>
-                        </div>
-
-                        {guerreira.level < 10 && (
-                          <div>
-                            <div className="flex justify-between text-sm mb-2">
-                              <span>Progresso para Nível {guerreira.level + 1}</span>
-                              <span>{guerreira.points || 0}/{levelSystem[guerreira.level]?.pointsRequired || 0} pts</span>
-                            </div>
-                            <div className="w-full bg-zayia-lilac/30 rounded-full h-3">
-                              <div 
-                                className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full"
-                                style={{ 
-                                  width: `${Math.min(100, ((guerreira.points || 0) / (levelSystem[guerreira.level]?.pointsRequired || 1)) * 100)}%` 
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Bio */}
-                      {guerreira.bio && (
-                        <div className="zayia-card p-6">
-                          <h5 className="text-lg font-semibold text-zayia-deep-violet mb-4">Sobre</h5>
-                          <p className="text-sm text-zayia-violet-gray leading-relaxed">
-                            {guerreira.bio}
-                          </p>
+                          <p className="text-gray-500 text-sm">Não informado</p>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
+
+                  {/* FOOTER */}
+                  <div className="bg-slate-800/50 border-t border-purple-500/20 p-6">
+                    <button
+                      onClick={() => setShowDetailsModal(null)}
+                      className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                </>
               )
             })()}
           </div>
