@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  DollarSign, 
-  Users, 
-  UserX, 
-  TrendingDown, 
-  Target, 
+import {
+  DollarSign,
+  Users,
+  UserX,
+  TrendingDown,
+  Target,
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  TrendingUp
+  TrendingUp,
+  Download
 } from 'lucide-react'
+import { supabaseClient } from '../../lib/supabase-client'
 
 interface MetricsData {
   monthlyRevenue: number
@@ -49,17 +51,52 @@ export function Dashboard2Section() {
   const [showCalendar, setShowCalendar] = useState(false)
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('monthly')
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date())
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch real data from supabase on component mount
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        const now = new Date()
+        const month = now.getMonth() + 1
+        const year = now.getFullYear()
+
+        const stats = await supabaseClient.getAdminStatistics(month, year)
+        setMetrics({
+          monthlyRevenue: stats.revenue,
+          activeUsers: stats.activeUsers,
+          cancelledUsers: stats.cancelledUsers,
+          churnRate: stats.churnRate,
+          todayChallenges: stats.todayChallengesCount
+        })
+      } catch (error) {
+        console.error('Error fetching admin statistics:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchAdminStats()
+  }, [])
+
 
   // Gerar dados do gráfico baseado na data selecionada
   useEffect(() => {
     generateChartData()
-    updateTodayChallenges()
   }, [selectedDate, viewMode])
 
-  // Atualizar desafios de hoje a cada minuto (simular tempo real)
+  // Atualizar desafios de hoje a cada minuto
   useEffect(() => {
     const interval = setInterval(() => {
-      updateTodayChallenges()
+      const now = new Date()
+      const month = now.getMonth() + 1
+      const year = now.getFullYear()
+      supabaseClient.getAdminStatistics(month, year).then(stats => {
+        setMetrics(prev => ({
+          ...prev,
+          todayChallenges: stats.todayChallengesCount
+        }))
+      })
     }, 60000) // A cada 1 minuto
 
     return () => clearInterval(interval)
@@ -170,6 +207,35 @@ export function Dashboard2Section() {
 
   const getMaxValue = () => {
     return Math.max(...chartData.map(d => viewMode === 'daily' ? d.revenue : d.revenue))
+  }
+
+  const exportToCSV = () => {
+    try {
+      // Prepare CSV content
+      const headers = ['Data', 'Receita', 'Usuárias Ativas', 'Desafios']
+      const rows = chartData.map(item => [
+        item.date,
+        item.revenue.toString(),
+        item.activeUsers.toString(),
+        item.challenges.toString()
+      ])
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\n')
+
+      // Create and download file
+      const element = document.createElement('a')
+      const file = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      element.href = URL.createObjectURL(file)
+      element.download = `dashboard_${new Date().toISOString().split('T')[0]}.csv`
+      element.click()
+      URL.revokeObjectURL(element.href)
+    } catch (error) {
+      console.error('Error exporting CSV:', error)
+      alert('Erro ao exportar CSV')
+    }
   }
 
   const calendarDays = generateCalendar()
@@ -297,6 +363,16 @@ export function Dashboard2Section() {
                 Mensal
               </button>
             </div>
+
+            {/* CSV Export Button */}
+            <button
+              onClick={exportToCSV}
+              className="zayia-button px-4 py-2 rounded-xl text-white font-medium flex items-center gap-2"
+              title="Exportar dados para CSV"
+            >
+              <Download className="w-4 h-4" />
+              CSV
+            </button>
 
             {/* Seletor de Data */}
             <div className="relative">

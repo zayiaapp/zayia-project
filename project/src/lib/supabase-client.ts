@@ -200,6 +200,15 @@ export interface SubscriptionData {
   updated_at: string
 }
 
+export interface AdminStatistics {
+  revenue: number
+  activeUsers: number
+  cancelledUsers: number
+  churnRate: number
+  todayChallengesCount: number
+  lastUpdated: string
+}
+
 export interface CommunityMessage {
   id: string
   user_id: string
@@ -2000,6 +2009,65 @@ export class SupabaseClient {
       return {
         success: false,
         message: `Erro de conexão: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+      }
+    }
+  }
+
+  // ADMIN DASHBOARD
+  async getAdminStatistics(month: number, year: number): Promise<AdminStatistics> {
+    try {
+      // Get current date range for the month
+      const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0]
+      const todayDate = new Date().toISOString().split('T')[0]
+
+      // Fetch subscription data for the month
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, subscription_status, created_at, updated_at')
+
+      if (profilesError) throw profilesError
+
+      // Count active and cancelled users
+      const activeUsers = profiles?.filter(p => p.subscription_status === 'active').length || 0
+      const cancelledUsers = profiles?.filter(p => p.subscription_status === 'cancelled').length || 0
+
+      // Calculate churn rate
+      const totalUsers = activeUsers + cancelledUsers
+      const churnRate = totalUsers > 0 ? (cancelledUsers / totalUsers) * 100 : 0
+
+      // Fetch challenges completed today
+      const { data: todayChallenges, error: challengesError } = await supabase
+        .from('user_progress')
+        .select('id, completed_at')
+        .gte('completed_at', `${todayDate}T00:00:00`)
+        .lte('completed_at', `${todayDate}T23:59:59`)
+
+      if (challengesError && challengesError.code !== 'PGRST116') throw challengesError
+
+      const todayChallengesCount = todayChallenges?.length || 0
+
+      // Mock revenue calculation (in a real system, would use payment data)
+      // Assume: basic=$99, premium=$199, vip=$299 per month
+      const revenueMock = activeUsers * 150 // Average revenue per user
+
+      return {
+        revenue: revenueMock,
+        activeUsers,
+        cancelledUsers,
+        churnRate: Math.round(churnRate * 100) / 100,
+        todayChallengesCount,
+        lastUpdated: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('Error fetching admin statistics:', error)
+      return {
+        revenue: 0,
+        activeUsers: 0,
+        cancelledUsers: 0,
+        churnRate: 0,
+        todayChallengesCount: 0,
+        lastUpdated: new Date().toISOString()
       }
     }
   }
