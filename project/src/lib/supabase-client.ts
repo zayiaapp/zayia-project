@@ -184,6 +184,14 @@ export interface MessageReport {
   updated_at: string
 }
 
+export interface CommunityRules {
+  id: string
+  content: string
+  updated_by_admin?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface MonthlyRanking {
   id: string
   user_id: string
@@ -981,6 +989,99 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error unbanning user:', error)
       return false
+    }
+  }
+
+  // COMMUNITY RULES
+  async getRules(): Promise<CommunityRules | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_rules')
+        .select('*')
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching community rules:', error)
+      return null
+    }
+  }
+
+  async updateRules(content: string, adminId: string): Promise<CommunityRules | null> {
+    try {
+      // Validate content
+      if (!content || content.trim().length === 0) {
+        throw new Error('Content cannot be empty')
+      }
+      if (content.length > 5000) {
+        throw new Error('Content cannot exceed 5000 characters')
+      }
+
+      // Get current rules to update or create new
+      const existing = await this.getRules()
+
+      let data: any
+      let error: any
+
+      if (existing) {
+        // Update existing rules
+        const result = await supabase
+          .from('community_rules')
+          .update({
+            content,
+            updated_by_admin: adminId,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .single()
+
+        data = result.data
+        error = result.error
+      } else {
+        // Create new rules
+        const result = await supabase
+          .from('community_rules')
+          .insert({
+            content,
+            updated_by_admin: adminId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        data = result.data
+        error = result.error
+      }
+
+      if (error) throw error
+      return data || null
+    } catch (error) {
+      console.error('Error updating community rules:', error)
+      return null
+    }
+  }
+
+  // COMMUNITY REPORTS
+  async getReports(status?: string): Promise<MessageReport[]> {
+    try {
+      let query = supabase
+        .from('message_reports')
+        .select('*, message:community_messages(id, content, user_id, user_profile:profiles(id, full_name))')
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching reports:', error)
+      return []
     }
   }
 
