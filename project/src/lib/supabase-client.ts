@@ -140,6 +140,81 @@ export interface UserEarnedBadge {
   earned_at: string
 }
 
+export interface CommunityMessage {
+  id: string
+  user_id: string
+  content: string
+  deleted_by_admin?: string
+  deleted_at?: string
+  deletion_reason?: string
+  created_at: string
+  updated_at: string
+  user_profile?: Profile
+  reactions?: MessageReaction[]
+}
+
+export interface MessageReaction {
+  id: string
+  message_id: string
+  emoji: string
+  user_id: string
+  created_at: string
+}
+
+export interface CommunityBan {
+  id: string
+  user_id: string
+  ban_number: number
+  ban_duration: 'active' | '1_day' | '7_days' | 'permanent'
+  reason?: string
+  banned_at: string
+  expires_at?: string
+  status: 'active' | 'expired'
+  created_at: string
+}
+
+export interface MessageReport {
+  id: string
+  message_id: string
+  reported_by?: string
+  reason: 'disrespectful' | 'inappropriate' | 'spam' | 'discrimination' | 'privacy' | 'other'
+  description?: string
+  status: 'pending' | 'resolved' | 'archived'
+  created_at: string
+  updated_at: string
+}
+
+export interface MonthlyRanking {
+  id: string
+  user_id: string
+  month: number
+  year: number
+  position: number
+  points: number
+  badges_count: number
+  completed_challenges: number
+  favorite_category?: string
+  created_at: string
+  user_profile?: Profile
+}
+
+export interface PrizePayment {
+  id: string
+  user_id: string
+  position: number
+  month: number
+  year: number
+  amount: number
+  status: 'pending' | 'paid' | 'cancelled'
+  payment_method?: 'pix' | 'bank_transfer' | 'manual'
+  payment_date?: string
+  pix_key?: string
+  bank_account?: string
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
 export class SupabaseClient {
   // PROFILES
   async getProfiles(): Promise<Profile[]> {
@@ -708,6 +783,357 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching level:', error)
       return null
+    }
+  }
+
+  // COMMUNITY MESSAGES
+  async postMessage(userId: string, content: string): Promise<CommunityMessage | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_messages')
+        .insert({
+          user_id: userId,
+          content
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data || null
+    } catch (error) {
+      console.error('Error posting message:', error)
+      return null
+    }
+  }
+
+  async getMessages(limit: number = 20, offset: number = 0): Promise<CommunityMessage[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_messages')
+        .select('*, reactions:message_reactions(id, emoji, user_id), user_profile:profiles(id, full_name, avatar_url)')
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      return []
+    }
+  }
+
+  async deleteMessage(messageId: string, userId: string, reason?: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('community_messages')
+        .update({
+          deleted_at: new Date().toISOString(),
+          deleted_by_admin: userId,
+          deletion_reason: reason
+        })
+        .eq('id', messageId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting message:', error)
+      return false
+    }
+  }
+
+  // MESSAGE REACTIONS
+  async addReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('message_reactions')
+        .insert({
+          message_id: messageId,
+          user_id: userId,
+          emoji
+        })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error adding reaction:', error)
+      return false
+    }
+  }
+
+  async removeReaction(messageId: string, userId: string, emoji: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('message_reactions')
+        .delete()
+        .eq('message_id', messageId)
+        .eq('user_id', userId)
+        .eq('emoji', emoji)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error removing reaction:', error)
+      return false
+    }
+  }
+
+  // MESSAGE REPORTS
+  async reportMessage(messageId: string, userId: string, reason: string, description: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('message_reports')
+        .insert({
+          message_id: messageId,
+          reported_by: userId,
+          reason,
+          description
+        })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error reporting message:', error)
+      return false
+    }
+  }
+
+  // BAN SYSTEM
+  async getUserBanStatus(userId: string): Promise<CommunityBan | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_bans')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching ban status:', error)
+      return null
+    }
+  }
+
+  async banUser(userId: string, duration: '1_day' | '7_days' | 'permanent', reason: string): Promise<boolean> {
+    try {
+      // Get current ban count
+      const { data: existingBans } = await supabase
+        .from('community_bans')
+        .select('ban_number')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      const banNumber = (existingBans?.[0]?.ban_number || 0) + 1
+
+      const { error } = await supabase
+        .from('community_bans')
+        .insert({
+          user_id: userId,
+          ban_number: banNumber,
+          ban_duration: duration,
+          reason
+        })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error banning user:', error)
+      return false
+    }
+  }
+
+  async unbanUser(userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('community_bans')
+        .update({ status: 'expired' })
+        .eq('user_id', userId)
+        .eq('status', 'active')
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error unbanning user:', error)
+      return false
+    }
+  }
+
+  // RANKINGS
+  async getMonthlyRanking(month: number, year: number, limit: number = 100): Promise<MonthlyRanking[]> {
+    try {
+      const { data, error } = await supabase
+        .from('monthly_rankings')
+        .select('*, user_profile:profiles(id, full_name, avatar_url, points)')
+        .eq('month', month)
+        .eq('year', year)
+        .order('position', { ascending: true })
+        .limit(limit)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching rankings:', error)
+      return []
+    }
+  }
+
+  async getUserRankingPosition(userId: string, month: number, year: number): Promise<MonthlyRanking | null> {
+    try {
+      const { data, error } = await supabase
+        .from('monthly_rankings')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('month', month)
+        .eq('year', year)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching user ranking:', error)
+      return null
+    }
+  }
+
+  // PRIZE PAYMENTS
+  async getUserPrizePayments(userId: string): Promise<PrizePayment[]> {
+    try {
+      const { data, error } = await supabase
+        .from('prize_payments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('year', { ascending: false })
+        .order('month', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching prize payments:', error)
+      return []
+    }
+  }
+
+  async updatePaymentStatus(paymentId: string, status: 'pending' | 'paid' | 'cancelled', method?: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('prize_payments')
+        .update({
+          status,
+          payment_method: method,
+          payment_date: status === 'paid' ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', paymentId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      return false
+    }
+  }
+
+  // REAL-TIME LISTENERS
+  onMessagesChange(callback: (change: any) => void) {
+    const subscription = supabase
+      .channel('community_messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'community_messages'
+        },
+        callback
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }
+
+  onReactionsChange(callback: (change: any) => void) {
+    const subscription = supabase
+      .channel('message_reactions')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions'
+        },
+        callback
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }
+
+  onUserBanChange(userId: string, callback: (change: any) => void) {
+    const subscription = supabase
+      .channel(`ban_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'community_bans',
+          filter: `user_id=eq.${userId}`
+        },
+        callback
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }
+
+  onRankingChange(month: number, year: number, callback: (change: any) => void) {
+    const subscription = supabase
+      .channel(`ranking_${month}_${year}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'monthly_rankings',
+          filter: `month=eq.${month},year=eq.${year}`
+        },
+        callback
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }
+
+  onPointsChange(userId: string, callback: (change: any) => void) {
+    const subscription = supabase
+      .channel(`points_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${userId}`
+        },
+        callback
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
     }
   }
 
