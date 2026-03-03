@@ -1,4 +1,5 @@
 import { DarkModeToggle } from '../../ui/DarkModeToggle'
+import { ExportDataSection } from './ExportDataSection'
 
 export function SettingsSection() {
   return (
@@ -31,6 +32,11 @@ export function SettingsSection() {
             <input type="checkbox" defaultChecked className="w-4 h-4" />
           </div>
         </div>
+      </div>
+
+      {/* Exportar Dados Section - LGPD Compliance */}
+      <div className="zayia-card p-6">
+        <ExportDataSection />
       </div>
 
       {/* Sobre Section */}
