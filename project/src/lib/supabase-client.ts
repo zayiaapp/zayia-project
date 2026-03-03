@@ -82,6 +82,64 @@ export interface UserProgress {
   created_at: string
 }
 
+export interface ChallengeCategory {
+  id: string
+  name: string
+  label: string
+  icon?: string
+  color?: string
+  description?: string
+  area?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Challenge {
+  id: string
+  category_id: string
+  title: string
+  description?: string
+  difficulty: 'facil' | 'dificil'
+  points_easy: number
+  points_hard: number
+  duration_minutes?: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Badge {
+  id: string
+  name: string
+  description?: string
+  icon_name?: string
+  category?: string
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  requirement: number
+  points: number
+  color?: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface Level {
+  id: string
+  level_number: number
+  points_required: number
+  name?: string
+  description?: string
+  color?: string
+  created_at: string
+}
+
+export interface UserEarnedBadge {
+  id: string
+  user_id: string
+  badge_id: string
+  earned_at: string
+}
+
 export class SupabaseClient {
   // PROFILES
   async getProfiles(): Promise<Profile[]> {
@@ -485,6 +543,174 @@ export class SupabaseClient {
     }
   }
 
+  // CHALLENGES
+  async getChallenges(): Promise<Challenge[]> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching challenges:', error)
+      return []
+    }
+  }
+
+  async getChallengesByCategory(categoryId: string): Promise<Challenge[]> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('category_id', categoryId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching challenges by category:', error)
+      return []
+    }
+  }
+
+  async getChallengeById(id: string): Promise<Challenge | null> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching challenge:', error)
+      return null
+    }
+  }
+
+  async getChallengeCategories(): Promise<ChallengeCategory[]> {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching challenge categories:', error)
+      return []
+    }
+  }
+
+  // BADGES
+  async getBadges(): Promise<Badge[]> {
+    try {
+      const { data, error } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('is_active', true)
+        .order('rarity', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching badges:', error)
+      return []
+    }
+  }
+
+  async getBadgeById(id: string): Promise<Badge | null> {
+    try {
+      const { data, error } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching badge:', error)
+      return null
+    }
+  }
+
+  async getUserBadges(userId: string): Promise<Badge[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_earned_badges')
+        .select('badges (*)')
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      // Extract badges from the joined data
+      const badges = data?.map((item: any) => item.badges).filter(Boolean) || []
+      return badges
+    } catch (error) {
+      console.error('Error fetching user badges:', error)
+      return []
+    }
+  }
+
+  async awardBadge(userId: string, badgeName: string): Promise<boolean> {
+    try {
+      // Call RPC function to award badge
+      const { data, error } = await supabase
+        .rpc('award_badge', {
+          user_id_param: userId,
+          badge_name_param: badgeName
+        })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error awarding badge:', error)
+      return false
+    }
+  }
+
+  // LEVELS
+  async getLevels(): Promise<Level[]> {
+    try {
+      const { data, error } = await supabase
+        .from('levels')
+        .select('*')
+        .order('level_number', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching levels:', error)
+      return []
+    }
+  }
+
+  async getLevelByPoints(points: number): Promise<Level | null> {
+    try {
+      const { data, error } = await supabase
+        .from('levels')
+        .select('*')
+        .lte('points_required', points)
+        .order('points_required', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
+      return data || null
+    } catch (error) {
+      console.error('Error fetching level:', error)
+      return null
+    }
+  }
+
   // TEST CONNECTION
   async testConnection(): Promise<{ success: boolean, message: string, details?: any }> {
     try {
@@ -501,7 +727,7 @@ export class SupabaseClient {
         success: true,
         message: 'Conexão estabelecida! Banco de dados acessível.',
         details: {
-          tables: ['profiles', 'questions', 'whatsapp_groups', 'user_progress'],
+          tables: ['profiles', 'questions', 'whatsapp_groups', 'user_progress', 'challenges', 'badges', 'levels'],
           rls_enabled: true,
           analytics
         }

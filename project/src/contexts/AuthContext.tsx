@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabaseClient, type Profile as SupabaseProfile } from '../lib/supabase-client'
+import { supabase } from '../lib/supabase'
 import { integrationsManager } from '../lib/integrations-manager'
-import { isSupabaseConfigured } from '../lib/supabase'
 
 interface Profile {
   id: string
@@ -11,7 +11,6 @@ interface Profile {
   created_at: string
   updated_at: string
   avatar_url?: string
-  // User-specific fields (optional for CEO)
   interests?: string[]
   goals?: string[]
   cpf?: string
@@ -77,136 +76,73 @@ export function useAuth() {
   return context
 }
 
-// Mock users database expandido
-const mockUsers = [
-  {
-    id: 'ceo-123',
-    email: 'ceo@zayia.com',
-    password: 'zayia2024',
-    profile: {
-      id: 'ceo-123',
-      email: 'ceo@zayia.com',
-      full_name: 'CEO ZAYIA',
-      role: 'ceo' as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
-    }
-  },
-  {
-    id: 'user-demo',
-    email: 'user@zayia.com',
-    password: 'demo2024',
-    profile: {
-      id: 'user-demo',
-      email: 'user@zayia.com',
-      full_name: 'Maria Silva',
-      role: 'user' as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      phone: '(11) 99999-9999',
-      birth_date: '1990-05-15',
-      location: 'São Paulo, SP',
-      profession: 'Designer',
-      education: 'Superior Completo',
-      bio: 'Apaixonada por design e crescimento pessoal. Sempre em busca de novos desafios e oportunidades de aprendizado.',
-      interests: ['Design', 'Meditação', 'Leitura', 'Yoga', 'Viagem'],
-      goals: ['Melhorar autoestima', 'Desenvolver liderança', 'Equilibrar vida pessoal e profissional'],
-      streak: 12,
-      total_sessions: 45,
-      points: 2850,
-      level: 8,
-      completed_challenges: 23,
-      subscription_plan: 'premium',
-      subscription_status: 'active',
-      notifications_enabled: true,
-      community_access: true,
-      mentor_status: 'mentee'
-    }
-  },
-  {
-    id: 'user-ana',
-    email: 'ana@exemplo.com',
-    password: 'demo123',
-    profile: {
-      id: 'user-ana',
-      email: 'ana@exemplo.com',
-      full_name: 'Ana Costa',
-      role: 'user' as const,
-      created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
-      avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      phone: '(21) 98888-8888',
-      birth_date: '1985-08-22',
-      location: 'Rio de Janeiro, RJ',
-      profession: 'Psicóloga',
-      education: 'Pós-graduação',
-      bio: 'Psicóloga especializada em terapia cognitivo-comportamental. Amo ajudar pessoas a descobrirem seu potencial.',
-      interests: ['Psicologia', 'Mindfulness', 'Corrida', 'Culinária'],
-      goals: ['Abrir consultório próprio', 'Especializar em terapia de casais', 'Manter equilíbrio vida-trabalho'],
-      streak: 25,
-      total_sessions: 78,
-      points: 4200,
-      level: 12,
-      completed_challenges: 45,
-      subscription_plan: 'vip',
-      subscription_status: 'active',
-      notifications_enabled: true,
-      community_access: true,
-      mentor_status: 'mentor'
-    }
-  },
-  {
-    id: 'user-julia',
-    email: 'julia@exemplo.com',
-    password: 'demo123',
-    profile: {
-      id: 'user-julia',
-      email: 'julia@exemplo.com',
-      full_name: 'Julia Santos',
-      role: 'user' as const,
-      created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-      updated_at: new Date().toISOString(),
-      avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      phone: '(31) 97777-7777',
-      birth_date: '1992-03-10',
-      location: 'Belo Horizonte, MG',
-      profession: 'Engenheira',
-      education: 'Superior Completo',
-      bio: 'Engenheira de software em transição de carreira. Buscando mais propósito e realização pessoal.',
-      interests: ['Tecnologia', 'Yoga', 'Fotografia', 'Viagem'],
-      goals: ['Mudar de carreira', 'Desenvolver soft skills', 'Encontrar propósito'],
-      streak: 8,
-      total_sessions: 32,
-      points: 1850,
-      level: 6,
-      completed_challenges: 18,
-      subscription_plan: 'basic',
-      subscription_status: 'active',
-      notifications_enabled: true,
-      community_access: true,
-      mentor_status: 'mentee'
-    }
-  }
-]
+// Demo credentials (only used if VITE_DEMO_MODE=true)
+const DEMO_CREDENTIALS = {
+  ceo: { email: 'ceo@zayia.com', password: 'zayia2024' },
+  user: { email: 'user@zayia.com', password: 'demo2024' }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
+  /**
+   * On app load, restore session from Supabase Auth
+   * This ensures user stays logged in across page refreshes
+   */
   useEffect(() => {
-    // Check if user is logged in (localStorage)
-    const savedUser = localStorage.getItem('zayia_user')
-    const savedProfile = localStorage.getItem('zayia_profile')
+    const restoreSession = async () => {
+      try {
+        setLoading(true)
 
-    if (savedUser && savedProfile) {
-      setUser(JSON.parse(savedUser))
-      setProfile(JSON.parse(savedProfile))
+        // Get current session from Supabase Auth
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError) {
+          console.error('Error restoring session:', sessionError)
+          setLoading(false)
+          return
+        }
+
+        if (session?.user) {
+          // Session exists, load profile from database
+          const userData: User = {
+            id: session.user.id,
+            email: session.user.email || ''
+          }
+          setUser(userData)
+
+          // Fetch profile from Supabase
+          try {
+            const profiles = await supabaseClient.getProfiles()
+            const userProfile = profiles.find((p: SupabaseProfile) => p.id === session.user.id)
+
+            if (userProfile) {
+              setProfile(userProfile)
+              localStorage.setItem('zayia_user', JSON.stringify(userData))
+              localStorage.setItem('zayia_profile', JSON.stringify(userProfile))
+              console.log('✅ Session restored for:', userData.email)
+            } else {
+              console.warn('Profile not found for authenticated user:', session.user.id)
+            }
+          } catch (profileError) {
+            console.error('Error loading profile:', profileError)
+          }
+        } else {
+          // No session, clear localStorage
+          localStorage.removeItem('zayia_user')
+          localStorage.removeItem('zayia_profile')
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error('Error in session restore:', error)
+        setLoading(false)
+      }
     }
 
-    setLoading(false)
+    restoreSession()
   }, [])
 
   // ✅ Sincronizar pontos de localStorage quando mudam
@@ -230,285 +166,258 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
   }, [])
 
+  /**
+   * Sign in with email and password using Supabase Auth
+   */
   const signIn = async (email: string, password: string) => {
     setLoading(true)
 
     try {
-      // Only try Supabase if it's properly configured
-      if (isSupabaseConfigured && integrationsManager.isSupabaseConfigured()) {
-        try {
-          // Use Promise.race to add a timeout to Supabase calls
-          const profiles = await Promise.race<SupabaseProfile[]>([
-            supabaseClient.getProfiles(),
-            new Promise<SupabaseProfile[]>((_, reject) =>
-              setTimeout(() => reject(new Error('Supabase connection timeout')), 5000)
-            )
-          ])
+      // Use Supabase Auth native
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
 
-          const userProfile = profiles.find((p: SupabaseProfile) => p.email === email)
+      if (error) {
+        console.error('Sign in error:', error.message)
+        setLoading(false)
+        return { error: { message: error.message || 'Email ou senha incorretos' } }
+      }
+
+      if (data.session?.user) {
+        const userData: User = {
+          id: data.session.user.id,
+          email: data.session.user.email || ''
+        }
+
+        // Fetch profile from database
+        try {
+          const profiles = await supabaseClient.getProfiles()
+          const userProfile = profiles.find((p: SupabaseProfile) => p.id === data.session.user.id)
 
           if (userProfile) {
-            const user = { id: userProfile.id, email: userProfile.email }
-
-            setUser(user)
+            setUser(userData)
             setProfile(userProfile)
-
-            // Save to localStorage
-            localStorage.setItem('zayia_user', JSON.stringify(user))
+            localStorage.setItem('zayia_user', JSON.stringify(userData))
             localStorage.setItem('zayia_profile', JSON.stringify(userProfile))
             localStorage.setItem('last_login_time', new Date().toISOString())
 
             // Send welcome email if configured
             if (integrationsManager.isResendConfigured()) {
-              integrationsManager.sendWelcomeEmail(email, userProfile.full_name || 'Usuária')
+              integrationsManager.sendWelcomeEmail(userData.email, userProfile.full_name || 'Usuária')
             }
 
+            console.log('✅ Sign in successful:', userData.email)
             setLoading(false)
             return { error: null }
+          } else {
+            setLoading(false)
+            return { error: { message: 'Perfil não encontrado. Contacte suporte.' } }
           }
-        } catch (supabaseError) {
-          console.log('Supabase unavailable, falling back to mock authentication:', supabaseError)
-          // Continue to fallback authentication below
+        } catch (profileError) {
+          console.error('Error fetching profile:', profileError)
+          setLoading(false)
+          return { error: { message: 'Erro ao carregar perfil. Tente novamente.' } }
         }
-      }
-
-      // Fallback to mock authentication
-      const mockUser = mockUsers.find(u => u.email === email && u.password === password)
-
-      if (mockUser) {
-        const user = { id: mockUser.id, email: mockUser.email }
-        const profile = mockUser.profile
-
-        setUser(user)
-        setProfile(profile)
-
-        // Save to localStorage
-        localStorage.setItem('zayia_user', JSON.stringify(user))
-        localStorage.setItem('zayia_profile', JSON.stringify(profile))
-        localStorage.setItem('last_login_time', new Date().toISOString())
-
-        setLoading(false)
-        return { error: null }
       } else {
         setLoading(false)
-        return { error: { message: 'Email ou senha incorretos' } }
+        return { error: { message: 'Erro ao fazer login. Tente novamente.' } }
       }
     } catch (error) {
-      console.error('Error during sign in:', error)
+      console.error('Unexpected error during sign in:', error)
       setLoading(false)
       return { error: { message: 'Erro interno. Tente novamente.' } }
     }
   }
 
+  /**
+   * Sign up with email, password, and full name using Supabase Auth
+   */
   const signUp = async (email: string, password: string, fullName: string) => {
     setLoading(true)
 
     try {
-      // Only try Supabase if it's properly configured
-      if (isSupabaseConfigured && integrationsManager.isSupabaseConfigured()) {
+      // Use Supabase Auth native
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password
+      })
+
+      if (error) {
+        console.error('Sign up error:', error.message)
+        setLoading(false)
+        return { error: { message: error.message || 'Erro ao criar conta' } }
+      }
+
+      if (data.user) {
         try {
-          // Use Promise.race to add a timeout to Supabase calls
-          const newProfile = await Promise.race<unknown>([
-            supabaseClient.createProfile({
-              email,
-              full_name: fullName,
-              role: 'user',
-              avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-              streak: 0,
-              total_sessions: 0,
-              points: 0,
-              level: 1,
-              completed_challenges: 0,
-              subscription_plan: 'basic',
-              subscription_status: 'active',
-              notifications_enabled: true,
-              community_access: true,
-              mentor_status: 'none'
-            }),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Supabase connection timeout')), 5000)
-            )
-          ])
+          // Create profile in database (ID is auto-generated by Supabase)
+          const newProfile = await supabaseClient.createProfile({
+            email,
+            full_name: fullName,
+            role: 'user',
+            avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+            streak: 0,
+            total_sessions: 0,
+            points: 0,
+            level: 1,
+            completed_challenges: 0,
+            subscription_plan: 'basic',
+            subscription_status: 'active',
+            notifications_enabled: true,
+            community_access: true,
+            mentor_status: 'none'
+          })
 
           if (newProfile) {
-            const newProfileTyped = newProfile as any
-            const user = { id: newProfileTyped.id, email: newProfileTyped.email }
-
-            setUser(user)
-            setProfile(newProfileTyped as Profile)
-
-            // Save to localStorage
-            localStorage.setItem('zayia_user', JSON.stringify(user))
+            const userData: User = { id: data.user.id, email }
+            setUser(userData)
+            setProfile(newProfile)
+            localStorage.setItem('zayia_user', JSON.stringify(userData))
             localStorage.setItem('zayia_profile', JSON.stringify(newProfile))
             localStorage.setItem('last_login_time', new Date().toISOString())
 
-            // Send welcome email if configured
+            // Send verification email + welcome email
             if (integrationsManager.isResendConfigured()) {
               integrationsManager.sendWelcomeEmail(email, fullName)
             }
 
+            console.log('✅ Sign up successful. Verification email sent to:', email)
             setLoading(false)
             return { error: null }
           } else {
             setLoading(false)
-            return { error: { message: 'Erro ao criar conta. Tente novamente.' } }
+            return { error: { message: 'Erro ao criar perfil. Tente novamente.' } }
           }
-        } catch (supabaseError) {
-          console.log('Supabase unavailable, falling back to mock signup:', supabaseError)
-          // Continue to fallback registration below
+        } catch (profileError) {
+          console.error('Error creating profile:', profileError)
+          setLoading(false)
+          return { error: { message: 'Erro ao criar perfil. Tente novamente.' } }
         }
-      }
-
-      // Fallback to mock user creation
-      const existingUser = mockUsers.find(u => u.email === email)
-      if (existingUser) {
+      } else {
         setLoading(false)
-        return { error: { message: 'Este email já está cadastrado' } }
+        return { error: { message: 'Erro ao criar conta. Tente novamente.' } }
       }
-
-      // Create new mock user
-      const newUserId = 'user-' + Date.now()
-      const newUser = {
-        id: newUserId,
-        email,
-        password,
-        profile: {
-          id: newUserId,
-          email,
-          full_name: fullName,
-          role: 'user' as const,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-          streak: 0,
-          total_sessions: 0,
-          points: 0,
-          level: 1,
-          completed_challenges: 0,
-          subscription_plan: 'basic' as const,
-          subscription_status: 'active' as const,
-          notifications_enabled: true,
-          community_access: true,
-          mentor_status: 'none' as const
-        }
-      }
-
-      mockUsers.push(newUser as any)
-
-      const user = { id: newUser.id, email: newUser.email }
-      const profile = newUser.profile as Profile
-
-      setUser(user)
-      setProfile(profile)
-
-      // Save to localStorage
-      localStorage.setItem('zayia_user', JSON.stringify(user))
-      localStorage.setItem('zayia_profile', JSON.stringify(profile))
-      localStorage.setItem('last_login_time', new Date().toISOString())
-
-      setLoading(false)
-      return { error: null }
     } catch (error) {
-      console.error('Error during sign up:', error)
+      console.error('Unexpected error during sign up:', error)
       setLoading(false)
-      return { error: { message: 'Erro ao criar conta. Tente novamente.' } }
+      return { error: { message: 'Erro interno. Tente novamente.' } }
     }
   }
 
+  /**
+   * Sign out using Supabase Auth
+   */
   const signOut = async () => {
-    setUser(null)
-    setProfile(null)
-    localStorage.removeItem('zayia_user')
-    localStorage.removeItem('zayia_profile')
-  }
-
-  const quickCEOLogin = async () => {
-    setLoading(true)
-
-    const ceoUser = mockUsers[0] // CEO is first user
-    const user = { id: ceoUser.id, email: ceoUser.email }
-    const profile = ceoUser.profile as Profile
-
-    setUser(user)
-    setProfile(profile)
-    
-    // Save to localStorage
-    localStorage.setItem('zayia_user', JSON.stringify(user))
-    localStorage.setItem('zayia_profile', JSON.stringify(profile))
-    localStorage.setItem('last_login_time', new Date().toISOString())
-    
-    setLoading(false)
-  }
-
-  const quickUserLogin = async () => {
-    setLoading(true)
-
-    const demoUser = mockUsers[1] // Demo user is second
-    const user = { id: demoUser.id, email: demoUser.email }
-    const profile = demoUser.profile as Profile
-
-    setUser(user)
-    setProfile(profile)
-    
-    // Save to localStorage
-    localStorage.setItem('zayia_user', JSON.stringify(user))
-    localStorage.setItem('zayia_profile', JSON.stringify(profile))
-    localStorage.setItem('last_login_time', new Date().toISOString())
-    
-    setLoading(false)
-  }
-
-  const updateProfile = async (updates: Partial<Profile>) => {
-    if (profile) {
-      try {
-        // ✅ Sempre adicionar updated_at ao atualizar
-        const dataToUpdate = {
-          ...updates,
-          updated_at: new Date().toISOString()
-        } as Partial<Profile>
-
-        if (integrationsManager.isSupabaseConfigured()) {
-          // Update in Supabase
-          const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate as any)
-          if (updatedProfile) {
-            setProfile(updatedProfile)
-            localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
-            console.log('✅ Perfil atualizado em Supabase')
-          }
-        } else {
-          // Fallback to local update
-          const updatedProfile = { ...profile, ...dataToUpdate }
-          setProfile(updatedProfile)
-          localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
-
-          // Update in mock database
-          const userIndex = mockUsers.findIndex(u => u.id === profile.id)
-          if (userIndex !== -1) {
-            mockUsers[userIndex].profile = updatedProfile as any
-          }
-          console.log('✅ Perfil atualizado localmente')
-        }
-      } catch (error) {
-        console.error('Error updating profile:', error)
-        throw error
-      }
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setProfile(null)
+      localStorage.removeItem('zayia_user')
+      localStorage.removeItem('zayia_profile')
+      console.log('✅ Sign out successful')
+    } catch (error) {
+      console.error('Error signing out:', error)
+      throw error
     }
   }
 
+  /**
+   * Quick CEO login (demo only)
+   * Only enabled if VITE_DEMO_MODE=true
+   */
+  const quickCEOLogin = async () => {
+    // Guard: only allow in demo mode
+    if (import.meta.env.VITE_DEMO_MODE !== 'true') {
+      console.warn('⚠️ quickCEOLogin disabled in production')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { email, password } = DEMO_CREDENTIALS.ceo
+      const result = await signIn(email, password)
+      if (result.error) {
+        console.error('Quick CEO login failed:', result.error)
+      } else {
+        console.log('✅ Quick CEO login successful')
+      }
+    } catch (error) {
+      console.error('Error in quickCEOLogin:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Quick user login (demo only)
+   * Only enabled if VITE_DEMO_MODE=true
+   */
+  const quickUserLogin = async () => {
+    // Guard: only allow in demo mode
+    if (import.meta.env.VITE_DEMO_MODE !== 'true') {
+      console.warn('⚠️ quickUserLogin disabled in production')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { email, password } = DEMO_CREDENTIALS.user
+      const result = await signIn(email, password)
+      if (result.error) {
+        console.error('Quick user login failed:', result.error)
+      } else {
+        console.log('✅ Quick user login successful')
+      }
+    } catch (error) {
+      console.error('Error in quickUserLogin:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Update user profile
+   */
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!profile) return
+
+    try {
+      const dataToUpdate = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      } as Partial<Profile>
+
+      // Update in Supabase
+      const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate as any)
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+        localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
+        console.log('✅ Profile updated in Supabase')
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Delete user account
+   */
   const deleteUser = async (userId: string) => {
-  // Remover do array mock
-  const userIndex = mockUsers.findIndex(u => u.id === userId)
-  if (userIndex !== -1) {
-    mockUsers.splice(userIndex, 1)
+    try {
+      // TODO: Implement actual user deletion in Supabase
+      // For now, just logout if it's the current user
+      if (user?.id === userId) {
+        await signOut()
+      }
+      return true
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      return false
+    }
   }
-  
-  // Se for o usuário atual, fazer logout
-  if (user?.id === userId) {
-    await signOut()
-  }
-  
-  return true
-}
 
 
   const value = {
