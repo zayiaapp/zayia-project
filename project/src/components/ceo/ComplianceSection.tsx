@@ -314,10 +314,21 @@ export function ComplianceSection() {
 
       // Salvar no localStorage
       setTimeout(saveData, 100)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving edits:', error)
       setIsSaving(false)
-      alert('Erro ao salvar. Tente novamente.')
+
+      // Mensagem de erro mais específica
+      let errorMessage = 'Erro ao salvar. Tente novamente.'
+
+      if (error?.message) {
+        errorMessage = `Erro: ${error.message}`
+      } else if (error?.code) {
+        errorMessage = `Erro (${error.code}): ${error.details || 'Tente novamente'}`
+      }
+
+      console.error('Full error object:', error)
+      alert(errorMessage)
     }
   }
 
