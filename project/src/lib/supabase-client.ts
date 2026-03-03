@@ -1447,6 +1447,160 @@ export class SupabaseClient {
     }
   }
 
+  // ADMIN MEDAL MANAGEMENT
+  async createMedal(medalData: {
+    name: string
+    description: string
+    icon: string
+    rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  }): Promise<Medal | null> {
+    try {
+      const { data, error } = await supabase
+        .from('medals')
+        .insert({
+          name: medalData.name,
+          description: medalData.description,
+          icon: medalData.icon,
+          rarity: medalData.rarity,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error creating medal:', error)
+      return null
+    }
+  }
+
+  async updateMedal(medalId: string, medalData: {
+    name?: string
+    description?: string
+    icon?: string
+    rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  }): Promise<Medal | null> {
+    try {
+      const { data, error } = await supabase
+        .from('medals')
+        .update({
+          ...medalData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', medalId)
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error updating medal:', error)
+      return null
+    }
+  }
+
+  async deleteMedal(medalId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('medals')
+        .delete()
+        .eq('id', medalId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting medal:', error)
+      return false
+    }
+  }
+
+  // ADMIN PRIZE MANAGEMENT
+  async getPrizes(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('prizes')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error && error.code !== 'PGRST116') throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching prizes:', error)
+      return []
+    }
+  }
+
+  async createPrize(prizeData: {
+    name: string
+    description: string
+    type: 'badge' | 'points' | 'discount'
+    value: number
+  }): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('prizes')
+        .insert({
+          name: prizeData.name,
+          description: prizeData.description,
+          type: prizeData.type,
+          value: prizeData.value,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error creating prize:', error)
+      return null
+    }
+  }
+
+  async updatePrize(prizeId: string, prizeData: {
+    name?: string
+    description?: string
+    type?: 'badge' | 'points' | 'discount'
+    value?: number
+  }): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('prizes')
+        .update({
+          ...prizeData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', prizeId)
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error updating prize:', error)
+      return null
+    }
+  }
+
+  async deletePrize(prizeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('prizes')
+        .delete()
+        .eq('id', prizeId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting prize:', error)
+      return false
+    }
+  }
+
   // SUBSCRIPTIONS
   async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
     try {
