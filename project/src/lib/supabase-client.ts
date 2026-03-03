@@ -222,6 +222,11 @@ export interface MonthlyRanking {
   user_profile?: Profile
 }
 
+export interface MonthlyWinner {
+  ranking: MonthlyRanking
+  prize?: PrizePayment
+}
+
 export interface PrizePayment {
   id: string
   user_id: string
@@ -1426,6 +1431,105 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching user ranking:', error)
       return null
+    }
+  }
+
+  // RANKING TOP 3
+  async getTopThree(): Promise<MonthlyRanking[]> {
+    try {
+      // Get current month and year
+      const now = new Date()
+      const month = now.getMonth() + 1 // JavaScript months are 0-indexed
+      const year = now.getFullYear()
+
+      const { data, error } = await supabase
+        .from('monthly_rankings')
+        .select('*, user_profile:profiles(id, full_name, avatar_url, points)')
+        .eq('month', month)
+        .eq('year', year)
+        .order('position', { ascending: true })
+        .limit(3)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching top 3 rankings:', error)
+      return []
+    }
+  }
+
+  // MONTHLY WINNERS
+  async getMonthlyWinners(month?: number, year?: number): Promise<MonthlyWinner[]> {
+    try {
+      // Use current month/year if not provided
+      const now = new Date()
+      const targetMonth = month ?? now.getMonth() + 1
+      const targetYear = year ?? now.getFullYear()
+
+      // Get top 3 rankings
+      const { data: rankings, error: rankingsError } = await supabase
+        .from('monthly_rankings')
+        .select('*, user_profile:profiles(id, full_name, avatar_url, points)')
+        .eq('month', targetMonth)
+        .eq('year', targetYear)
+        .order('position', { ascending: true })
+        .limit(3)
+
+      if (rankingsError) throw rankingsError
+
+      if (!rankings || rankings.length === 0) {
+        return []
+      }
+
+      // Get prizes for each winner
+      const { data: prizes, error: prizesError } = await supabase
+        .from('prize_payments')
+        .select('*')
+        .eq('month', targetMonth)
+        .eq('year', targetYear)
+        .in(
+          'user_id',
+          rankings.map((r) => r.user_id)
+        )
+
+      if (prizesError) throw prizesError
+
+      // Combine rankings with prizes
+      const winners: MonthlyWinner[] = rankings.map((ranking) => ({
+        ranking,
+        prize: prizes?.find((p) => p.user_id === ranking.user_id)
+      }))
+
+      return winners
+    } catch (error) {
+      console.error('Error fetching monthly winners:', error)
+      return []
+    }
+  }
+
+  // RANKING SCORE CALCULATION
+  async calculateRankingScore(userId: string): Promise<number> {
+    try {
+      // Get current month and year
+      const now = new Date()
+      const month = now.getMonth() + 1
+      const year = now.getFullYear()
+
+      // Get user's ranking position for current month
+      const { data, error } = await supabase
+        .from('monthly_rankings')
+        .select('points')
+        .eq('user_id', userId)
+        .eq('month', month)
+        .eq('year', year)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+
+      return data?.points || 0
+    } catch (error) {
+      console.error('Error calculating ranking score:', error)
+      return 0
     }
   }
 
