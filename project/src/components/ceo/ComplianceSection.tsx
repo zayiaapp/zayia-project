@@ -246,53 +246,7 @@ export function ComplianceSection() {
 
     try {
       if (editingSection === 'company') {
-        // Salvar dados da empresa no Supabase
-        const companyPayload = {
-          company_name: editData.name,
-          cnpj: editData.cnpj,
-          address: editData.address?.street || '',
-          phone: editData.contact?.phone || '',
-          email: editData.contact?.email || '',
-          website: editData.website || '',
-          dpo_name: editData.contact?.dpo_name || null,
-          dpo_email: editData.contact?.dpo_email || '',
-          updated_at: new Date().toISOString()
-        }
-
-        // Tentar buscar o primeiro registro existente
-        const { data: existingRecords, error: selectError } = await supabase
-          .from('company_info')
-          .select('id')
-          .limit(1)
-
-        console.log('Existing records check:', { existingRecords, selectError })
-
-        if (!selectError && existingRecords && existingRecords.length > 0) {
-          // Update existing record
-          console.log('Updating existing record:', existingRecords[0].id)
-          const { error: updateError } = await supabase
-            .from('company_info')
-            .update(companyPayload)
-            .eq('id', existingRecords[0].id)
-
-          if (updateError) {
-            console.error('Update error:', updateError)
-            throw updateError
-          }
-        } else {
-          // Insert new record
-          console.log('Inserting new record')
-          const { error: insertError } = await supabase
-            .from('company_info')
-            .insert([companyPayload])
-
-          if (insertError) {
-            console.error('Insert error:', insertError)
-            throw insertError
-          }
-        }
-
-        console.log('Company info saved successfully')
+        // Atualizar dados da empresa
         setData((prev: ComplianceData) => ({ ...prev, company: editData }))
       } else if (editingSection?.startsWith('document_')) {
         const docType = editingSection.replace('document_', '')
@@ -313,22 +267,19 @@ export function ComplianceSection() {
       setEditData({})
 
       // Salvar no localStorage
-      setTimeout(saveData, 100)
+      setTimeout(() => {
+        saveData()
+        // Notificar outras abas sobre a mudança
+        window.localStorage.setItem('compliance_data_updated', Date.now().toString())
+        window.dispatchEvent(new Event('complianceDataUpdated'))
+      }, 100)
+
+      // Feedback visual
+      alert('✅ Alterações salvas com sucesso!')
     } catch (error: any) {
       console.error('Error saving edits:', error)
       setIsSaving(false)
-
-      // Mensagem de erro mais específica
-      let errorMessage = 'Erro ao salvar. Tente novamente.'
-
-      if (error?.message) {
-        errorMessage = `Erro: ${error.message}`
-      } else if (error?.code) {
-        errorMessage = `Erro (${error.code}): ${error.details || 'Tente novamente'}`
-      }
-
-      console.error('Full error object:', error)
-      alert(errorMessage)
+      alert('❌ Erro ao salvar. Tente novamente.')
     }
   }
 

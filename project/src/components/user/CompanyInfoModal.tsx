@@ -30,30 +30,22 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
   useEffect(() => {
     fetchCompanyInfo()
 
-    // Subscribe to real-time updates (if Supabase is configured)
-    let channel: any = null
-    try {
-      console.log('Setting up real-time subscription for company_info')
-      channel = supabase
-        .channel('company_info_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'company_info',
-          },
-          (payload: any) => {
-            console.log('Real-time update received:', payload)
-            fetchCompanyInfo()
-          }
-        )
-        .subscribe((status: string) => {
-          console.log('Subscription status:', status)
-        })
-    } catch (error) {
-      console.log('Could not subscribe to real-time updates:', error)
+    // Escutar mudanças no localStorage (quando admin salva)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'zayia_compliance_data' && e.newValue) {
+        console.log('Compliance data updated in localStorage, refreshing...')
+        fetchCompanyInfo()
+      }
     }
+
+    // Escutar evento customizado (mesma aba)
+    const handleComplianceUpdate = () => {
+      console.log('Compliance data updated (same tab), refreshing...')
+      fetchCompanyInfo()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('complianceDataUpdated', handleComplianceUpdate)
 
     // Polling como fallback (a cada 30 segundos)
     const pollInterval = setInterval(() => {
@@ -62,9 +54,8 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
     }, 30000)
 
     return () => {
-      if (channel) {
-        channel.unsubscribe()
-      }
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('complianceDataUpdated', handleComplianceUpdate)
       clearInterval(pollInterval)
     }
   }, [])
@@ -80,22 +71,38 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
       setLoading(true)
       setError(null)
 
-      console.log('Fetching company info from Supabase...')
-      const { data, error: queryError } = await supabase
-        .from('company_info')
-        .select('*')
-        .single()
+      console.log('Loading company info from localStorage...')
 
-      console.log('Supabase response:', { data, error: queryError })
+      // Tentar carregar dados do localStorage (salvos pelo admin)
+      const savedCompliance = localStorage.getItem('zayia_compliance_data')
+      if (savedCompliance) {
+        const complianceData = JSON.parse(savedCompliance)
+        const companyData = complianceData.company
 
-      if (queryError) {
-        console.log('Supabase query error, falling back to compliance.json')
+        const companyInfo: CompanyInfo = {
+          id: 'local-storage',
+          company_name: companyData.name,
+          cnpj: companyData.cnpj,
+          address: `${companyData.address.street}, ${companyData.address.neighborhood}`,
+          phone: companyData.contact.phone,
+          email: companyData.contact.email,
+          website: companyData.website,
+          dpo_name: companyData.contact?.dpo_name || 'DPO ZAYIA',
+          dpo_email: companyData.contact.dpo_email,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+
+        console.log('Company info loaded from localStorage:', companyInfo)
+        setCompanyInfo(companyInfo)
+      } else {
+        console.log('No data in localStorage, using default compliance.json')
         // Fallback para dados do compliance.json
         const complianceDataTyped = complianceData as any
         const companyData = complianceDataTyped.company
 
-        setCompanyInfo({
-          id: 'fallback',
+        const companyInfo: CompanyInfo = {
+          id: 'default',
           company_name: companyData.name,
           cnpj: companyData.cnpj,
           address: `${companyData.address.street}, ${companyData.address.neighborhood}`,
@@ -106,38 +113,15 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
           dpo_email: companyData.contact.dpo_email,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        })
-      } else if (data) {
-        console.log('Company info loaded from Supabase:', data)
-        setCompanyInfo(data)
-      } else {
-        setError('Informações da empresa não disponíveis')
+        }
+
+        console.log('Company info loaded from default data:', companyInfo)
+        setCompanyInfo(companyInfo)
       }
     } catch (err) {
-      console.log('Error fetching from Supabase, using fallback data')
-      // Fallback final para dados do compliance.json
-      try {
-        const complianceDataTyped = complianceData as any
-        const companyData = complianceDataTyped.company
-
-        setCompanyInfo({
-          id: 'fallback',
-          company_name: companyData.name,
-          cnpj: companyData.cnpj,
-          address: `${companyData.address.street}, ${companyData.address.neighborhood}`,
-          phone: companyData.contact.phone,
-          email: companyData.contact.email,
-          website: companyData.website,
-          dpo_name: 'DPO ZAYIA',
-          dpo_email: companyData.contact.dpo_email,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      } catch (fallbackErr) {
-        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar dados'
-        console.error('Error fetching company info:', errorMessage, err)
-        setError(errorMessage)
-      }
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar dados'
+      console.error('Error loading company info:', errorMessage, err)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
