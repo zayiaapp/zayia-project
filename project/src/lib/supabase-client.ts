@@ -109,6 +109,22 @@ export interface Challenge {
   updated_at: string
 }
 
+export interface ChallengeCompletion {
+  success: boolean
+  points_earned: number
+  medals_unlocked: string[]
+  message: string
+  level_up?: boolean
+  new_level?: number
+}
+
+export interface ChallengeMeta {
+  total_challenges: number
+  by_difficulty: { facil: number; dificil: number }
+  by_category: { [key: string]: number }
+  cache_timestamp: string
+}
+
 export interface Badge {
   id: string
   name: string
@@ -689,6 +705,297 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching challenge categories:', error)
       return []
+    }
+  }
+
+  // CHALLENGE COMPLETION
+  async completeChallenge(
+    challengeId: string,
+    userId: string,
+    proofUrl: string
+  ): Promise<ChallengeCompletion> {
+    try {
+      // Validate inputs
+      if (!challengeId || !userId || !proofUrl) {
+        throw new Error('Missing required parameters: challengeId, userId, proofUrl')
+      }
+
+      // Validate user is not banned
+      const banStatus = await this.getUserBanStatus(userId)
+      if (banStatus && banStatus.status === 'active') {
+        return {
+          success: false,
+          points_earned: 0,
+          medals_unlocked: [],
+          message: 'User is banned and cannot complete challenges'
+        }
+      }
+
+      // Get challenge details
+      const challenge = await this.getChallengeById(challengeId)
+      if (!challenge) {
+        throw new Error('Challenge not found')
+      }
+
+      // Check if user already completed this challenge today
+      const today = new Date().toISOString().split('T')[0]
+      const { data: existingCompletion, error: checkError } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .gte('created_at', `${today}T00:00:00`)
+        .limit(1)
+
+      if (checkError) throw checkError
+      if (existingCompletion && existingCompletion.length > 0) {
+        return {
+          success: false,
+          points_earned: 0,
+          medals_unlocked: [],
+          message: 'Challenge already completed today'
+        }
+      }
+
+      // Calculate points based on difficulty
+      const points = challenge.difficulty === 'facil' ? challenge.points_easy : challenge.points_hard
+
+      // Record challenge completion
+      const { error: insertError } = await supabase.from('user_progress').insert({
+        user_id: userId,
+        challenge_id: challengeId,
+        challenge_category: challenge.category_id,
+        challenge_difficulty: challenge.difficulty,
+        points_earned: points,
+        proof_url: proofUrl,
+        duration_minutes: challenge.duration_minutes || 15,
+        created_at: new Date().toISOString()
+      })
+
+      if (insertError) throw insertError
+
+      // Update user points
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('points, level')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) throw profileError
+
+      const newPoints = (profile?.points || 0) + points
+      const levelUpThreshold = 100 + ((profile?.level || 1) - 1) * 50
+      const newLevel = newPoints >= levelUpThreshold ? (profile?.level || 1) + 1 : (profile?.level || 1)
+      const levelUp = newLevel > (profile?.level || 1)
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          points: newPoints,
+          level: newLevel,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      // Dispatch event for real-time update
+      window.dispatchEvent(new CustomEvent('pointsUpdated'))
+      if (levelUp) {
+        window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: newLevel } }))
+      }
+
+      return {
+        success: true,
+        points_earned: points,
+        medals_unlocked: [],
+        message: `Challenge completed! You earned ${points} points.`,
+        level_up: levelUp,
+        new_level: levelUp ? newLevel : undefined
+      }
+    } catch (error) {
+      console.error('Error completing challenge:', error)
+      return {
+        success: false,
+        points_earned: 0,
+        medals_unlocked: [],
+        message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
+    }
+  }
+
+  // CHALLENGE RETRIEVAL
+  async getChallengesToday(): Promise<Challenge[]> {
+    try {
+      // Get one challenge per category
+      const categories = await this.getChallengeCategories()
+      const challenges: Challenge[] = []
+
+      for (const category of categories) {
+        const { data, error } = await supabase
+          .from('challenges')
+          .select('*')
+          .eq('category_id', category.id)
+          .eq('is_active', true)
+          .order('difficulty', { ascending: false })
+          .limit(1)
+
+        if (error) throw error
+        if (data && data.length > 0) {
+          challenges.push(data[0])
+        }
+      }
+
+      return challenges
+    } catch (error) {
+      console.error('Error fetching today\'s challenges:', error)
+      return []
+    }
+  }
+
+  async getAllChallenges(limit: number = 20, offset: number = 0): Promise<Challenge[]> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('is_active', true)
+        .order('difficulty', { ascending: true })
+        .order('created_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching all challenges:', error)
+      return []
+    }
+  }
+
+  async getChallengeDetails(challengeId: string): Promise<Challenge | null> {
+    try {
+      return await this.getChallengeById(challengeId)
+    } catch (error) {
+      console.error('Error fetching challenge details:', error)
+      return null
+    }
+  }
+
+  // CHALLENGE METADATA
+  private challengeMetaCache: { data: ChallengeMeta; timestamp: number } | null = null
+
+  async getChallengeMeta(): Promise<ChallengeMeta> {
+    try {
+      // Check cache (1 hour = 3600000ms)
+      if (
+        this.challengeMetaCache &&
+        Date.now() - this.challengeMetaCache.timestamp < 3600000
+      ) {
+        return this.challengeMetaCache.data
+      }
+
+      const { data: challenges, error: challengesError } = await supabase
+        .from('challenges')
+        .select('id, difficulty, category_id')
+        .eq('is_active', true)
+
+      if (challengesError) throw challengesError
+
+      const byDifficulty = { facil: 0, dificil: 0 }
+      const byCategory: { [key: string]: number } = {}
+
+      for (const challenge of challenges || []) {
+        // Count by difficulty
+        if (challenge.difficulty === 'facil') {
+          byDifficulty.facil++
+        } else {
+          byDifficulty.dificil++
+        }
+
+        // Count by category
+        if (!byCategory[challenge.category_id]) {
+          byCategory[challenge.category_id] = 0
+        }
+        byCategory[challenge.category_id]++
+      }
+
+      const meta: ChallengeMeta = {
+        total_challenges: challenges?.length || 0,
+        by_difficulty: byDifficulty,
+        by_category: byCategory,
+        cache_timestamp: new Date().toISOString()
+      }
+
+      // Cache result
+      this.challengeMetaCache = {
+        data: meta,
+        timestamp: Date.now()
+      }
+
+      return meta
+    } catch (error) {
+      console.error('Error fetching challenge metadata:', error)
+      return {
+        total_challenges: 0,
+        by_difficulty: { facil: 0, dificil: 0 },
+        by_category: {},
+        cache_timestamp: new Date().toISOString()
+      }
+    }
+  }
+
+  // PERMISSION CHECKS
+  async validateUserPermission(
+    userId: string,
+    challengeId: string
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    try {
+      // Check if user exists
+      const { data: user, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single()
+
+      if (userError || !user) {
+        return { allowed: false, reason: 'User not found' }
+      }
+
+      // Check if user is banned
+      const banStatus = await this.getUserBanStatus(userId)
+      if (banStatus && banStatus.status === 'active') {
+        return { allowed: false, reason: 'User is banned' }
+      }
+
+      // Check if user already completed this challenge today
+      const today = new Date().toISOString().split('T')[0]
+      const { data: completed, error: completedError } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('challenge_id', challengeId)
+        .gte('created_at', `${today}T00:00:00`)
+        .limit(1)
+
+      if (completedError) throw completedError
+      if (completed && completed.length > 0) {
+        return { allowed: false, reason: 'Challenge already completed today' }
+      }
+
+      // Check if challenge exists
+      const { data: challenge, error: challengeError } = await supabase
+        .from('challenges')
+        .select('id')
+        .eq('id', challengeId)
+        .single()
+
+      if (challengeError || !challenge) {
+        return { allowed: false, reason: 'Challenge not found' }
+      }
+
+      return { allowed: true }
+    } catch (error) {
+      console.error('Error validating user permission:', error)
+      return { allowed: false, reason: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` }
     }
   }
 
