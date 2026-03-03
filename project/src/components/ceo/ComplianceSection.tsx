@@ -134,8 +134,27 @@ export function ComplianceSection() {
               website: companyInfoData.website
             }
           }))
+        } else if (queryError?.code === 'PGRST116') {
+          // Tabela vazia - inserir dados padrão do compliance.json
+          const defaultCompanyData = complianceDataTyped.company
+          const { error: insertError } = await supabase
+            .from('company_info')
+            .insert([{
+              company_name: defaultCompanyData.name,
+              cnpj: defaultCompanyData.cnpj,
+              address: defaultCompanyData.address.street,
+              phone: defaultCompanyData.contact.phone,
+              email: defaultCompanyData.contact.email,
+              website: defaultCompanyData.website,
+              dpo_name: defaultCompanyData.contact.dpo_email.split('@')[0],
+              dpo_email: defaultCompanyData.contact.dpo_email
+            }])
+
+          if (!insertError) {
+            setData(complianceDataTyped)
+          }
         } else {
-          // Se não existir no Supabase, carregar do localStorage
+          // Erro desconhecido - carregar do localStorage
           const saved = localStorage.getItem('zayia_compliance_data')
           if (saved) {
             try {
