@@ -166,6 +166,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
   }, [])
 
+  // ✅ Task 2.6: Real-time listener for points + ranking updates
+  useEffect(() => {
+    if (!user?.id) return
+
+    const handlePointsChanged = (change: any) => {
+      console.log('🔄 Real-time points update from Supabase:', change)
+
+      const updatedData = change.new
+
+      // Update profile state with new points and level
+      setProfile(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          points: updatedData.points || prev.points,
+          level: updatedData.level || prev.level
+        }
+      })
+
+      // Update localStorage for persistence
+      if (updatedData.points) {
+        localStorage.setItem('user_points', updatedData.points.toString())
+      }
+
+      // Dispatch event for UI components to update (dashboard, ranking, etc)
+      window.dispatchEvent(new CustomEvent('pointsUpdated'))
+
+      // Log level up celebration
+      if (updatedData.level && updatedData.level > (profile?.level || 0)) {
+        console.log('🎉 Level up! New level:', updatedData.level)
+        window.dispatchEvent(new CustomEvent('levelUp', { detail: { level: updatedData.level } }))
+      }
+    }
+
+    // Subscribe to real-time changes on user's points and level
+    const unsubscribe = supabaseClient.onPointsChange(user.id, handlePointsChanged)
+
+    // Cleanup on unmount or when user changes
+    return () => {
+      unsubscribe()
+    }
+  }, [user?.id, profile?.level])
+
   /**
    * Sign in with email and password using Supabase Auth
    */
