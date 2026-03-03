@@ -269,9 +269,33 @@ export function ComplianceSection() {
       // Salvar no localStorage
       setTimeout(() => {
         saveData()
-        // Notificar outras abas sobre a mudança
+
+        // Notificar outras abas sobre a mudança (múltiplos métodos para garantir)
+        console.log('Broadcasting compliance data update...')
+
+        // Método 1: BroadcastChannel API (mais confiável)
+        try {
+          const channel = new BroadcastChannel('zayia_compliance_updates')
+          channel.postMessage({
+            type: 'COMPLIANCE_DATA_UPDATED',
+            timestamp: Date.now(),
+            data: data
+          })
+          channel.close()
+          console.log('BroadcastChannel message sent')
+        } catch (e) {
+          console.log('BroadcastChannel not available')
+        }
+
+        // Método 2: Storage event (para outras abas do mesmo domínio)
         window.localStorage.setItem('compliance_data_updated', Date.now().toString())
-        window.dispatchEvent(new Event('complianceDataUpdated'))
+        console.log('Storage event triggered')
+
+        // Método 3: Custom event (para a mesma aba)
+        window.dispatchEvent(new CustomEvent('complianceDataUpdated', {
+          detail: { timestamp: Date.now() }
+        }))
+        console.log('Custom event dispatched')
       }, 100)
 
       // Feedback visual

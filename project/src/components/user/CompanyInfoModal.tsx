@@ -30,30 +30,49 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
   useEffect(() => {
     fetchCompanyInfo()
 
-    // Escutar mudanças no localStorage (quando admin salva)
+    let broadcastChannel: BroadcastChannel | null = null
+
+    // Método 1: BroadcastChannel API (mais confiável entre abas)
+    try {
+      broadcastChannel = new BroadcastChannel('zayia_compliance_updates')
+      broadcastChannel.onmessage = (event) => {
+        if (event.data?.type === 'COMPLIANCE_DATA_UPDATED') {
+          console.log('📡 BroadcastChannel update received:', event.data.timestamp)
+          fetchCompanyInfo()
+        }
+      }
+      console.log('✅ BroadcastChannel listener registered')
+    } catch (e) {
+      console.log('BroadcastChannel not available, using fallback')
+    }
+
+    // Método 2: Storage event (para mudanças de outra aba)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'zayia_compliance_data' && e.newValue) {
-        console.log('Compliance data updated in localStorage, refreshing...')
+      if (e.key === 'zayia_compliance_data' || e.key === 'compliance_data_updated') {
+        console.log('💾 Storage event detected, refreshing...')
         fetchCompanyInfo()
       }
     }
 
-    // Escutar evento customizado (mesma aba)
-    const handleComplianceUpdate = () => {
-      console.log('Compliance data updated (same tab), refreshing...')
+    // Método 3: Custom event listener (mesma aba)
+    const handleComplianceUpdate = (e: any) => {
+      console.log('🔔 Custom event detected, refreshing...', e.detail)
       fetchCompanyInfo()
     }
 
     window.addEventListener('storage', handleStorageChange)
     window.addEventListener('complianceDataUpdated', handleComplianceUpdate)
 
-    // Polling como fallback (a cada 30 segundos)
+    // Polling como fallback (a cada 5 segundos para modal aberto)
     const pollInterval = setInterval(() => {
-      console.log('Polling for company info updates')
+      console.log('⏱️ Polling for company info updates')
       fetchCompanyInfo()
-    }, 30000)
+    }, 5000)
 
     return () => {
+      if (broadcastChannel) {
+        broadcastChannel.close()
+      }
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('complianceDataUpdated', handleComplianceUpdate)
       clearInterval(pollInterval)
