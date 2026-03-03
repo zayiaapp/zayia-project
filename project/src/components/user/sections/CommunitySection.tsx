@@ -132,8 +132,22 @@ export function CommunitySection() {
     // Post message to Supabase
     const newMessage = await supabaseClient.postMessage(user.id, content)
     if (newMessage) {
-      // Message will be loaded via real-time listener
       console.log('✅ Message posted:', newMessage.id)
+
+      // Add message to UI immediately (real-time listener fallback)
+      const messageWithProfile: CommunityMessage = {
+        ...newMessage,
+        user_profile: {
+          id: user.id,
+          email: profile.email,
+          full_name: profile.full_name,
+          role: profile.role,
+          avatar_url: profile.avatar_url,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at
+        }
+      }
+      setMessages([messageWithProfile, ...messages])
     } else {
       console.error('Failed to post message')
     }
