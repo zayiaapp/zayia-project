@@ -197,22 +197,22 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
         </div>
 
         <div className="mt-6 mb-6">
-          <div className="flex items-start gap-3 p-4 bg-purple-900/20 rounded-lg border border-purple-500/20">
+          <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg border border-purple-300">
             <input
               id="acceptTerms"
               name="acceptTerms"
               type="checkbox"
               checked={formData.acceptTerms}
               onChange={handleChange}
-              className="w-5 h-5 mt-0.5 rounded border border-purple-400 bg-purple-950 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer accent-purple-600"
+              className="w-5 h-5 mt-0.5 rounded border border-purple-400 bg-white text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer accent-purple-600"
             />
-            <label htmlFor="acceptTerms" className="text-sm text-gray-300 flex-1 cursor-pointer leading-relaxed">
+            <label htmlFor="acceptTerms" className="text-sm text-gray-700 flex-1 cursor-pointer leading-relaxed">
               Aceito a{' '}
               <a
                 href="http://localhost:5176/politica-privacidade"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 font-semibold underline transition"
+                className="text-purple-600 hover:text-purple-700 font-semibold underline transition"
                 onClick={(e) => e.stopPropagation()}
               >
                 Ler Política de Privacidade
@@ -222,7 +222,7 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
                 href="http://localhost:5176/termos-uso"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 font-semibold underline transition"
+                className="text-purple-600 hover:text-purple-700 font-semibold underline transition"
                 onClick={(e) => e.stopPropagation()}
               >
                 Ler Termos de Uso

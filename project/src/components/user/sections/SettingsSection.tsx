@@ -1,4 +1,3 @@
-import { DarkModeToggle } from '../../ui/DarkModeToggle'
 import { ExportDataSection } from './ExportDataSection'
 
 export function SettingsSection() {
@@ -7,12 +6,6 @@ export function SettingsSection() {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-zayia-deep-violet">⚙️ Configurações</h2>
         <p className="text-zayia-violet-gray text-sm mt-1">Personalize sua experiência na ZAYIA</p>
-      </div>
-
-      {/* Aparência Section */}
-      <div className="zayia-card p-6">
-        <h3 className="text-lg font-bold text-zayia-deep-violet mb-4">🎨 Aparência</h3>
-        <DarkModeToggle />
       </div>
 
       {/* Notificações Section */}
