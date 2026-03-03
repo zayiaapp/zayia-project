@@ -42,7 +42,7 @@ export function CommunitySection() {
     }
   }, [user?.id])
 
-  // Load messages and setup real-time listener
+  // Load messages and setup real-time listener + polling fallback
   useEffect(() => {
     console.log('🎯 CommunitySection useEffect running, user.id:', user?.id)
     loadCommunityData()
@@ -56,6 +56,11 @@ export function CommunitySection() {
     })
     console.log('✅ Listener created, unsubscribe function type:', typeof unsubscribeMessages)
 
+    // Polling fallback: reload messages every 3 seconds for cross-user updates
+    const pollingInterval = setInterval(() => {
+      loadCommunityData()
+    }, 3000)
+
     // Setup real-time listener for ban status
     let unsubscribeBan: (() => void) | undefined
     if (user?.id) {
@@ -67,6 +72,7 @@ export function CommunitySection() {
     return () => {
       unsubscribeMessages()
       if (unsubscribeBan) unsubscribeBan()
+      clearInterval(pollingInterval)
     }
   }, [user?.id])
 
