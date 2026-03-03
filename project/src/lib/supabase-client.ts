@@ -1001,6 +1001,161 @@ export class SupabaseClient {
     }
   }
 
+  // ADMIN CHALLENGE MANAGEMENT
+  async createChallenge(challengeData: {
+    title: string
+    description: string
+    category_id: string
+    points_easy: number
+    points_hard: number
+    difficulty: 'facil' | 'dificil'
+    duration_minutes?: number
+  }): Promise<Challenge | null> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .insert({
+          title: challengeData.title,
+          description: challengeData.description,
+          category_id: challengeData.category_id,
+          points_easy: challengeData.points_easy,
+          points_hard: challengeData.points_hard,
+          difficulty: challengeData.difficulty,
+          duration_minutes: challengeData.duration_minutes || 30,
+          is_active: true,
+          created_at: new Date().toISOString()
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error creating challenge:', error)
+      return null
+    }
+  }
+
+  async updateChallenge(challengeId: string, challengeData: {
+    title?: string
+    description?: string
+    category_id?: string
+    points_easy?: number
+    points_hard?: number
+    difficulty?: 'facil' | 'dificil'
+    duration_minutes?: number
+  }): Promise<Challenge | null> {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .update({
+          ...challengeData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', challengeId)
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error updating challenge:', error)
+      return null
+    }
+  }
+
+  async deleteChallenge(challengeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('challenges')
+        .delete()
+        .eq('id', challengeId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting challenge:', error)
+      return false
+    }
+  }
+
+  async createChallengeCategory(categoryData: {
+    name: string
+    icon: string
+    color: string
+  }): Promise<ChallengeCategory | null> {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_categories')
+        .insert({
+          name: categoryData.name,
+          icon: categoryData.icon,
+          color: categoryData.color,
+          created_at: new Date().toISOString()
+        })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error creating challenge category:', error)
+      return null
+    }
+  }
+
+  async updateChallengeCategory(categoryId: string, categoryData: {
+    name?: string
+    icon?: string
+    color?: string
+  }): Promise<ChallengeCategory | null> {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_categories')
+        .update({
+          ...categoryData,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', categoryId)
+        .select('*')
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Error updating challenge category:', error)
+      return null
+    }
+  }
+
+  async deleteChallengeCategory(categoryId: string): Promise<boolean> {
+    try {
+      // Check if category has active challenges
+      const { data: challenges, error: checkError } = await supabase
+        .from('challenges')
+        .select('id')
+        .eq('category_id', categoryId)
+        .eq('is_active', true)
+
+      if (checkError) throw checkError
+      if (challenges && challenges.length > 0) {
+        console.error('Cannot delete category with active challenges')
+        return false
+      }
+
+      const { error } = await supabase
+        .from('challenge_categories')
+        .delete()
+        .eq('id', categoryId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting challenge category:', error)
+      return false
+    }
+  }
+
   // PERMISSION CHECKS
   async validateUserPermission(
     userId: string,
