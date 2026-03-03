@@ -12,7 +12,8 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    acceptTerms: false
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -23,9 +24,10 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
   const { signUp } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     }))
   }
 
@@ -35,6 +37,12 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     setError('')
 
     // Validações
+    if (!formData.acceptTerms) {
+      setError('Você deve aceitar a Política de Privacidade e Termos de Uso para continuar')
+      setLoading(false)
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('As senhas não coincidem')
       setLoading(false)
@@ -188,6 +196,41 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
           </div>
         </div>
 
+        <div className="mt-6 mb-6">
+          <div className="flex items-start gap-3 p-4 bg-purple-900/20 rounded-lg border border-purple-500/20">
+            <input
+              id="acceptTerms"
+              name="acceptTerms"
+              type="checkbox"
+              checked={formData.acceptTerms}
+              onChange={handleChange}
+              className="w-5 h-5 mt-0.5 rounded border border-purple-400 bg-purple-950 text-purple-600 focus:ring-2 focus:ring-purple-500 cursor-pointer accent-purple-600"
+            />
+            <label htmlFor="acceptTerms" className="text-sm text-gray-300 flex-1 cursor-pointer leading-relaxed">
+              Aceito a{' '}
+              <a
+                href="http://localhost:5176/politica-privacidade"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-300 font-semibold underline transition"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Ler Política de Privacidade
+              </a>
+              {' '}e os{' '}
+              <a
+                href="http://localhost:5176/termos-uso"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-300 font-semibold underline transition"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Ler Termos de Uso
+              </a>
+            </label>
+          </div>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm">
             {error}
@@ -196,8 +239,12 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
 
         <button
           type="submit"
-          disabled={loading}
-          className="zayia-button w-full py-3 px-4 rounded-xl text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          disabled={loading || !formData.acceptTerms}
+          className={`w-full py-3 px-4 rounded-xl text-white font-semibold flex items-center justify-center gap-2 transition ${
+            formData.acceptTerms && !loading
+              ? 'zayia-button hover:opacity-90 cursor-pointer'
+              : 'bg-gray-400 cursor-not-allowed opacity-50'
+          }`}
         >
           {loading ? <LoadingSpinner size="sm" /> : <Sparkles className="w-5 h-5" />}
           {loading ? 'Criando conta...' : 'Criar Conta'}
