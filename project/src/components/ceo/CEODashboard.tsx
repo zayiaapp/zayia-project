@@ -6,7 +6,6 @@ import {
   BarChart3,
   Users,
   MessageSquare,
-  Settings,
   LogOut,
   Trophy,
   Target,
@@ -47,7 +46,6 @@ import IntegrationsSection from './IntegrationsSection'
 import { Dashboard2Section } from './Dashboard2Section'
 import { GuerreirasSection } from './GuerreirasSection'
 import { QuizzSection } from './QuizzSection'
-import { SettingsSection } from './SettingsSection'
 import { SubscriptionsSection } from './SubscriptionsSection'
 import { generateMockRankingUsers } from '../../lib/ranking-data-mock'
 
@@ -67,8 +65,7 @@ export function CEODashboard() {
     { id: 'notifications', label: 'Notificações', icon: Bell },
     { id: 'subscriptions', label: 'Assinaturas', icon: CreditCard },
     { id: 'integrations', label: 'Integrações', icon: Zap },
-    { id: 'compliance', label: 'Compliance', icon: Shield },
-    { id: 'settings', label: 'Configurações', icon: Settings }
+    { id: 'compliance', label: 'Compliance', icon: Shield }
   ]
 
   const handleRefreshRanking = async () => {
@@ -263,7 +260,6 @@ export function CEODashboard() {
       case 'subscriptions': return <SubscriptionsSection />
       case 'integrations': return <IntegrationsSection />
       case 'compliance': return <ComplianceSection />
-      case 'settings': return <SettingsSection />
       default: return renderDashboard()
     }
   }
