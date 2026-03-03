@@ -176,6 +176,30 @@ export interface LevelRequirement {
   color?: string
 }
 
+export interface SubscriptionPlan {
+  id: string
+  name: 'basic' | 'premium' | 'vip'
+  price: number
+  currency: string
+  billing_period: 'monthly' | 'yearly'
+  features: string[]
+  description?: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SubscriptionData {
+  user_id: string
+  plan: 'basic' | 'premium' | 'vip'
+  status: 'active' | 'cancelled' | 'expired'
+  started_at?: string
+  expires_at?: string
+  cancelled_at?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface CommunityMessage {
   id: string
   user_id: string
@@ -1256,6 +1280,116 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error calculating next level:', error)
       return 1 // Default to level 1
+    }
+  }
+
+  // SUBSCRIPTIONS
+  async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
+    try {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true })
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
+      return data || []
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error)
+      return []
+    }
+  }
+
+  async getUserSubscription(userId: string): Promise<SubscriptionData | null> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, subscription_plan, subscription_status, created_at, updated_at')
+        .eq('id', userId)
+        .single()
+
+      if (error && error.code === 'PGRST116') return null // No user found
+      if (error) throw error
+
+      return {
+        user_id: data.id,
+        plan: data.subscription_plan || 'basic',
+        status: data.subscription_status || 'active',
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      }
+    } catch (error) {
+      console.error('Error fetching user subscription:', error)
+      return null
+    }
+  }
+
+  async updateSubscription(userId: string, planId: string): Promise<SubscriptionData | null> {
+    try {
+      // Verify plan exists
+      const { data: planData, error: planError } = await supabase
+        .from('subscription_plans')
+        .select('name')
+        .eq('id', planId)
+        .single()
+
+      if (planError || !planData) {
+        console.error('Subscription plan not found:', planId)
+        return null
+      }
+
+      // Update user's subscription
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_plan: planData.name,
+          subscription_status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select('id, subscription_plan, subscription_status, created_at, updated_at')
+        .single()
+
+      if (error) throw error
+
+      return {
+        user_id: data.id,
+        plan: data.subscription_plan || 'basic',
+        status: data.subscription_status || 'active',
+        created_at: data.created_at,
+        updated_at: data.updated_at
+      }
+    } catch (error) {
+      console.error('Error updating subscription:', error)
+      return null
+    }
+  }
+
+  async cancelSubscription(userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          subscription_status: 'cancelled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error cancelling subscription:', error)
+      return false
+    }
+  }
+
+  async checkSubscriptionStatus(userId: string): Promise<boolean> {
+    try {
+      const subscription = await this.getUserSubscription(userId)
+      return subscription?.status === 'active' || false
+    } catch (error) {
+      console.error('Error checking subscription status:', error)
+      return false
     }
   }
 
