@@ -810,13 +810,14 @@ export class SupabaseClient {
     try {
       const { data, error } = await supabase
         .from('community_messages')
-        .select('*, reactions:message_reactions(id, emoji, user_id), user_profile:profiles(id, full_name, avatar_url)')
-        .is('deleted_at', null)
+        .select(`id, user_id, content, deleted_by_admin, deleted_at, deletion_reason, created_at, updated_at, user_profile:user_id(id, full_name, avatar_url, email)`, { count: 'exact' })
+        // Load ALL messages including deleted ones (soft delete will show placeholder)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
 
       if (error) throw error
-      return data || []
+      // Type cast - reactions are loaded separately when needed
+      return (data as unknown as CommunityMessage[]) || []
     } catch (error) {
       console.error('Error fetching messages:', error)
       return []
