@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Shield, 
-  FileText, 
-  Users, 
-  AlertTriangle, 
-  CheckCircle, 
-  Edit, 
-  Save, 
-  X, 
-  Download, 
-  Eye, 
-  Calendar, 
-  Mail, 
-  Phone, 
-  Building, 
+import {
+  Shield,
+  FileText,
+  Users,
+  AlertTriangle,
+  CheckCircle,
+  Edit,
+  Save,
+  X,
+  Download,
+  Eye,
+  Calendar,
+  Mail,
+  Phone,
+  Building,
   Globe,
   Lock,
   UserCheck,
@@ -26,6 +26,7 @@ import {
   Check
 } from 'lucide-react'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
+import { supabase } from '../../lib/supabase'
 
 // Importar dados de compliance
 import complianceData from '../../data/compliance.json'
@@ -99,15 +100,107 @@ export function ComplianceSection() {
   const [isSaving, setIsSaving] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  // Carregar dados salvos do localStorage
+  // Carregar dados do Supabase e sincronizar com localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('zayia_compliance_data')
-    if (saved) {
+    const loadComplianceData = async () => {
       try {
-        setData(JSON.parse(saved))
+        // Tentar carregar dados do Supabase
+        const { data: companyInfoData, error: queryError } = await supabase
+          .from('company_info')
+          .select('*')
+          .single()
+
+        if (!queryError && companyInfoData) {
+          // Se conseguir carregar do Supabase, mesclar com dados de compliance
+          setData(prev => ({
+            ...prev,
+            company: {
+              ...prev.company,
+              name: companyInfoData.company_name,
+              cnpj: companyInfoData.cnpj,
+              address: {
+                street: companyInfoData.address || '',
+                neighborhood: prev.company.address.neighborhood,
+                city: prev.company.address.city,
+                state: prev.company.address.state,
+                zipcode: prev.company.address.zipcode
+              },
+              contact: {
+                email: companyInfoData.email,
+                phone: companyInfoData.phone,
+                support_email: prev.company.contact.support_email,
+                dpo_email: companyInfoData.dpo_email || ''
+              },
+              website: companyInfoData.website
+            }
+          }))
+        } else {
+          // Se não existir no Supabase, carregar do localStorage
+          const saved = localStorage.getItem('zayia_compliance_data')
+          if (saved) {
+            try {
+              setData(JSON.parse(saved))
+            } catch (error) {
+              console.error('Error loading compliance data:', error)
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error loading compliance data:', error)
+        console.error('Error loading from Supabase:', error)
+        // Fallback para localStorage
+        const saved = localStorage.getItem('zayia_compliance_data')
+        if (saved) {
+          try {
+            setData(JSON.parse(saved))
+          } catch (error) {
+            console.error('Error loading compliance data:', error)
+          }
+        }
       }
+    }
+
+    loadComplianceData()
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('company_info_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'company_info'
+        },
+        (payload) => {
+          const companyInfoData = payload.new as any
+          setData(prev => ({
+            ...prev,
+            company: {
+              ...prev.company,
+              name: companyInfoData.company_name,
+              cnpj: companyInfoData.cnpj,
+              address: {
+                street: companyInfoData.address || '',
+                neighborhood: prev.company.address.neighborhood,
+                city: prev.company.address.city,
+                state: prev.company.address.state,
+                zipcode: prev.company.address.zipcode
+              },
+              contact: {
+                email: companyInfoData.email,
+                phone: companyInfoData.phone,
+                support_email: prev.company.contact.support_email,
+                dpo_email: companyInfoData.dpo_email || ''
+              },
+              website: companyInfoData.website
+            }
+          }))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      channel.unsubscribe()
     }
   }, [])
 
@@ -131,32 +224,66 @@ export function ComplianceSection() {
   // Salvar edições
   const saveEdits = async () => {
     setIsSaving(true)
-    
-    // Simular salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    if (editingSection === 'company') {
-      setData((prev: ComplianceData) => ({ ...prev, company: editData }))
-    } else if (editingSection?.startsWith('document_')) {
-      const docType = editingSection.replace('document_', '')
-      setData((prev: ComplianceData) => ({
-        ...prev,
-        documents: {
-          ...prev.documents,
-          [docType]: {
-            ...editData,
-            last_updated: new Date().toISOString().split('T')[0]
-          }
+
+    try {
+      if (editingSection === 'company') {
+        // Salvar dados da empresa no Supabase
+        const { data: existingCompany } = await supabase
+          .from('company_info')
+          .select('id')
+          .single()
+
+        const companyPayload = {
+          company_name: editData.name,
+          cnpj: editData.cnpj,
+          address: editData.address?.street || '',
+          phone: editData.contact?.phone || '',
+          email: editData.contact?.email || '',
+          website: editData.website || '',
+          dpo_name: editData.contact?.dpo_name || null,
+          dpo_email: editData.contact?.dpo_email || '',
+          updated_at: new Date().toISOString()
         }
-      }))
+
+        if (existingCompany?.id) {
+          // Update existing
+          await supabase
+            .from('company_info')
+            .update(companyPayload)
+            .eq('id', existingCompany.id)
+        } else {
+          // Insert new
+          await supabase
+            .from('company_info')
+            .insert([companyPayload])
+        }
+
+        setData((prev: ComplianceData) => ({ ...prev, company: editData }))
+      } else if (editingSection?.startsWith('document_')) {
+        const docType = editingSection.replace('document_', '')
+        setData((prev: ComplianceData) => ({
+          ...prev,
+          documents: {
+            ...prev.documents,
+            [docType]: {
+              ...editData,
+              last_updated: new Date().toISOString().split('T')[0]
+            }
+          }
+        }))
+      }
+
+      setIsSaving(false)
+      setEditingSection(null)
+      setEditData({})
+
+      // Salvar no localStorage
+      setTimeout(saveData, 100)
+    } catch (error) {
+      console.error('Error saving edits:', error)
+      setIsSaving(false)
+      alert('Erro ao salvar. Tente novamente.')
     }
-    
-    setIsSaving(false)
-    setEditingSection(null)
-    setEditData({})
-    
-    // Salvar no localStorage
-    setTimeout(saveData, 100)
   }
 
   // Copiar para clipboard
