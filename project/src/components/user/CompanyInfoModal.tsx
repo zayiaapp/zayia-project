@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { X, Mail, Phone, MapPin, Globe, Building2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import complianceData from '../../data/compliance.json'
 
 interface CompanyInfo {
   id: string
@@ -28,24 +29,31 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
   useEffect(() => {
     fetchCompanyInfo()
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('company_info_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'company_info',
-        },
-        () => {
-          fetchCompanyInfo()
-        }
-      )
-      .subscribe()
+    // Subscribe to real-time updates (if Supabase is configured)
+    let channel: any = null
+    try {
+      channel = supabase
+        .channel('company_info_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'company_info',
+          },
+          () => {
+            fetchCompanyInfo()
+          }
+        )
+        .subscribe()
+    } catch (error) {
+      console.log('Could not subscribe to real-time updates')
+    }
 
     return () => {
-      channel.unsubscribe()
+      if (channel) {
+        channel.unsubscribe()
+      }
     }
   }, [])
 
@@ -54,23 +62,64 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
       setLoading(true)
       setError(null)
 
+      console.log('Fetching company info from Supabase...')
       const { data, error: queryError } = await supabase
         .from('company_info')
         .select('*')
         .single()
 
+      console.log('Supabase response:', { data, error: queryError })
+
       if (queryError) {
-        if (queryError.code === 'PGRST116') {
-          setError('Informações da empresa não disponíveis')
-        } else {
-          throw queryError
-        }
-      } else {
+        console.log('Supabase query error, falling back to compliance.json')
+        // Fallback para dados do compliance.json
+        const complianceDataTyped = complianceData as any
+        const companyData = complianceDataTyped.company
+
+        setCompanyInfo({
+          id: 'fallback',
+          company_name: companyData.name,
+          cnpj: companyData.cnpj,
+          address: `${companyData.address.street}, ${companyData.address.neighborhood}`,
+          phone: companyData.contact.phone,
+          email: companyData.contact.email,
+          website: companyData.website,
+          dpo_name: 'DPO ZAYIA',
+          dpo_email: companyData.contact.dpo_email,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      } else if (data) {
+        console.log('Company info loaded from Supabase:', data)
         setCompanyInfo(data)
+      } else {
+        setError('Informações da empresa não disponíveis')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar dados')
-      console.error('Error fetching company info:', err)
+      console.log('Error fetching from Supabase, using fallback data')
+      // Fallback final para dados do compliance.json
+      try {
+        const complianceDataTyped = complianceData as any
+        const companyData = complianceDataTyped.company
+
+        setCompanyInfo({
+          id: 'fallback',
+          company_name: companyData.name,
+          cnpj: companyData.cnpj,
+          address: `${companyData.address.street}, ${companyData.address.neighborhood}`,
+          phone: companyData.contact.phone,
+          email: companyData.contact.email,
+          website: companyData.website,
+          dpo_name: 'DPO ZAYIA',
+          dpo_email: companyData.contact.dpo_email,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      } catch (fallbackErr) {
+        const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar dados'
+        console.error('Error fetching company info:', errorMessage, err)
+        setError(errorMessage)
+      }
     } finally {
       setLoading(false)
     }
