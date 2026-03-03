@@ -17,52 +17,48 @@ export function ExportDataSection() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchUserData = async (): Promise<UserExportData | null> => {
-    try {
-      if (!user || !user.id) {
-        throw new Error('Usuário não autenticado')
-      }
+    if (!user || !user.id) {
+      throw new Error('Usuário não autenticado')
+    }
 
-      // Fetch profile data
-      const profileData = profile || {}
+    // Fetch profile data
+    const profileData = profile || {}
 
-      // Fetch completed challenges
-      const { data: challenges, error: challengesError } = await supabase
-        .from('user_challenges')
-        .select('*')
-        .eq('user_id', user.id)
+    // Fetch completed challenges
+    const { data: challenges, error: challengesError } = await supabase
+      .from('user_challenges')
+      .select('*')
+      .eq('user_id', user.id)
 
-      if (challengesError && challengesError.code !== 'PGRST116') {
-        console.warn('Warning fetching challenges:', challengesError)
-      }
+    if (challengesError && challengesError.code !== 'PGRST116') {
+      console.warn('Warning fetching challenges:', challengesError)
+    }
 
-      // Fetch subscriptions
-      const { data: subscriptions, error: subsError } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
+    // Fetch subscriptions
+    const { data: subscriptions, error: subsError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
 
-      if (subsError && subsError.code !== 'PGRST116') {
-        console.warn('Warning fetching subscriptions:', subsError)
-      }
+    if (subsError && subsError.code !== 'PGRST116') {
+      console.warn('Warning fetching subscriptions:', subsError)
+    }
 
-      // Fetch invoices
-      const { data: invoices, error: invoicesError } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('user_id', user.id)
+    // Fetch invoices
+    const { data: invoices, error: invoicesError } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('user_id', user.id)
 
-      if (invoicesError && invoicesError.code !== 'PGRST116') {
-        console.warn('Warning fetching invoices:', invoicesError)
-      }
+    if (invoicesError && invoicesError.code !== 'PGRST116') {
+      console.warn('Warning fetching invoices:', invoicesError)
+    }
 
-      return {
-        profile: profileData,
-        challenges: challenges || [],
-        subscriptions: subscriptions || [],
-        invoices: invoices || [],
-      }
-    } catch (err) {
-      throw err
+    return {
+      profile: profileData,
+      challenges: challenges || [],
+      subscriptions: subscriptions || [],
+      invoices: invoices || [],
     }
   }
 
