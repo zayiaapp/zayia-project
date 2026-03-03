@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { X, Mail, Phone, MapPin, Globe, Building2 } from 'lucide-react'
+import { X, Mail, Phone, MapPin, Globe, Building2, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import complianceData from '../../data/compliance.json'
 
@@ -25,6 +25,7 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     fetchCompanyInfo()
@@ -32,6 +33,7 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
     // Subscribe to real-time updates (if Supabase is configured)
     let channel: any = null
     try {
+      console.log('Setting up real-time subscription for company_info')
       channel = supabase
         .channel('company_info_changes')
         .on(
@@ -41,21 +43,37 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
             schema: 'public',
             table: 'company_info',
           },
-          () => {
+          (payload: any) => {
+            console.log('Real-time update received:', payload)
             fetchCompanyInfo()
           }
         )
-        .subscribe()
+        .subscribe((status: string) => {
+          console.log('Subscription status:', status)
+        })
     } catch (error) {
-      console.log('Could not subscribe to real-time updates')
+      console.log('Could not subscribe to real-time updates:', error)
     }
+
+    // Polling como fallback (a cada 30 segundos)
+    const pollInterval = setInterval(() => {
+      console.log('Polling for company info updates')
+      fetchCompanyInfo()
+    }, 30000)
 
     return () => {
       if (channel) {
         channel.unsubscribe()
       }
+      clearInterval(pollInterval)
     }
   }, [])
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchCompanyInfo()
+    setIsRefreshing(false)
+  }
 
   const fetchCompanyInfo = async () => {
     try {
@@ -131,12 +149,22 @@ export const CompanyInfoModal: React.FC<CompanyInfoModalProps> = ({ onClose }) =
         {/* HEADER */}
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-purple-600">Informações da Empresa</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="text-gray-400 hover:text-purple-600 transition disabled:opacity-50"
+              title="Atualizar dados"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* LOADING */}

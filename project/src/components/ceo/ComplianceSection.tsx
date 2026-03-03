@@ -247,11 +247,6 @@ export function ComplianceSection() {
     try {
       if (editingSection === 'company') {
         // Salvar dados da empresa no Supabase
-        const { data: existingCompany } = await supabase
-          .from('company_info')
-          .select('id')
-          .single()
-
         const companyPayload = {
           company_name: editData.name,
           cnpj: editData.cnpj,
@@ -264,19 +259,40 @@ export function ComplianceSection() {
           updated_at: new Date().toISOString()
         }
 
-        if (existingCompany?.id) {
-          // Update existing
-          await supabase
+        // Tentar buscar o primeiro registro existente
+        const { data: existingRecords, error: selectError } = await supabase
+          .from('company_info')
+          .select('id')
+          .limit(1)
+
+        console.log('Existing records check:', { existingRecords, selectError })
+
+        if (!selectError && existingRecords && existingRecords.length > 0) {
+          // Update existing record
+          console.log('Updating existing record:', existingRecords[0].id)
+          const { error: updateError } = await supabase
             .from('company_info')
             .update(companyPayload)
-            .eq('id', existingCompany.id)
+            .eq('id', existingRecords[0].id)
+
+          if (updateError) {
+            console.error('Update error:', updateError)
+            throw updateError
+          }
         } else {
-          // Insert new
-          await supabase
+          // Insert new record
+          console.log('Inserting new record')
+          const { error: insertError } = await supabase
             .from('company_info')
             .insert([companyPayload])
+
+          if (insertError) {
+            console.error('Insert error:', insertError)
+            throw insertError
+          }
         }
 
+        console.log('Company info saved successfully')
         setData((prev: ComplianceData) => ({ ...prev, company: editData }))
       } else if (editingSection?.startsWith('document_')) {
         const docType = editingSection.replace('document_', '')
