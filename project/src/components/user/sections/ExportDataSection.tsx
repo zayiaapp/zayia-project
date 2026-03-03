@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Download, FileJson, FileText, AlertCircle } from 'lucide-react'
+import { FileText, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import jsPDF from 'jspdf'
@@ -14,9 +14,7 @@ interface UserExportData {
 export function ExportDataSection() {
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [format, setFormat] = useState<'json' | 'pdf' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
 
   const fetchUserData = async (): Promise<UserExportData | null> => {
     try {
@@ -68,38 +66,6 @@ export function ExportDataSection() {
     }
   }
 
-  const generateJSON = (data: UserExportData) => {
-    const jsonData = {
-      exportDate: new Date().toISOString(),
-      version: '1.0',
-      compliance: 'LGPD - Direito de Portabilidade',
-      data: {
-        profile: data.profile,
-        challenges: {
-          total: data.challenges.length,
-          items: data.challenges,
-        },
-        subscriptions: {
-          total: data.subscriptions.length,
-          items: data.subscriptions,
-        },
-        invoices: {
-          total: data.invoices.length,
-          items: data.invoices,
-        },
-      },
-    }
-
-    const jsonString = JSON.stringify(jsonData, null, 2)
-    const blob = new Blob([jsonString], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `zayia-dados-${new Date().getTime()}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  }
-
   const generatePDF = (data: UserExportData) => {
     const doc = new jsPDF()
     let yPosition = 20
@@ -107,7 +73,7 @@ export function ExportDataSection() {
     // Header
     doc.setFontSize(16)
     doc.setTextColor(75, 0, 130) // Purple
-    doc.text('EXPORTAÇÃO DE DADOS PESSOAIS - ZAYIA', 20, yPosition)
+    doc.text('MEUS DADOS PESSOAIS - ZAYIA', 20, yPosition)
     yPosition += 10
 
     // Compliance note
@@ -231,12 +197,10 @@ export function ExportDataSection() {
     doc.save(`zayia-dados-${new Date().getTime()}.pdf`)
   }
 
-  const handleExport = async (exportFormat: 'json' | 'pdf') => {
+  const handleExport = async () => {
     try {
       setError(null)
-      setSuccess(false)
       setLoading(true)
-      setFormat(exportFormat)
 
       const data = await fetchUserData()
 
@@ -244,20 +208,12 @@ export function ExportDataSection() {
         throw new Error('Erro ao buscar dados')
       }
 
-      if (exportFormat === 'json') {
-        generateJSON(data)
-      } else {
-        generatePDF(data)
-      }
-
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      generatePDF(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao exportar dados')
       console.error('Export error:', err)
     } finally {
       setLoading(false)
-      setFormat(null)
     }
   }
 
@@ -266,7 +222,7 @@ export function ExportDataSection() {
       <div>
         <h3 className="text-lg font-semibold text-zayia-deep-violet mb-2">💾 Exportar Meus Dados</h3>
         <p className="text-sm text-zayia-violet-gray mb-4">
-          Baixe uma cópia de todos seus dados pessoais conforme seu direito de portabilidade pela LGPD (Artigo 20).
+          Baixe um PDF com todos seus dados pessoais conforme seu direito de portabilidade pela LGPD.
         </p>
       </div>
 
@@ -277,56 +233,21 @@ export function ExportDataSection() {
         </div>
       )}
 
-      {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-700">✅ Arquivo baixado com sucesso!</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* JSON Export */}
-        <button
-          onClick={() => handleExport('json')}
-          disabled={loading}
-          className={`flex items-center gap-3 p-4 rounded-xl border-2 transition ${
-            loading && format === 'json'
-              ? 'bg-purple-900/30 border-purple-500/30 cursor-not-allowed'
-              : 'bg-white border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-          }`}
-        >
-          <FileJson className="w-5 h-5 text-purple-600 flex-shrink-0" />
-          <div className="text-left">
-            <p className="font-semibold text-zayia-deep-violet">
-              {loading && format === 'json' ? 'Exportando...' : 'Exportar JSON'}
-            </p>
-            <p className="text-xs text-zayia-violet-gray">Formato estruturado</p>
-          </div>
-          {!loading && <Download className="w-4 h-4 text-purple-600 ml-auto" />}
-        </button>
-
-        {/* PDF Export */}
-        <button
-          onClick={() => handleExport('pdf')}
-          disabled={loading}
-          className={`flex items-center gap-3 p-4 rounded-xl border-2 transition ${
-            loading && format === 'pdf'
-              ? 'bg-purple-900/30 border-purple-500/30 cursor-not-allowed'
-              : 'bg-white border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-          }`}
-        >
-          <FileText className="w-5 h-5 text-purple-600 flex-shrink-0" />
-          <div className="text-left">
-            <p className="font-semibold text-zayia-deep-violet">
-              {loading && format === 'pdf' ? 'Exportando...' : 'Exportar PDF'}
-            </p>
-            <p className="text-xs text-zayia-violet-gray">Formato legível</p>
-          </div>
-          {!loading && <Download className="w-4 h-4 text-purple-600 ml-auto" />}
-        </button>
-      </div>
+      <button
+        onClick={handleExport}
+        disabled={loading}
+        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition font-semibold ${
+          loading
+            ? 'bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed'
+            : 'bg-purple-600 border-purple-600 text-white hover:bg-purple-700 hover:border-purple-700'
+        }`}
+      >
+        <FileText className="w-5 h-5" />
+        {loading ? 'Exportando...' : 'Exportar Meus Dados em PDF'}
+      </button>
 
       <p className="text-xs text-zayia-violet-gray mt-4 p-3 bg-purple-50 rounded-lg">
-        📋 <strong>Sobre esta exportação:</strong> Os arquivos contêm seus dados pessoais e histórico. Mantenha em local seguro e não compartilhe com terceiros.
+        📄 Seu PDF será baixado automaticamente com todos seus dados pessoais.
       </p>
     </div>
   )
