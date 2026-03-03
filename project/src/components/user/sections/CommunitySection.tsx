@@ -42,24 +42,29 @@ export function CommunitySection() {
     }
   }, [user?.id])
 
-  // Load messages and setup real-time listener + polling fallback
+  // Load messages and setup real-time listener
   useEffect(() => {
-    console.log('🎯 CommunitySection useEffect running, user.id:', user?.id)
+    if (!user?.id) return
+
+    console.log('🎯 CommunitySection useEffect running, user.id:', user.id)
     loadCommunityData()
 
-    // Setup real-time listener for messages
-    console.log('🔌 About to create onMessagesChange listener')
-    const unsubscribeMessages = supabaseClient.onMessagesChange((change: any) => {
-      console.log('📱 Message change:', change.eventType)
-      // Reload messages on any change
-      loadCommunityData()
-    })
-    console.log('✅ Listener created, unsubscribe function type:', typeof unsubscribeMessages)
+    // Setup real-time listener for messages with robust connection
+    console.log('🔌 Setting up real-time listener')
+    let subscription: any = null
 
-    // Polling fallback: reload messages every 3 seconds for cross-user updates
-    const pollingInterval = setInterval(() => {
-      loadCommunityData()
-    }, 3000)
+    const setupListener = async () => {
+      subscription = supabaseClient.onMessagesChange((change: any) => {
+        console.log('📱 Real-time message received:', change.eventType, change.new?.id)
+        // Update messages without full reload - only reload if needed
+        if (change.eventType === 'INSERT' || change.eventType === 'DELETE' || change.eventType === 'UPDATE') {
+          loadCommunityData()
+        }
+      })
+      console.log('✅ Real-time listener ready')
+    }
+
+    setupListener()
 
     // Setup real-time listener for ban status
     let unsubscribeBan: (() => void) | undefined
@@ -70,9 +75,9 @@ export function CommunitySection() {
     }
 
     return () => {
-      unsubscribeMessages()
+      if (subscription) subscription()
       if (unsubscribeBan) unsubscribeBan()
-      clearInterval(pollingInterval)
+      console.log('🧹 Cleanup: listeners unsubscribed')
     }
   }, [user?.id])
 

@@ -1063,8 +1063,15 @@ export class SupabaseClient {
   onMessagesChange(callback: (change: any) => void) {
     console.log('🔌 Setting up real-time listener for community_messages')
 
+    const channelName = `public:community_messages:${Date.now()}`
+
     const subscription = supabase
-      .channel('community_messages')
+      .channel(channelName, {
+        config: {
+          broadcast: { self: true },
+          presence: { key: 'user' }
+        }
+      })
       .on(
         'postgres_changes',
         {
@@ -1073,12 +1080,15 @@ export class SupabaseClient {
           table: 'community_messages'
         },
         (payload) => {
-          console.log('📱 Real-time message change received:', payload.eventType, payload)
+          console.log('📱 Real-time message change received:', payload.eventType)
           callback(payload)
         }
       )
       .subscribe((status) => {
-        console.log('🔗 Listener status:', status)
+        console.log('🔗 Listener connection status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Real-time listener ACTIVE and receiving events')
+        }
       })
 
     return () => {
