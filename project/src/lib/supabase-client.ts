@@ -156,6 +156,26 @@ export interface UserEarnedBadge {
   earned_at: string
 }
 
+export interface Medal {
+  id: string
+  user_id: string
+  name: string
+  category_id?: string
+  description?: string
+  icon?: string
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
+  points: number
+  unlocked_at: string
+}
+
+export interface LevelRequirement {
+  level: number
+  points_required: number
+  name: string
+  description?: string
+  color?: string
+}
+
 export interface CommunityMessage {
   id: string
   user_id: string
@@ -1103,6 +1123,139 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching level:', error)
       return null
+    }
+  }
+
+  // MEDALS
+  async checkAndUnlockMedals(userId: string): Promise<Medal[]> {
+    try {
+      // Get total challenges completed by user
+      const { data: progressData, error: progressError } = await supabase
+        .from('user_progress')
+        .select('id')
+        .eq('user_id', userId)
+
+      if (progressError && progressError.code !== 'PGRST116') throw progressError
+      const totalCompleted = progressData?.length || 0
+
+      // Check which medals should be unlocked
+      const medalThresholds = [
+        { level: 'iniciante', threshold: 1, points: 5 },
+        { level: 'aprendiz', threshold: 5, points: 10 },
+        { level: 'mestre', threshold: 10, points: 15 },
+        { level: 'lendaria', threshold: 25, points: 20 }
+      ]
+
+      const unlockedMedals: Medal[] = []
+
+      for (const medal of medalThresholds) {
+        if (totalCompleted >= medal.threshold) {
+          // Check if user already has this medal
+          const { data: existingMedal, error: checkError } = await supabase
+            .from('user_medals')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('level', medal.level)
+            .single()
+
+          if (checkError && checkError.code === 'PGRST116') {
+            // Medal doesn't exist, create it
+            const { data: newMedal, error: insertError } = await supabase
+              .from('user_medals')
+              .insert({
+                user_id: userId,
+                level: medal.level,
+                points: medal.points,
+                unlocked_at: new Date().toISOString()
+              })
+              .select('*')
+              .single()
+
+            if (insertError) throw insertError
+            unlockedMedals.push(newMedal)
+          } else if (existingMedal) {
+            unlockedMedals.push(existingMedal)
+          }
+        }
+      }
+
+      return unlockedMedals
+    } catch (error) {
+      console.error('Error checking and unlocking medals:', error)
+      return []
+    }
+  }
+
+  async getMedalsByCategory(userId: string, categoryId: string): Promise<Medal[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_medals')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('category_id', categoryId)
+        .order('unlocked_at', { ascending: false })
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
+      return data || []
+    } catch (error) {
+      console.error('Error fetching medals by category:', error)
+      return []
+    }
+  }
+
+  async getGlobalMedals(): Promise<Medal[]> {
+    try {
+      const { data, error } = await supabase
+        .from('medals')
+        .select('*')
+        .eq('is_active', true)
+        .order('rarity', { ascending: true })
+
+      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
+      return data || []
+    } catch (error) {
+      console.error('Error fetching global medals:', error)
+      return []
+    }
+  }
+
+  async getLevelRequirements(): Promise<LevelRequirement[]> {
+    try {
+      // Define level requirements based on points scaling
+      const levels: LevelRequirement[] = [
+        { level: 1, points_required: 0, name: 'Novice', color: '#94a3b8' },
+        { level: 2, points_required: 100, name: 'Apprentice', color: '#10b981' },
+        { level: 3, points_required: 150, name: 'Expert', color: '#3b82f6' },
+        { level: 4, points_required: 200, name: 'Master', color: '#f59e0b' },
+        { level: 5, points_required: 300, name: 'Legend', color: '#8b5cf6' },
+        { level: 6, points_required: 450, name: 'Mythical', color: '#ec4899' }
+      ]
+
+      return levels
+    } catch (error) {
+      console.error('Error fetching level requirements:', error)
+      return []
+    }
+  }
+
+  async calculateNextLevel(currentPoints: number): Promise<number> {
+    try {
+      const requirements = await this.getLevelRequirements()
+
+      // Find the appropriate level based on current points
+      let currentLevel = 1
+      for (const req of requirements) {
+        if (currentPoints >= req.points_required) {
+          currentLevel = req.level
+        } else {
+          break
+        }
+      }
+
+      return currentLevel
+    } catch (error) {
+      console.error('Error calculating next level:', error)
+      return 1 // Default to level 1
     }
   }
 
