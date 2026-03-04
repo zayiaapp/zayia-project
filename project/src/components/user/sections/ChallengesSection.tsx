@@ -5,10 +5,12 @@ import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
 import { PopUpMedalUnlocked } from '../modals/PopUpMedalUnlocked'
+import { LevelUpModal } from '../modals/LevelUpModal'
 import { checkAndUnlockMedals } from '../../../lib/medals-unlock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { incrementDailyCount } from '../../../lib/challenges-storage'
 import { BADGES, type Badge } from '../../../lib/badges-data-mock'
+import { supabaseClient } from '../../../lib/supabase-client'
 
 export function ChallengesSection() {
   const { user } = useAuth()
@@ -22,6 +24,13 @@ export function ChallengesSection() {
   const [isLoading, setIsLoading] = useState(true)
   const [unlockedMedalPopup, setUnlockedMedalPopup] = useState<Badge | null>(null)
   const [previousEarnedBadges, setPreviousEarnedBadges] = useState<Set<string>>(new Set())
+  // Level-up state
+  const [levelUpData, setLevelUpData] = useState<{
+    newLevel: number
+    bonusPoints: number
+    challengePoints: number
+    medalPoints: number
+  } | null>(null)
 
   // Initialize on mount
   useEffect(() => {
@@ -129,32 +138,58 @@ export function ChallengesSection() {
 
 
     // 7. CALCULAR TOTAL FINAL
-    const finalTotalPoints = totalAfterChallenge + medalPointsAdded
+    let finalTotalPoints = totalAfterChallenge + medalPointsAdded
 
+    // 8. VERIFICAR LEVEL-UP
+    let levelUpBonus = 0
+    const checkLevelUp = async () => {
+      // Get current level from localStorage or profile
+      const levelStr = localStorage.getItem('user_level')
+      const currentLevel = levelStr ? parseInt(levelStr, 10) : 0
+      const levelUpResult = await supabaseClient.checkAndAwardLevelUp(
+        user.id,
+        finalTotalPoints,
+        currentLevel
+      )
 
-    // 8. SALVAR APENAS UMA VEZ
-    localStorage.setItem('user_points', finalTotalPoints.toString())
-    const afterStorage = localStorage.getItem('user_points')
+      if (levelUpResult.leveledUp) {
+        levelUpBonus = levelUpResult.totalBonus
+        finalTotalPoints += levelUpBonus
 
+        // Mostrar nível-up modal
+        setLevelUpData({
+          newLevel: levelUpResult.newLevel,
+          bonusPoints: levelUpBonus,
+          challengePoints: pointsFromChallenge,
+          medalPoints: medalPointsAdded
+        })
+      }
 
-    // 9. MOSTRAR POP-UP
-    if (allNewMedals.length > 0) {
-      const newMedalId = allNewMedals[0]
-      const medalObj = BADGES.find(b => b.id === newMedalId)
-      if (medalObj) {
-        setUnlockedMedalPopup(medalObj)
+      // 9. SALVAR PONTOS FINAIS
+      localStorage.setItem('user_points', finalTotalPoints.toString())
+      const afterStorage = localStorage.getItem('user_points')
+
+      // 10. MOSTRAR POP-UP DE MEDALHA (se houver)
+      if (allNewMedals.length > 0) {
+        const newMedalId = allNewMedals[0]
+        const medalObj = BADGES.find(b => b.id === newMedalId)
+        if (medalObj) {
+          setUnlockedMedalPopup(medalObj)
+        }
+      }
+
+      // 11. INCREMENTAR DESAFIOS HOJE
+      incrementDailyCount()
+
+      // 12. DISPARAR EVENTOS
+      window.dispatchEvent(new Event('pointsUpdated'))
+      window.dispatchEvent(new Event('dailyProgressUpdated'))
+      if (allNewMedals.length > 0) {
+        window.dispatchEvent(new Event('medalsUpdated'))
       }
     }
 
-    // 10. INCREMENTAR DESAFIOS HOJE
-    incrementDailyCount()
-
-    // 11. DISPARAR EVENTOS
-    window.dispatchEvent(new Event('pointsUpdated'))
-    window.dispatchEvent(new Event('dailyProgressUpdated'))
-    if (allNewMedals.length > 0) {
-      window.dispatchEvent(new Event('medalsUpdated'))
-    }
+    checkLevelUp()
 
   }
 
@@ -204,6 +239,18 @@ export function ChallengesSection() {
         onClose={() => setUnlockedMedalPopup(null)}
         onViewMedal={handleViewMedal}
       />
+
+      {/* Pop-up para level-up */}
+      {levelUpData && (
+        <LevelUpModal
+          isOpen={!!levelUpData}
+          newLevel={levelUpData.newLevel}
+          bonusPoints={levelUpData.bonusPoints}
+          challengePoints={levelUpData.challengePoints}
+          medalPoints={levelUpData.medalPoints}
+          onClose={() => setLevelUpData(null)}
+        />
+      )}
 
       {/* Sub-tabs */}
       <div className="flex gap-4 border-b border-zayia-lilac/30">

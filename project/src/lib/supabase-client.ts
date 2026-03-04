@@ -2682,6 +2682,95 @@ export class SupabaseClient {
       }
     }
   }
+
+  // LEVEL UP SYSTEM
+  /**
+   * Check and award level-ups based on current points
+   * Automatically detects when user reaches next level threshold
+   * @param userId - User ID
+   * @param currentPoints - Current total points
+   * @param currentLevel - Current level
+   * @returns Level-up details {leveledUp, newLevel, bonusPoints, totalBonus}
+   */
+  async checkAndAwardLevelUp(
+    userId: string,
+    currentPoints: number,
+    currentLevel: number
+  ): Promise<{
+    leveledUp: boolean
+    newLevel: number
+    bonusPoints: number
+    totalBonus: number
+  }> {
+    try {
+      const { LEVELS } = await import('./badges-data-mock')
+
+      let newLevel = currentLevel
+      let totalBonus = 0
+
+      // Check if multiple levels can be achieved
+      for (let nextLevel = currentLevel + 1; nextLevel < LEVELS.length; nextLevel++) {
+        const nextLevelRequired = LEVELS[nextLevel]?.pointsRequired || 0
+
+        if (currentPoints >= nextLevelRequired) {
+          newLevel = nextLevel
+          const bonus = LEVELS[nextLevel]?.bonusPoints || 0
+          totalBonus += bonus
+          console.log(
+            `✅ Level-up detected: ${currentLevel} → ${nextLevel} (+${bonus} bonus points)`
+          )
+        } else {
+          break
+        }
+      }
+
+      if (newLevel > currentLevel) {
+        // Update level locally (for now, using localStorage)
+        localStorage.setItem('user_level', newLevel.toString())
+
+        // TODO: When EPIC-001 is done, update level in profile via Supabase
+        // await supabase.from('profiles').update({ level: newLevel }).eq('id', userId)
+
+        // Award bonus points
+        const newTotalPoints = currentPoints + totalBonus
+
+        // Dispatch level-up event
+        window.dispatchEvent(
+          new CustomEvent('levelUp', {
+            detail: {
+              newLevel,
+              bonusPoints: totalBonus,
+              levelName: LEVELS[newLevel]?.name
+            }
+          })
+        )
+
+        console.log(`🎉 Level-up awarded: Level ${newLevel}, +${totalBonus} bonus points`)
+
+        return {
+          leveledUp: true,
+          newLevel,
+          bonusPoints: totalBonus,
+          totalBonus
+        }
+      }
+
+      return {
+        leveledUp: false,
+        newLevel: currentLevel,
+        bonusPoints: 0,
+        totalBonus: 0
+      }
+    } catch (error) {
+      console.error('❌ Error checking level-up:', error)
+      return {
+        leveledUp: false,
+        newLevel: currentLevel,
+        bonusPoints: 0,
+        totalBonus: 0
+      }
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()

@@ -165,6 +165,17 @@ export function DashboardSection() {
     return () => clearInterval(interval)
   }, [])
 
+  // ✅ Listener para atualizar quando há level-up
+  useEffect(() => {
+    const handleLevelUp = () => {
+      // Force re-render para atualizar display de nível
+      console.log('🎉 Dashboard: Nível foi atualizado')
+    }
+
+    window.addEventListener('levelUp', handleLevelUp)
+    return () => window.removeEventListener('levelUp', handleLevelUp)
+  }, [])
+
 
 
   return (
