@@ -2613,6 +2613,75 @@ export class SupabaseClient {
       return false
     }
   }
+
+  // CHALLENGE PROOF UPLOAD
+  /**
+   * Upload challenge proof (photo) to Supabase Storage
+   * @param userId - User ID
+   * @param challengeId - Challenge ID
+   * @param blob - Compressed image blob
+   * @returns Storage path and public URL
+   */
+  async uploadProof(userId: string, challengeId: string, blob: Blob): Promise<string> {
+    try {
+      if (!userId || !challengeId || !blob) {
+        throw new Error('Missing required parameters: userId, challengeId, blob')
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now()
+      const filename = `${userId}/${challengeId}_${timestamp}.webp`
+      const path = `challenge-proofs/${filename}`
+
+      // Upload to storage
+      const { data, error } = await supabase.storage.from('challenge-proofs').upload(path, blob, {
+        contentType: 'image/webp',
+        upsert: false
+      })
+
+      if (error) throw error
+      if (!data) throw new Error('No data returned from upload')
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('challenge-proofs').getPublicUrl(path)
+
+      console.log(`✅ Proof uploaded: ${publicUrlData.publicUrl}`)
+      return publicUrlData.publicUrl
+    } catch (error) {
+      console.error('❌ Error uploading proof:', error)
+      throw new Error(`Failed to upload proof: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  /**
+   * Complete challenge with proof URL
+   * Enhanced version that integrates photo upload
+   * @param challengeId - Challenge ID
+   * @param userId - User ID
+   * @param proofUrl - Storage URL of proof
+   * @returns Challenge completion result
+   */
+  async completeChallengeWithProof(
+    challengeId: string,
+    userId: string,
+    proofBlob: Blob
+  ): Promise<ChallengeCompletion> {
+    try {
+      // Step 1: Upload proof
+      const proofUrl = await this.uploadProof(userId, challengeId, proofBlob)
+
+      // Step 2: Complete challenge (existing logic)
+      return await this.completeChallenge(challengeId, userId, proofUrl)
+    } catch (error) {
+      console.error('❌ Error completing challenge with proof:', error)
+      return {
+        success: false,
+        points_earned: 0,
+        medals_unlocked: [],
+        message: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      }
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()

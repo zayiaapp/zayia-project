@@ -7,12 +7,14 @@ interface ChallengeCardDailyProps {
   challenge: Challenge
   isCompleted: boolean
   onComplete: (challengeId: string, proofFile: File) => void
+  isUploading?: boolean
 }
 
 export const ChallengeCardDaily: React.FC<ChallengeCardDailyProps> = ({
   challenge,
   isCompleted,
   onComplete,
+  isUploading = false,
 }) => {
   const [state, setState] = useState<ChallengeState>('blocked')
   const [secondsRemaining, setSecondsRemaining] = useState(60)
@@ -215,11 +217,20 @@ export const ChallengeCardDaily: React.FC<ChallengeCardDailyProps> = ({
           {/* BOTÃO ENVIAR (só ativa se tem arquivo) */}
           <button
             onClick={handleSubmitProof}
-            disabled={!selectedFile}
-            style={selectedFile ? { backgroundColor: '#8B4FC1', color: 'white' } : { backgroundColor: '#6B7280', color: '#D1D5DB' }}
+            disabled={!selectedFile || isUploading}
+            style={selectedFile && !isUploading ? { backgroundColor: '#8B4FC1', color: 'white' } : { backgroundColor: '#6B7280', color: '#D1D5DB' }}
             className="w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 cursor-pointer"
           >
-            📤 Enviar Prova e Validar
+            {isUploading ? (
+              <>
+                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Enviando...
+              </>
+            ) : (
+              <>
+                📤 Enviar Prova e Validar
+              </>
+            )}
           </button>
         </div>
       </div>

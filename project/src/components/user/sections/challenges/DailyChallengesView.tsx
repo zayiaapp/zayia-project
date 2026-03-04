@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Challenge, ChallengeCategory } from '../../../../lib/challenges-data-mock'
 import ChallengesDataMock from '../../../../lib/challenges-data-mock'
 import { ChallengeCardDaily } from './ChallengeCardDaily'
+import { compressImage, validateImageFile } from '../../../../lib/photo-compression'
+import { supabaseClient } from '../../../../lib/supabase-client'
 
 interface DailyChallengesViewProps {
   userId: string
@@ -20,6 +22,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
     const today = new Date().toISOString().split('T')[0]
     return ChallengesDataMock.getDailyChallenges(category.id, today)
   })
+  const [isUploading, setIsUploading] = useState(false)
 
   const totalChallenges = 120
   const totalCompleted = completedChallengeIds.size
@@ -33,16 +36,52 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
     easyChallenges.filter(c => !completedChallengeIds.has(c.id)).length * 10 +
     hardChallenges.filter(c => !completedChallengeIds.has(c.id)).length * 25
 
-  const handleProofSubmitted = (challengeId: string, proofFile: File) => {
-    // TODO: Upload arquivo para storage (Supabase/Firebase)
-    // TODO: Marcar como validado com timestamp
+  const handleProofSubmitted = async (challengeId: string, proofFile: File) => {
+    setIsUploading(true)
+    try {
+      // 1. Validate file
+      validateImageFile(proofFile)
 
-    // Marcar como completo
-    ChallengesDataMock.completeChallenge(challengeId, userId)
-    onChallengeCompleted(challengeId, proofFile)
+      // 2. Compress image
+      console.log(`📸 Compressing image: ${proofFile.name}...`)
+      const compressedBlob = await compressImage(proofFile)
 
-    // Toast de sucesso
-    console.log(`✅ Desafio ${challengeId} validado com prova: ${proofFile.name}`)
+      // 3. Upload to Supabase Storage + Complete Challenge
+      console.log(`📤 Uploading proof to Supabase...`)
+      const result = await supabaseClient.completeChallengeWithProof(challengeId, userId, compressedBlob)
+
+      if (result.success) {
+        // Update local state
+        ChallengesDataMock.completeChallenge(challengeId, userId)
+        onChallengeCompleted(challengeId, proofFile)
+
+        // Show success notification
+        console.log(`✅ Challenge completed! +${result.points_earned} points`)
+        window.dispatchEvent(
+          new CustomEvent('notificationUpdate', {
+            detail: {
+              type: 'success',
+              message: `Parabéns! +${result.points_earned} pontos`
+            }
+          })
+        )
+      } else {
+        throw new Error(result.message || 'Failed to complete challenge')
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.error(`❌ Error submitting proof: ${errorMsg}`)
+      window.dispatchEvent(
+        new CustomEvent('notificationUpdate', {
+          detail: {
+            type: 'error',
+            message: errorMsg
+          }
+        })
+      )
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   return (
@@ -114,6 +153,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
                       challenge={challenge}
                       isCompleted={completedChallengeIds.has(challenge.id)}
                       onComplete={handleProofSubmitted}
+                      isUploading={isUploading}
                     />
                   ))}
                 </div>
@@ -133,6 +173,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
                       challenge={challenge}
                       isCompleted={completedChallengeIds.has(challenge.id)}
                       onComplete={handleProofSubmitted}
+                      isUploading={isUploading}
                     />
                   ))}
                 </div>
