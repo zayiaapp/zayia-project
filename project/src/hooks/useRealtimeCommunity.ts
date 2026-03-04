@@ -67,9 +67,17 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
     }
   }, [userId, enabled])
 
-  // Optimistic UI update: add new message to top
+  // Optimistic UI update: add new message to top (with deduplication)
   const addMessageOptimistic = useCallback((message: CommunityMessage) => {
-    setMessages(prev => [message, ...prev])
+    setMessages(prev => {
+      // ✅ Deduplicate: check if message with this ID already exists
+      const isDuplicate = prev.some(m => m.id === message.id)
+      if (isDuplicate) {
+        console.log('⚠️ Message already exists, skipping duplicate:', message.id)
+        return prev
+      }
+      return [message, ...prev]
+    })
   }, [])
 
   // Optimistic UI update: update message in place
@@ -98,8 +106,9 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
         console.log('📱 Real-time message received:', change.eventType, messageId)
 
         if (change.eventType === 'INSERT') {
-          // Add new message to top (incremental)
+          // Add new message to top (incremental, with deduplication)
           if (change.new) {
+            console.log('📱 Real-time INSERT:', change.new.id)
             addMessageOptimistic(change.new)
           }
         } else if (change.eventType === 'UPDATE') {

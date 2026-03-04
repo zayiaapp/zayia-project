@@ -1712,11 +1712,12 @@ export class SupabaseClient {
   }
 
   // COMMUNITY MESSAGES
-  async postMessage(userId: string, content: string): Promise<CommunityMessage | null> {
+  async postMessage(userId: string, content: string, messageId?: string): Promise<CommunityMessage | null> {
     try {
       const { data, error } = await supabase
         .from('community_messages')
         .insert({
+          id: messageId, // ✅ Use client-generated ID for idempotency
           user_id: userId,
           content
         })

@@ -35,25 +35,45 @@ export function useCommunityActions(options: UseCommunityActionsOptions = {}) {
           throw new Error('🚫 Você não pode enviar mensagens enquanto está banida')
         }
 
-        // Post to Supabase
-        const newMessage = await supabaseClient.postMessage(userId, content)
-        if (newMessage) {
-          // Optimistic UI update
-          const messageWithProfile: CommunityMessage = {
-            ...newMessage,
-            user_profile: {
-              id: userId,
-              email: userProfile.email,
-              full_name: userProfile.full_name,
-              role: userProfile.role,
-              avatar_url: userProfile.avatar_url,
-              created_at: userProfile.created_at,
-              updated_at: userProfile.updated_at
-            }
+        // ✅ CRITICAL FIX: Generate message ID on client to prevent duplicates
+        // Use this ID for idempotency - same ID = no duplicate on retry
+        const messageId = crypto.randomUUID()
+
+        // Create optimistic message with client-generated ID
+        const optimisticMessage: CommunityMessage = {
+          id: messageId,
+          user_id: userId,
+          content,
+          deleted_at: null,
+          deleted_by_admin: null,
+          deletion_reason: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          reactions: [],
+          user_profile: {
+            id: userId,
+            email: userProfile.email,
+            full_name: userProfile.full_name,
+            role: userProfile.role,
+            avatar_url: userProfile.avatar_url,
+            created_at: userProfile.created_at,
+            updated_at: userProfile.updated_at
           }
-          onOptimisticAdd?.(messageWithProfile)
-          console.log('✅ Message posted:', newMessage.id)
+        }
+
+        // Add to UI BEFORE sending to server (optimistic update)
+        onOptimisticAdd?.(optimisticMessage)
+        console.log('✅ Message optimistic update:', messageId)
+
+        // Post to Supabase with the same ID
+        const newMessage = await supabaseClient.postMessage(userId, content, messageId)
+        if (newMessage) {
+          console.log('✅ Message persisted to server:', newMessage.id)
           return newMessage
+        } else {
+          // If server fails, remove optimistic message from UI
+          console.error('❌ Server failed to persist message')
+          throw new Error('Falha ao enviar mensagem')
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Failed to post message'
