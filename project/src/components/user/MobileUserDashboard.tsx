@@ -20,7 +20,7 @@ import {
 import { DashboardOverviewSection } from './sections/DashboardOverviewSection'
 import { RankingSection } from './sections/RankingSection'
 import { ChallengesSection } from './sections/ChallengesSection'
-import { BadgesSection } from './sections/BadgesSection'
+import { AchievementsSection } from './sections/AchievementsSection'
 import { CommunitySection } from './sections/CommunitySection'
 import { SubscriptionSection } from './sections/SubscriptionSection'
 import { ProfileSection } from './sections/ProfileSection'
@@ -81,7 +81,7 @@ export function MobileUserDashboard() {
       case 'dashboard': return <DashboardOverviewSection />
       case 'ranking': return <RankingSection />
       case 'challenges': return <ChallengesSection />
-      case 'badges': return <BadgesSection />
+      case 'badges': return <AchievementsSection />
       case 'community': return <CommunitySection />
       case 'subscription': return <SubscriptionSection />
       case 'profile': return <ProfileSection />
