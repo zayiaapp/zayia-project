@@ -3,7 +3,6 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { supabaseClient } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
 import { Gift, Sparkles, Lock } from 'lucide-react'
-import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { MedalCarousel } from './badges/MedalCarousel'
 import { MedalDetailModal } from '../modals/MedalDetailModal'
@@ -22,15 +21,42 @@ interface Medal {
 
 export function BadgesSection() {
   const { profile } = useAuth()
+  const [badges, setBadges] = useState<any[]>([])
+  const [levels, setLevels] = useState<any[]>([])
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
   const [currentPoints, setCurrentPoints] = useState(0)
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true)
 
   // Filters
   const [rarityFilter, setRarityFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'earned' | 'locked'>('all')
   const [sortBy, setSortBy] = useState<'name' | 'date'>('name')
+
+  // Load badges and levels from Supabase on mount
+  useEffect(() => {
+    const loadBadgesAndLevels = async () => {
+      try {
+        setIsLoadingBadges(true)
+        const [badgesData, levelsData] = await Promise.all([
+          supabaseClient.getAllBadges(),
+          supabaseClient.getAllLevels()
+        ])
+        setBadges(badgesData)
+        setLevels(levelsData)
+      } catch (error) {
+        console.error('❌ Error loading badges and levels:', error)
+        // Fallback: show empty state
+        setBadges([])
+        setLevels([])
+      } finally {
+        setIsLoadingBadges(false)
+      }
+    }
+
+    loadBadgesAndLevels()
+  }, [])
 
   // Carregar dados ao montar
   useEffect(() => {
@@ -140,17 +166,17 @@ export function BadgesSection() {
 
   // ✅ Agrupar medalhas por CATEGORIA REAL
   const medalsByCategory = {
-    'org_iniciante': BADGES.filter(b => b.id?.includes('org_')),
-    'saude': BADGES.filter(b => b.id?.includes('saude_')),
-    'ie_': BADGES.filter(b => b.id?.includes('ie_')),
-    'com_': BADGES.filter(b => b.id?.includes('com_')),
-    'rot_': BADGES.filter(b => b.id?.includes('rot_')),
-    'lead_': BADGES.filter(b => b.id?.includes('lead_')),
-    'inov_': BADGES.filter(b => b.id?.includes('inov_')),
+    'org_iniciante': badges.filter(b => b.badge_id?.includes('org_')),
+    'saude': badges.filter(b => b.badge_id?.includes('saude_')),
+    'ie_': badges.filter(b => b.badge_id?.includes('ie_')),
+    'com_': badges.filter(b => b.badge_id?.includes('com_')),
+    'rot_': badges.filter(b => b.badge_id?.includes('rot_')),
+    'lead_': badges.filter(b => b.badge_id?.includes('lead_')),
+    'inov_': badges.filter(b => b.badge_id?.includes('inov_')),
   }
 
   // ✅ Separar medalhas globais
-  const globalMedals = BADGES.filter(b => b.category === 'Global')
+  const globalMedals = badges.filter(b => b.category === 'Global')
 
   // ✅ Mapear categorias com ícones e nomes
   const categories = [
@@ -162,6 +188,18 @@ export function BadgesSection() {
     { key: 'lead_', name: 'Carreira e Desenvolvimento Profissional', icon: '💼', badges: medalsByCategory['lead_'] },
     { key: 'inov_', name: 'Digital Detox', icon: '📱', badges: medalsByCategory['inov_'] },
   ]
+
+  // Show loading state while badges/levels are loading
+  if (isLoadingBadges) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-zayia-purple"></div>
+          <p className="text-zayia-violet-gray mt-4">Carregando medalhas...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -262,14 +300,14 @@ export function BadgesSection() {
 
       {/* ===== CARROSSEL: TODOS OS NÍVEIS ===== */}
       <MedalCarousel
-        medals={LEVELS.map(level => ({
-          id: `level-${level.level}`,
+        medals={levels.map(level => ({
+          id: `level-${level.level_number}`,
           name: level.name,
           icon: level.icon,
-          requirement: level.level,
-          points: level.pointsRequired,
-          levelNumber: level.level,
-          isEarned: currentPoints >= level.pointsRequired,
+          requirement: level.level_number,
+          points: level.points_required,
+          levelNumber: level.level_number,
+          isEarned: currentPoints >= level.points_required,
         }))}
         categoryName="Todos os Níveis"
         categoryIcon="👑"

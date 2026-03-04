@@ -3064,6 +3064,160 @@ export class SupabaseClient {
       return []
     }
   }
+
+  // ===== BADGES & LEVELS =====
+  // Get all active badges
+  async getAllBadges(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('❌ Error fetching badges:', error)
+      return []
+    }
+  }
+
+  // Get badges filtered by category
+  async getBadgesByCategory(category: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('category', category)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error(`❌ Error fetching badges for category ${category}:`, error)
+      return []
+    }
+  }
+
+  // Get badges earned by user
+  async getUserEarnedBadges(userId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_earned_badges')
+        .select(`
+          id,
+          badge_id,
+          earned_at,
+          badges:badge_id (*)
+        `)
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error(`❌ Error fetching earned badges for user ${userId}:`, error)
+      return []
+    }
+  }
+
+  // Award badge to user if not already earned
+  async checkAndAwardBadge(userId: string, badgeId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      if (!userId || !badgeId) {
+        throw new Error('Missing required parameters: userId, badgeId')
+      }
+
+      // Check if user already has this badge
+      const { data: existingBadge, error: checkError } = await supabase
+        .from('user_earned_badges')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('badge_id', badgeId)
+        .single()
+
+      if (existingBadge) {
+        return { success: false, message: 'Badge already earned' }
+      }
+
+      // Get badge details to validate
+      const { data: badgeData, error: badgeError } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('id', badgeId)
+        .single()
+
+      if (badgeError || !badgeData) {
+        throw new Error('Badge not found')
+      }
+
+      // Award badge
+      const { error: awardError } = await supabase
+        .from('user_earned_badges')
+        .insert({
+          user_id: userId,
+          badge_id: badgeId,
+          earned_at: new Date().toISOString()
+        })
+
+      if (awardError) throw awardError
+
+      return { success: true, message: 'Badge awarded successfully' }
+    } catch (error) {
+      console.error(`❌ Error awarding badge ${badgeId} to user ${userId}:`, error)
+      return { success: false, message: error instanceof Error ? error.message : 'Failed to award badge' }
+    }
+  }
+
+  // Get all levels
+  async getAllLevels(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('levels')
+        .select('*')
+        .order('level_number', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('❌ Error fetching levels:', error)
+      return []
+    }
+  }
+
+  // Calculate user level based on points
+  async getUserLevel(userId: string): Promise<any | null> {
+    try {
+      // Get user's total points from profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('points')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) throw profileError
+
+      const userPoints = profileData?.points || 0
+
+      // Get all levels
+      const { data: levelsData, error: levelsError } = await supabase
+        .from('levels')
+        .select('*')
+        .order('level_number', { ascending: false })
+
+      if (levelsError) throw levelsError
+
+      // Find the highest level user qualifies for
+      const currentLevel = (levelsData || []).find((level: any) => level.points_required <= userPoints)
+
+      return currentLevel || null
+    } catch (error) {
+      console.error(`❌ Error calculating level for user ${userId}:`, error)
+      return null
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()
