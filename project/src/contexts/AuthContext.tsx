@@ -432,35 +432,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updated_at: new Date().toISOString()
       } as Partial<Profile>
 
-      // Log what fields are being updated
-      const updatedFields = Object.keys(dataToUpdate)
-      console.log('📤 Sending profile update to Supabase:', {
-        userId: profile.id,
-        fields: updatedFields,
-        hasAvatar: 'avatar_url' in dataToUpdate
-      })
-
       // Update in Supabase
       const updatedProfile = await supabaseClient.updateProfile(profile.id, dataToUpdate as any)
-
-      if (!updatedProfile) {
-        console.error('⚠️ Supabase returned null - update may have failed silently')
-        throw new Error('Profile update returned null - check RLS policies and network')
+      if (updatedProfile) {
+        setProfile(updatedProfile)
+        localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
+        console.log('✅ Profile updated in Supabase')
       }
-
-      // Verify critical field was actually persisted
-      if ('avatar_url' in dataToUpdate && updatedProfile.avatar_url !== dataToUpdate.avatar_url) {
-        console.warn('⚠️ Avatar update sent but not persisted in Supabase response')
-      }
-
-      setProfile(updatedProfile)
-      localStorage.setItem('zayia_profile', JSON.stringify(updatedProfile))
-      console.log('✅ Profile updated in Supabase:', {
-        avatar_updated: 'avatar_url' in dataToUpdate,
-        avatarPreview: updatedProfile.avatar_url ? updatedProfile.avatar_url.substring(0, 50) + '...' : 'null'
-      })
     } catch (error) {
-      console.error('❌ Error updating profile:', error)
+      console.error('Error updating profile:', error)
       throw error
     }
   }
