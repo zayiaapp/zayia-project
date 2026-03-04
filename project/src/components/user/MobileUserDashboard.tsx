@@ -24,7 +24,7 @@ import { AchievementsSection } from './sections/AchievementsSection'
 import { UserCommunitySection } from './sections/UserCommunitySection'
 import { SubscriptionSection } from './sections/SubscriptionSection'
 import { ProfileSection } from './sections/ProfileSection'
-import { SettingsSection } from './sections/SettingsSection'
+import { UserSettingsSection } from './sections/UserSettingsSection'
 
 export function MobileUserDashboard() {
   const { profile, signOut } = useAuth()
@@ -85,7 +85,7 @@ export function MobileUserDashboard() {
       case 'community': return <UserCommunitySection />
       case 'subscription': return <SubscriptionSection />
       case 'profile': return <ProfileSection />
-      case 'settings': return <SettingsSection />
+      case 'settings': return <UserSettingsSection />
       default: return <DashboardOverviewSection />
     }
   }
