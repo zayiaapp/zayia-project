@@ -13,7 +13,7 @@
 2. [EPIC-002: Admin Dashboard](#epic-002-admin-dashboard) (6 stories)
 3. [EPIC-003: User Dashboard](#epic-003-user-dashboard) (5 stories)
 4. [EPIC-004: Gamification System](#epic-004-gamification-system) (6 stories)
-5. [EPIC-005: Community & Moderation](#epic-005-community--moderation) (5 stories)
+5. ~~[EPIC-005: Community & Moderation](#epic-005-community--moderation) (5 stories)~~ **MERGED into EPIC-003.005**
 6. [EPIC-006: Notifications & Automation](#epic-006-notifications--automation) (4 stories)
 7. [EPIC-007: Integrations & Deployment](#epic-007-integrations--deployment) (9 stories)
 
@@ -760,167 +760,20 @@ Implement real-time ranking calculation (sort by points, TOP 3, monthly reset).
 
 ---
 
-## EPIC-005: Community & Moderation
+## ~~EPIC-005: Community & Moderation~~ **CLOSED - MERGED INTO EPIC-003.005**
 
-**Epic Lead:** @dev
-**Complexity:** MEDIUM (16 pontos)
-**Priority:** 🟠 HIGH
-**Duration:** Week 4
+**Status:** ✅ MERGED
+**Reason:** All 5 stories (16 pts) already implemented in STORY-003.005
+**Implementation Location:** `/docs/stories/003.005.user-community-participation.md`
 
-Real-time community chat, reactions, reporting, bans, rules.
+### Previously Planned Stories (ALL COMPLETED):
+- ~~STORY-005.001: Real-Time Community Chat~~ ✅ → AC1-AC2 in STORY-003.005
+- ~~STORY-005.002: Emoji Reactions System~~ ✅ → AC3 in STORY-003.005
+- ~~STORY-005.003: Message Reporting & Moderation~~ ✅ → AC4 in STORY-003.005
+- ~~STORY-005.004: User Ban System~~ ✅ → AC6 in STORY-003.005
+- ~~STORY-005.005: Community Rules Management~~ ✅ → AC5 in STORY-003.005
 
-### STORY-005.001: Real-Time Community Chat
-**Complexity:** 4 pontos | **Status:** Draft
-**Owner:** @dev
-**Depends on:** STORY-001.003, STORY-003.005
-
-**Description:**
-Implement real-time community chat (messages, reactions, deletions).
-
-**Acceptance Criteria:**
-- [ ] Send message (max 1000 chars)
-- [ ] Display all messages (infinite scroll or pagination)
-- [ ] Timestamps on each message
-- [ ] User avatar + level badge
-- [ ] Mentions (@user links)
-- [ ] Reply feature (visual indicator)
-- [ ] Real-time new messages (Supabase broadcast)
-- [ ] Real-time deletions (show "removed")
-- [ ] Auto-scroll to new messages
-- [ ] Emoji picker for reactions
-
-**Subtasks:**
-1. Message input field
-2. Send message function
-3. Message list component
-4. Real-time listener (new messages)
-5. Avatar + level display
-6. Mentions parsing
-7. Reply feature
-8. Timestamp formatting
-9. Auto-scroll logic
-10. Deleted message handling
-
----
-
-### STORY-005.002: Emoji Reactions System
-**Complexity:** 3 pontos | **Status:** Draft
-**Owner:** @dev
-**Depends on:** STORY-005.001
-
-**Description:**
-Implement emoji reactions (5 emojis: ❤️🔥💪✨🙏) with real-time sync.
-
-**Acceptance Criteria:**
-- [ ] 5 emoji options available
-- [ ] Add reaction to message
-- [ ] Remove own reaction
-- [ ] Count reactions
-- [ ] Hover shows who reacted
-- [ ] Real-time sync (all users)
-- [ ] Reactions persist in DB
-- [ ] Max 1 reaction per emoji per user
-
-**Subtasks:**
-1. Emoji picker component
-2. Add reaction function
-3. Remove reaction function
-4. Reaction counter
-5. Tooltip (who reacted)
-6. Real-time listener
-7. Reaction persistence
-8. Uniqueness constraint
-
----
-
-### STORY-005.003: Message Reporting & Moderation
-**Complexity:** 4 pontos | **Status:** Draft
-**Owner:** @dev
-**Depends on:** STORY-005.001
-
-**Description:**
-Implement message reporting (reasons) and admin moderation (delete + notify).
-
-**Acceptance Criteria:**
-- [ ] Report button on messages
-- [ ] Report reasons (5 types)
-- [ ] Report description (text)
-- [ ] Reports stored in DB
-- [ ] Admin can view all reports
-- [ ] Admin delete message with reason
-- [ ] Deleted message shows "removed by admin"
-- [ ] Real-time sync for all users
-- [ ] User notified of deletion
-
-**Subtasks:**
-1. Report button + modal
-2. Report reasons enum
-3. Report storage
-4. Admin reports list
-5. Delete message action
-6. Soft delete logic
-7. Real-time deletion sync
-8. Notification to user
-
----
-
-### STORY-005.004: User Ban System (Temporary & Permanent)
-**Complexity:** 4 pontos | **Status:** Draft
-**Owner:** @dev
-**Depends on:** STORY-001.001
-
-**Description:**
-Implement user ban system (1 day, 7 days, permanent) with auto-expiry and real-time sync.
-
-**Acceptance Criteria:**
-- [ ] Ban options (1d, 7d, permanent)
-- [ ] Ban reason (text)
-- [ ] Ban expiry calculation
-- [ ] Ban auto-expiry (1d/7d)
-- [ ] Field disabled when banned
-- [ ] Banned user notified
-- [ ] Real-time field disable
-- [ ] Ban status check on message send
-- [ ] Unbanned notification
-- [ ] Ban history in DB
-
-**Subtasks:**
-1. Ban modal + duration select
-2. Ban reason input
-3. Ban expiry calculation
-4. Ban storage (profiles + bans table)
-5. Auto-expiry scheduler
-6. Check ban status on send
-7. Field disable logic
-8. Real-time status sync
-9. Notification on ban
-10. Notification on unban
-
----
-
-### STORY-005.005: Community Rules Management
-**Complexity:** 2 pontos | **Status:** Draft
-**Owner:** @dev
-**Depends on:** STORY-001.003
-
-**Description:**
-Implement community rules editor (admin) and viewer (user) with real-time sync.
-
-**Acceptance Criteria:**
-- [ ] Admin: Edit rules (rich text)
-- [ ] Admin: Save rules
-- [ ] User: View rules modal
-- [ ] User: Rules always current version
-- [ ] Real-time sync (when rules updated)
-- [ ] Rules appear in community tab
-
-**Subtasks:**
-1. Rules editor modal (admin)
-2. Rich text editor
-3. Save function
-4. Rules viewer modal (user)
-5. Real-time listener
-6. Cache invalidation
+**Release Notes:** This epic was planned for weeks 3-4 but implementation was completed ahead of schedule as part of EPIC-003 (User Dashboard). All acceptance criteria met and QA verified.
 
 ---
 
@@ -1325,26 +1178,30 @@ Setup production deployment (CI/CD, hosting, monitoring, scaling).
 
 ## 📊 Summary
 
-| Epic | Stories | Complexity | Priority |
-|------|---------|-----------|----------|
-| 001: Backend Foundation | 7 | HIGH (42 pts) | 🔴 CRITICAL |
-| 002: Admin Dashboard | 6 | HIGH (28 pts) | 🔴 CRITICAL |
-| 003: User Dashboard | 5 | MEDIUM (22 pts) | 🔴 CRITICAL |
-| 004: Gamification | 6 | MEDIUM (18 pts) | 🟠 HIGH |
-| 005: Community | 5 | MEDIUM (16 pts) | 🟠 HIGH |
-| 006: Notifications | 4 | MEDIUM (14 pts) | 🟠 HIGH |
-| 007: Integrations | 9 | HIGH (24 pts) | 🟠 HIGH |
-| **TOTAL** | **42** | **164 pts** | **Weeks 1-5** |
+| Epic | Stories | Complexity | Priority | Status |
+|------|---------|-----------|----------|--------|
+| 001: Backend Foundation | 7 | HIGH (42 pts) | 🔴 CRITICAL | ✅ DONE |
+| 002: Admin Dashboard | 6 | HIGH (28 pts) | 🔴 CRITICAL | ✅ DONE |
+| 003: User Dashboard | 5 | MEDIUM (22 pts) | 🔴 CRITICAL | ✅ DONE |
+| 004: Gamification | 6 | MEDIUM (18 pts) | 🟠 HIGH | ⏳ NEXT |
+| ~~005: Community~~ | ~~5~~ | ~~MEDIUM (16 pts)~~ | ~~🟠 HIGH~~ | ✅ MERGED |
+| 006: Notifications | 4 | MEDIUM (14 pts) | 🟠 HIGH | ⏳ NEXT |
+| 007: Integrations | 9 | HIGH (24 pts) | 🟠 HIGH | ⏳ NEXT |
+| **TOTAL** | **37** | **148 pts** | **Weeks 1-5** | **6 EPICs** |
+
+**Note:** EPIC-005 (16 pts) merged into EPIC-003.005. Cleanup completed 2026-03-04.
 
 ---
 
 ## 🚦 Recommended Execution Order
 
-1. **Week 1-2:** EPIC-001 (Backend Foundation) - paralleliza
-2. **Week 2-3:** EPIC-002 + EPIC-003 (Admin + User Dashboards) - paralleliza
-3. **Week 3-4:** EPIC-004 + EPIC-005 (Gamification + Community) - paralleliza
-4. **Week 4:** EPIC-006 (Notifications)
-5. **Week 5:** EPIC-007 (Integrations & Deployment)
+1. **Week 1-2:** EPIC-001 (Backend Foundation) - ✅ DONE
+2. **Week 2-3:** EPIC-002 + EPIC-003 (Admin + User Dashboards) - ✅ DONE
+3. **Week 3-4:** EPIC-004 (Gamification System) - ⏳ NEXT
+4. **Week 4:** EPIC-006 (Notifications & Automation) - ⏳ NEXT
+5. **Week 5:** EPIC-007 (Integrations & Deployment) - ⏳ NEXT
+
+**Note:** EPIC-005 removed (merged into EPIC-003.005). Timeline optimized.
 
 ---
 
