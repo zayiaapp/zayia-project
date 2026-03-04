@@ -21,25 +21,9 @@ export function useRules(userId: string | undefined) {
       setLoading(true)
       setError(null)
 
-      // Get the latest rules from community_rules table
-      const { data, error: fetchError } = await supabaseClient
-        .from('community_rules')
-        .select('content')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (fetchError) {
-        // If no rules exist, use default
-        console.warn('No community rules found:', fetchError)
-        setRules('')
-        return
-      }
-
-      if (data) {
-        setRules(data.content || '')
-        console.log('✅ Community rules loaded')
-      }
+      const content = await supabaseClient.getCommunityRules()
+      setRules(content || '')
+      console.log('✅ Community rules loaded')
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to load rules')
       setError(error)
@@ -55,22 +39,13 @@ export function useRules(userId: string | undefined) {
       if (!userId) return false
 
       try {
-        // Insert new rule entry (keeps history via created_at)
-        const { error: insertError } = await supabaseClient
-          .from('community_rules')
-          .insert({
-            content,
-            updated_by_admin: userId
-          })
-
-        if (insertError) {
-          console.error('Error updating rules:', insertError)
-          return false
+        const success = await supabaseClient.updateCommunityRules(content, userId)
+        if (success) {
+          setRules(content)
+          console.log('✅ Community rules updated')
+          return true
         }
-
-        setRules(content)
-        console.log('✅ Community rules updated')
-        return true
+        return false
       } catch (error) {
         console.error('Error updating rules:', error)
         return false

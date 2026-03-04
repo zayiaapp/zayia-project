@@ -17,6 +17,7 @@ import { ReportsListModal } from './community/ReportsListModal'
 import { useRealtimeCommunity } from '../../../hooks/useRealtimeCommunity'
 import { useBanStatus } from '../../../hooks/useBanStatus'
 import { useCommunityActions } from '../../../hooks/useCommunityActions'
+import { useRules } from '../../../hooks/useRules'
 
 export function CommunitySection() {
   const { user, profile } = useAuth()
@@ -49,6 +50,8 @@ export function CommunitySection() {
     onOptimisticUpdate: updateMessageOptimistic
   })
 
+  const { rules, updateRules } = useRules(user?.id)
+
   // Local UI state (modals, forms, toasts)
   const [rulesOpen, setRulesOpen] = useState(false)
   const [selectedUserForBan, setSelectedUserForBan] = useState<{ id: string; name: string; email: string; avatar?: string } | null>(null)
@@ -56,7 +59,6 @@ export function CommunitySection() {
   const [messageToDelete, setMessageToDelete] = useState<{ id: string; content: string } | null>(null)
   const [quickBanModalOpen, setQuickBanModalOpen] = useState(false)
   const [messageForQuickBan, setMessageForQuickBan] = useState<{ id: string; userId: string; userName: string; content: string } | null>(null)
-  const [rules, setRules] = useState('')
   const [banToastMessage, setBanToastMessage] = useState<string | null>(null)
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [messageForReport, setMessageForReport] = useState<{ id: string; content: string; senderName: string } | null>(null)
@@ -152,12 +154,11 @@ export function CommunitySection() {
     }
   }
 
-  const handleSaveRules = (content: string) => {
-    if (!user) return
-
-    CommunityDataMock.updateRules(content, user.id)
-    setRules(content)
-    setRulesOpen(false)
+  const handleSaveRules = async (content: string) => {
+    const success = await updateRules(content)
+    if (success) {
+      setRulesOpen(false)
+    }
   }
 
   const handleReport = (messageId: string) => {

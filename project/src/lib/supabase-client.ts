@@ -2536,6 +2536,51 @@ export class SupabaseClient {
       return []
     }
   }
+
+  /**
+   * Get latest community rules
+   */
+  async getCommunityRules() {
+    try {
+      const { data, error } = await supabase
+        .from('community_rules')
+        .select('content')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rules exist yet
+          return null
+        }
+        throw error
+      }
+
+      return data?.content || ''
+    } catch (error) {
+      console.error('❌ Error getting community rules:', error)
+      return ''
+    }
+  }
+
+  /**
+   * Update community rules
+   */
+  async updateCommunityRules(content: string, adminId: string) {
+    try {
+      const { error } = await supabase.from('community_rules').insert({
+        content,
+        updated_by_admin: adminId
+      })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('❌ Error updating community rules:', error)
+      return false
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()
