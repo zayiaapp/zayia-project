@@ -36,35 +36,51 @@ export function ChallengesSection() {
   useEffect(() => {
     if (!user?.id) return
 
-    setIsLoading(true)
-    ChallengesDataMock.initialize()
+    const initializeData = async () => {
+      try {
+        setIsLoading(true)
+        ChallengesDataMock.initialize()
 
-    // Load all categories
-    const categories = ChallengesDataMock.getCategories()
-    setAllCategories(categories)
+        // Load all categories from Supabase
+        const supabaseCategories = await supabaseClient.getChallengeCategories()
+        // Map Supabase structure to match component expectations
+        const mappedCategories = supabaseCategories.map((cat: any) => ({
+          ...cat,
+          label: cat.name, // Map 'name' to 'label' for backward compatibility
+          challenges: [], // Placeholder - will be populated by DailyChallengesView
+        }))
+        setAllCategories(mappedCategories)
 
-    // Track previously earned badges to detect new ones
-    const earnedBadges = getEarnedBadges()
-    setPreviousEarnedBadges(new Set(earnedBadges))
+        // Track previously earned badges to detect new ones
+        const earnedBadges = getEarnedBadges()
+        setPreviousEarnedBadges(new Set(earnedBadges))
 
-    // Load user's active category
-    const activeCategoryId = ChallengesDataMock.getActiveCategory(user.id)
+        // Load user's active category
+        const activeCategoryId = ChallengesDataMock.getActiveCategory(user.id)
 
-    if (activeCategoryId) {
-      const category = ChallengesDataMock.getCategoryById(activeCategoryId)
-      if (category) {
-        setActiveCategory(category)
+        if (activeCategoryId) {
+          // Find category from loaded Supabase data
+          const category = mappedCategories.find((cat: any) => cat.id === activeCategoryId)
+          if (category) {
+            setActiveCategory(category)
 
-        // Load completed challenges
-        const completed = ChallengesDataMock.getUserCompletedChallenges(activeCategoryId, user.id)
-        setCompletedChallengeIds(new Set(completed))
+            // Load completed challenges
+            const completed = ChallengesDataMock.getUserCompletedChallenges(activeCategoryId, user.id)
+            setCompletedChallengeIds(new Set(completed))
+          }
+        } else {
+          // First time - show modal
+          setShowCategoryModal(true)
+        }
+      } catch (error) {
+        console.error('❌ Error initializing challenges:', error)
+        setShowCategoryModal(true)
+      } finally {
+        setIsLoading(false)
       }
-    } else {
-      // First time - show modal
-      setShowCategoryModal(true)
     }
 
-    setIsLoading(false)
+    initializeData()
   }, [user?.id])
 
   const handleCategorySelected = (category: ChallengeCategory) => {

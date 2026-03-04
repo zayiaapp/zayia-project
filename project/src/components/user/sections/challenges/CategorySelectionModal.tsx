@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import ChallengesDataMock, { ChallengeCategory } from '../../../../lib/challenges-data-mock'
+import { supabaseClient } from '../../../../lib/supabase-client'
+import ChallengesDataMock from '../../../../lib/challenges-data-mock'
 
 interface CategorySelectionModalProps {
   userId: string
-  onCategorySelected: (category: ChallengeCategory) => void
+  onCategorySelected: (category: any) => void
   onClose: () => void
 }
 
@@ -14,24 +15,47 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
   onClose,
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [categories, setCategories] = useState<any[]>([])
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true)
+  const [isConfirming, setIsConfirming] = useState(false)
 
-  ChallengesDataMock.initialize()
-  const categories = ChallengesDataMock.getCategories()
+  // Load categories from Supabase on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await supabaseClient.getChallengeCategories()
+        // Map Supabase structure to match component expectations
+        const mappedCategories = data.map((cat: any) => ({
+          ...cat,
+          label: cat.name, // Map 'name' to 'label' for backward compatibility
+        }))
+        setCategories(mappedCategories)
+      } catch (error) {
+        console.error('❌ Error loading categories:', error)
+        setCategories([])
+      } finally {
+        setIsLoadingCategories(false)
+      }
+    }
+
+    loadCategories()
+  }, [])
 
   const handleConfirm = async () => {
     if (!selectedCategoryId) return
 
-    setIsLoading(true)
+    setIsConfirming(true)
+    // Keep using ChallengesDataMock.setActiveCategory for backward compatibility
     const success = ChallengesDataMock.setActiveCategory(userId, selectedCategoryId)
 
     if (success) {
-      const category = ChallengesDataMock.getCategoryById(selectedCategoryId)
+      // Get category from loaded state
+      const category = categories.find((cat: any) => cat.id === selectedCategoryId)
       if (category) {
         onCategorySelected(category)
       }
     }
-    setIsLoading(false)
+    setIsConfirming(false)
   }
 
   return (
@@ -84,20 +108,20 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
         <div className="flex gap-3 p-6 border-t border-gray-200 bg-gray-50">
           <button
             onClick={onClose}
-            disabled={isLoading}
+            disabled={isConfirming}
             className={`flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold transition ${
-              isLoading ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
+              isConfirming ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
             }`}
           >
             Escolher Depois
           </button>
           <button
             onClick={handleConfirm}
-            disabled={!selectedCategoryId || isLoading}
-            style={!selectedCategoryId || isLoading ? { backgroundColor: '#9CA3AF', color: '#4B5563' } : { backgroundColor: '#8B4FC1', color: 'white' }}
+            disabled={!selectedCategoryId || isConfirming}
+            style={!selectedCategoryId || isConfirming ? { backgroundColor: '#9CA3AF', color: '#4B5563' } : { backgroundColor: '#8B4FC1', color: 'white' }}
             className="flex-1 px-4 py-2 rounded-lg font-semibold cursor-pointer"
           >
-            {isLoading ? 'Confirmando...' : 'Confirmar Escolha'}
+            {isConfirming ? 'Confirmando...' : 'Confirmar Escolha'}
           </button>
         </div>
       </div>

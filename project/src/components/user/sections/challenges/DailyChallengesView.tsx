@@ -18,11 +18,32 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   completedChallengeIds,
   onChallengeCompleted,
 }) => {
-  const [dailyChallenges, setDailyChallenges] = useState<Challenge[]>(() => {
-    const today = new Date().toISOString().split('T')[0]
-    return ChallengesDataMock.getDailyChallenges(category.id, today)
-  })
+  const [dailyChallenges, setDailyChallenges] = useState<Challenge[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [isChallengesLoading, setIsChallengesLoading] = useState(true)
+
+  // Load challenges from Supabase on mount or when category changes
+  React.useEffect(() => {
+    const loadChallenges = async () => {
+      try {
+        setIsChallengesLoading(true)
+        const challenges = await supabaseClient.getChallengesByCategory(category.id)
+        // Map Supabase structure to match Challenge interface
+        const mappedChallenges = challenges.map((ch: any) => ({
+          ...ch,
+          difficulty: ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : 'medio',
+        }))
+        setDailyChallenges(mappedChallenges)
+      } catch (error) {
+        console.error('❌ Error loading challenges:', error)
+        setDailyChallenges([])
+      } finally {
+        setIsChallengesLoading(false)
+      }
+    }
+
+    loadChallenges()
+  }, [category.id])
 
   const totalChallenges = 120
   const totalCompleted = completedChallengeIds.size
@@ -100,24 +121,30 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
           </p>
         </div>
 
-        {/* 🧪 DEBUG: Botão para avançar dia (APENAS EM DEVELOPMENT) */}
+        {/* 🧪 DEBUG: Botão para recarregar desafios (APENAS EM DEVELOPMENT) */}
         {process.env.NODE_ENV === 'development' && (
           <button
-            onClick={() => {
-              const today = new Date()
-              today.setDate(today.getDate() + 1)
-              const nextDayStr = today.toISOString().split('T')[0]
-
-              const newChallenges = ChallengesDataMock.getDailyChallenges(category.id, nextDayStr)
-              setDailyChallenges(newChallenges)
-
-              console.log(`🧪 TESTE: Avançando para ${nextDayStr}`)
-              console.log(`🧪 Novos desafios carregados:`, newChallenges)
+            onClick={async () => {
+              try {
+                setIsChallengesLoading(true)
+                const challenges = await supabaseClient.getChallengesByCategory(category.id)
+                const mappedChallenges = challenges.map((ch: any) => ({
+                  ...ch,
+                  difficulty: ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : 'medio',
+                }))
+                setDailyChallenges(mappedChallenges)
+                console.log(`🧪 TESTE: Desafios recarregados`)
+                console.log(`🧪 Total de desafios:`, mappedChallenges.length)
+              } catch (error) {
+                console.error('❌ Error reloading challenges:', error)
+              } finally {
+                setIsChallengesLoading(false)
+              }
             }}
             style={{ backgroundColor: '#FBBF24', color: '#1F2937' }}
             className="mt-4 px-4 py-2 text-sm font-bold rounded-lg flex items-center gap-2 w-fit cursor-pointer"
           >
-            🧪 Avançar Dia (Teste)
+            🧪 Recarregar Desafios (Teste)
           </button>
         )}
       </div>
@@ -126,7 +153,14 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
       <div>
         <h4 className="text-lg font-bold text-zayia-deep-violet mb-4">⚡ Desafios de Hoje</h4>
 
-        {dailyChallenges.length === 0 ? (
+        {isChallengesLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-zayia-purple"></div>
+              <p className="text-zayia-violet-gray mt-2">Carregando desafios...</p>
+            </div>
+          </div>
+        ) : dailyChallenges.length === 0 ? (
           <p className="text-center text-zayia-violet-gray py-8">
             Nenhum desafio disponível para hoje
           </p>
