@@ -2180,7 +2180,10 @@ export class SupabaseClient {
   onMessagesChange(callback: (change: any) => void) {
     console.log('🔌 Setting up real-time listener for community_messages')
 
-    const channelName = `public:community_messages:${Date.now()}`
+    // CRITICAL: Use consistent channel name so all listeners connect to same channel
+    // This is the ONLY listener for messages - if we use Date.now() each listener
+    // gets its own isolated channel and won't receive events from other listeners!
+    const channelName = 'community_messages_channel'
 
     const subscription = supabase
       .channel(channelName, {
@@ -2197,24 +2200,29 @@ export class SupabaseClient {
           table: 'community_messages'
         },
         (payload) => {
-          console.log('📱 Real-time message change received:', payload.eventType)
+          const messageId = (payload.new as any)?.id || (payload.old as any)?.id
+          console.log('📱 Real-time message change received:', payload.eventType, messageId)
           callback(payload)
         }
       )
       .subscribe((status) => {
-        console.log('🔗 Listener connection status:', status)
+        console.log('🔗 Real-time listener connection status:', status)
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Real-time listener ACTIVE and receiving events')
+          console.log('✅ Real-time listener ACTIVE on channel:', channelName)
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Real-time channel error - check RLS policies')
         }
       })
 
     return () => {
-      console.log('🔓 Unsubscribing from community_messages listener')
-      subscription.unsubscribe()
+      console.log('🔓 Unsubscribing from channel:', channelName)
+      supabase.removeChannel(subscription)
     }
   }
 
   onReactionsChange(callback: (change: any) => void) {
+    console.log('🔌 Setting up real-time listener for message_reactions')
+
     const subscription = supabase
       .channel('message_reactions')
       .on(
@@ -2224,12 +2232,18 @@ export class SupabaseClient {
           schema: 'public',
           table: 'message_reactions'
         },
-        callback
+        (payload) => {
+          console.log('📱 Real-time reaction change received:', payload.eventType)
+          callback(payload)
+        }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('🔗 Reactions listener status:', status)
+      })
 
     return () => {
-      subscription.unsubscribe()
+      console.log('🔓 Unsubscribing from message_reactions')
+      supabase.removeChannel(subscription)
     }
   }
 
