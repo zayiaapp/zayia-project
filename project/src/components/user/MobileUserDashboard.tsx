@@ -16,15 +16,15 @@ import {
   Settings
 } from 'lucide-react'
 
-// Import das seções
-import { DashboardOverviewSection } from './sections/DashboardOverviewSection'
+// Import das seções (usando componentes originais aprovados)
+import { DashboardSection } from './sections/DashboardSection'
 import { RankingSection } from './sections/RankingSection'
 import { ChallengesSection } from './sections/ChallengesSection'
-import { AchievementsSection } from './sections/AchievementsSection'
-import { UserCommunitySection } from './sections/UserCommunitySection'
+import { BadgesSection } from './sections/BadgesSection'
+import { CommunitySection } from './sections/CommunitySection'
 import { SubscriptionSection } from './sections/SubscriptionSection'
 import { ProfileSection } from './sections/ProfileSection'
-import { UserSettingsSection } from './sections/UserSettingsSection'
+import { SettingsSection } from './sections/SettingsSection'
 
 export function MobileUserDashboard() {
   const { profile, signOut } = useAuth()
@@ -78,15 +78,15 @@ export function MobileUserDashboard() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'dashboard': return <DashboardOverviewSection />
+      case 'dashboard': return <DashboardSection />
       case 'ranking': return <RankingSection />
       case 'challenges': return <ChallengesSection />
-      case 'badges': return <AchievementsSection />
-      case 'community': return <UserCommunitySection />
+      case 'badges': return <BadgesSection />
+      case 'community': return <CommunitySection />
       case 'subscription': return <SubscriptionSection />
       case 'profile': return <ProfileSection />
-      case 'settings': return <UserSettingsSection />
-      default: return <DashboardOverviewSection />
+      case 'settings': return <SettingsSection />
+      default: return <DashboardSection />
     }
   }
 
