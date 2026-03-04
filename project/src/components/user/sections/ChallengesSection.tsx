@@ -175,6 +175,28 @@ export function ChallengesSection() {
         console.log(`🌟 Global medals unlocked:`, globalMedalResult.newGlobalMedals)
       }
 
+      // 8.7 ATUALIZAR SEQUÊNCIA (STREAK)
+      const streakResult = await supabaseClient.updateStreak(user.id)
+      const streakMultiplier = Math.min(streakResult.currentStreak * 0.01, 0.5) // 1% per day, max 50%
+      const streakBonus = Math.floor(pointsFromChallenge * streakMultiplier)
+      finalTotalPoints += streakBonus
+
+      // Check for milestone
+      if (streakResult.currentStreak > 0) {
+        await supabaseClient.checkStreakMilestone(user.id, streakResult.currentStreak)
+      }
+
+      console.log(`🔥 Streak: ${streakResult.currentStreak} days (+${streakBonus} bonus)`)
+
+      // Show warning if streak was broken
+      if (streakResult.streakBroken) {
+        window.dispatchEvent(
+          new CustomEvent('showStreakWarning', {
+            detail: { previousStreak: streakResult.currentStreak }
+          })
+        )
+      }
+
       // 9. SALVAR PONTOS FINAIS
       localStorage.setItem('user_points', finalTotalPoints.toString())
       const afterStorage = localStorage.getItem('user_points')
@@ -193,6 +215,7 @@ export function ChallengesSection() {
 
       // 12. DISPARAR EVENTOS
       window.dispatchEvent(new Event('pointsUpdated'))
+      window.dispatchEvent(new Event('rankingUpdated'))
       window.dispatchEvent(new Event('dailyProgressUpdated'))
       if (allNewMedals.length > 0) {
         window.dispatchEvent(new Event('medalsUpdated'))

@@ -2772,6 +2772,147 @@ export class SupabaseClient {
     }
   }
 
+  async updateStreak(
+    userId: string,
+    lastChallengeDate?: string
+  ): Promise<{
+    currentStreak: number
+    streakBroken: boolean
+    newStreak: boolean
+  }> {
+    try {
+      // Get current streak from localStorage (temporary until EPIC-001 migration)
+      const streakStr = localStorage.getItem('user_streak')
+      const currentStreak = streakStr ? parseInt(streakStr, 10) : 0
+
+      const lastDateStr = lastChallengeDate || localStorage.getItem('last_challenge_date')
+      const today = new Date().toDateString()
+
+      // If no previous date, this is first challenge
+      if (!lastDateStr) {
+        localStorage.setItem('user_streak', '1')
+        localStorage.setItem('last_challenge_date', today)
+        localStorage.setItem('streak_start_date', today)
+        return {
+          currentStreak: 1,
+          streakBroken: false,
+          newStreak: true
+        }
+      }
+
+      // Check if last challenge was today (don't increment twice)
+      if (lastDateStr === today) {
+        return {
+          currentStreak,
+          streakBroken: false,
+          newStreak: false
+        }
+      }
+
+      // Check if < 24 hours since last challenge
+      const lastDate = new Date(lastDateStr)
+      const now = new Date()
+      const hoursDiff = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60)
+
+      if (hoursDiff < 24) {
+        // Continue streak
+        const newStreak = currentStreak + 1
+        localStorage.setItem('user_streak', newStreak.toString())
+        localStorage.setItem('last_challenge_date', today)
+
+        console.log(`🔥 Streak incremented: ${currentStreak} → ${newStreak} days`)
+
+        window.dispatchEvent(
+          new CustomEvent('streakUpdated', {
+            detail: { streak: newStreak, streakBroken: false }
+          })
+        )
+
+        return {
+          currentStreak: newStreak,
+          streakBroken: false,
+          newStreak: false
+        }
+      } else {
+        // Streak broken - reset to 1
+        localStorage.setItem('user_streak', '1')
+        localStorage.setItem('last_challenge_date', today)
+        localStorage.setItem('streak_start_date', today)
+
+        console.log(
+          `⚠️ Streak broken! Previous streak: ${currentStreak} days`
+        )
+
+        window.dispatchEvent(
+          new CustomEvent('streakBroken', {
+            detail: { previousStreak: currentStreak }
+          })
+        )
+
+        return {
+          currentStreak: 1,
+          streakBroken: true,
+          newStreak: true
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error updating streak:', error)
+      return {
+        currentStreak: 0,
+        streakBroken: false,
+        newStreak: false
+      }
+    }
+  }
+
+  async checkStreakMilestone(
+    userId: string,
+    streakCount: number
+  ): Promise<{
+    milestone?: number
+  }> {
+    try {
+      const milestones = [7, 14, 30, 50, 100]
+      let reachedMilestone: number | undefined
+
+      for (const milestone of milestones) {
+        if (streakCount === milestone) {
+          // Check if already unlocked
+          const { data: existing } = await supabase
+            .from('user_streak_milestones')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('milestone_days', milestone)
+            .single()
+
+          if (!existing) {
+            // Award milestone
+            await supabase.from('user_streak_milestones').insert({
+              user_id: userId,
+              milestone_days: milestone,
+              achieved_at: new Date().toISOString()
+            })
+
+            reachedMilestone = milestone
+
+            console.log(`🎯 Streak milestone reached: ${milestone} days!`)
+
+            window.dispatchEvent(
+              new CustomEvent('streakMilestone', {
+                detail: { milestone, streakCount }
+              })
+            )
+          }
+        }
+      }
+
+      return { milestone: reachedMilestone }
+    } catch (error) {
+      console.error('❌ Error checking streak milestone:', error)
+      return {}
+    }
+  }
+
   async checkAndAwardGlobalMedals(
     userId: string,
     earnedMedalIds: string[],
@@ -2848,6 +2989,79 @@ export class SupabaseClient {
     } catch (error) {
       console.error('❌ Error checking global medals:', error)
       return { newGlobalMedals: [] }
+    }
+  }
+
+  // RANKING - Get user rank by points
+  async getUserRankingByPoints(userId: string): Promise<{ rank: number; totalUsers: number; userPoints: number }> {
+    try {
+      // Get user's current points from localStorage (temporary solution)
+      const userPointsStr = localStorage.getItem('user_points')
+      const userPoints = userPointsStr ? parseInt(userPointsStr, 10) : 0
+
+      // For now, calculate rank based on localStorage (would query Supabase in production)
+      // In a real scenario, this would be: COUNT(users with points > userPoints) + 1
+      // For MVP, we'll use a simple calculation based on available data
+
+      // Get all profiles for ranking (this would be optimized with a DB view in production)
+      const { data: allProfiles, error } = await supabase
+        .from('profiles')
+        .select('id, points')
+        .not('points', 'is', null)
+        .order('points', { ascending: false })
+
+      if (error) throw error
+
+      // Calculate rank
+      const userRank = (allProfiles?.findIndex(p => p.id === userId) || 0) + 1
+      const totalUsers = allProfiles?.length || 1
+
+      console.log(`📊 User rank: ${userRank}/${totalUsers} (${userPoints} points)`)
+
+      return {
+        rank: userRank,
+        totalUsers,
+        userPoints
+      }
+    } catch (error) {
+      console.error('❌ Error calculating user ranking:', error)
+      return {
+        rank: 1,
+        totalUsers: 1,
+        userPoints: 0
+      }
+    }
+  }
+
+  async getUsersForLeaderboard(limit: number = 10): Promise<Array<{
+    id: string
+    name: string
+    avatar?: string
+    points: number
+    rank: number
+  }>> {
+    try {
+      // Get top users by points
+      const { data: topUsers, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url, points')
+        .not('points', 'is', null)
+        .order('points', { ascending: false })
+        .limit(limit)
+
+      if (error) throw error
+
+      // Format for leaderboard display
+      return (topUsers || []).map((user, index) => ({
+        id: user.id,
+        name: user.full_name || 'Usuária',
+        avatar: user.avatar_url,
+        points: user.points || 0,
+        rank: index + 1
+      }))
+    } catch (error) {
+      console.error('❌ Error fetching leaderboard:', error)
+      return []
     }
   }
 }

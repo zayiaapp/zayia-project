@@ -13,6 +13,8 @@ import { getGreeting } from '../../../lib/utils'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getDailyCompletedCount, getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
+import { RankTierBadge } from '../RankTierBadge'
+import { LeaderboardSection } from './LeaderboardSection'
 
 export function DashboardSection() {
   const { profile } = useAuth()
@@ -23,6 +25,7 @@ export function DashboardSection() {
   const [dailyChallengesCompleted, setDailyChallengesCompleted] = useState(0)
   const [userStats, setUserStats] = useState<any>(null)
   const [userRanking, setUserRanking] = useState<any>(null)
+  const [currentStreak, setCurrentStreak] = useState(0)
 
   // ✅ Sincronizar medalhas com pontos reais
   const getSyncedMedals = (userPoints: number) => {
@@ -59,6 +62,10 @@ export function DashboardSection() {
 
     // Carregar contador de desafios de hoje
     setDailyChallengesCompleted(getDailyCompletedCount())
+
+    // Carregar streak
+    const streakStr = localStorage.getItem('user_streak') || '0'
+    setCurrentStreak(parseInt(streakStr, 10))
   }, [profile?.points])
 
   // ✅ Sincronizar stats com Supabase em tempo real
@@ -176,7 +183,27 @@ export function DashboardSection() {
     return () => window.removeEventListener('levelUp', handleLevelUp)
   }, [])
 
+  // ✅ Listener para atualizar streak
+  useEffect(() => {
+    const handleStreakUpdated = (event: any) => {
+      const streak = event.detail?.streak || 0
+      setCurrentStreak(streak)
+      console.log(`🔥 Dashboard: Streak atualizado para ${streak}`)
+    }
 
+    window.addEventListener('streakUpdated', handleStreakUpdated)
+    return () => window.removeEventListener('streakUpdated', handleStreakUpdated)
+  }, [])
+
+  // ✅ Listener para atualizar ranking
+  useEffect(() => {
+    const handleRankingUpdated = () => {
+      console.log('🏆 Dashboard: Ranking atualizado')
+    }
+
+    window.addEventListener('rankingUpdated', handleRankingUpdated)
+    return () => window.removeEventListener('rankingUpdated', handleRankingUpdated)
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -199,6 +226,29 @@ export function DashboardSection() {
           Data: {getFormattedToday()}
         </p>
       </div>
+
+      {/* ✅ Streak Display - Prominent */}
+      {currentStreak > 0 && (
+        <div className="zayia-card p-6 bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200">
+          <div className="text-center">
+            <div className="text-5xl mb-2 animate-pulse">🔥</div>
+            <div className="text-4xl font-bold text-orange-600 mb-2">
+              {currentStreak} dias
+            </div>
+            <div className="text-sm text-orange-600 font-semibold">
+              em chamas!
+            </div>
+            <p className="text-xs text-orange-500 mt-2">
+              Mantenha a consistência para ganhar bônus de pontos!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Tier Badge Display */}
+      {profile?.points && (
+        <RankTierBadge points={profile.points} />
+      )}
 
       {/* ✅ Cards de Stats: Medalhas e Ranking */}
       <div className="grid grid-cols-2 gap-4">
@@ -507,6 +557,11 @@ export function DashboardSection() {
         </div>
       )}
 
+      {/* ✅ Leaderboard Section */}
+      <div className="zayia-card p-6">
+        <LeaderboardSection />
+      </div>
+
       {/* Motivação do Dia */}
       <div className="zayia-card p-6 bg-gradient-to-r from-zayia-cream to-zayia-lilac/20">
         <div className="text-center">
@@ -515,7 +570,7 @@ export function DashboardSection() {
             Frase do Dia ✨
           </h3>
           <p className="text-sm text-zayia-deep-violet italic">
-            "Cada pequeno passo que você dá hoje é uma vitória que merece ser celebrada. 
+            "Cada pequeno passo que você dá hoje é uma vitória que merece ser celebrada.
             Você é mais forte do que imagina!"
           </p>
         </div>
