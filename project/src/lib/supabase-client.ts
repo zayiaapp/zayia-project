@@ -3313,6 +3313,147 @@ export class SupabaseClient {
       return 0
     }
   }
+
+  // ===== USER PREFERENCES MANAGEMENT =====
+
+  // Get user preferences (creates defaults if missing)
+  async getUserPreferences(userId: string): Promise<any> {
+    try {
+      // Try to fetch existing preferences
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+
+      if (!error && data) {
+        return data
+      }
+
+      // If not found, create default preferences
+      if (error?.code === 'PGRST116') {
+        // PGRST116 = no rows found
+        const { data: newPrefs, error: createError } = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: userId,
+            daily_goal: 5,
+            notifications_enabled: true,
+            theme: 'auto',
+            language: 'pt',
+            email_frequency: 'weekly',
+            marketing_emails: true
+          })
+          .select()
+          .single()
+
+        if (createError) throw createError
+        return newPrefs
+      }
+
+      throw error
+    } catch (error) {
+      console.error(`❌ Error fetching user preferences for ${userId}:`, error)
+      // Return safe defaults if fetch fails
+      return {
+        user_id: userId,
+        daily_goal: 5,
+        notifications_enabled: true,
+        quiet_hours_start: null,
+        quiet_hours_end: null,
+        theme: 'auto',
+        language: 'pt',
+        email_frequency: 'weekly',
+        marketing_emails: true
+      }
+    }
+  }
+
+  // Update user preferences
+  async updateUserPreferences(userId: string, updates: any): Promise<{ success: boolean; preferences: any; message: string }> {
+    try {
+      // Validate enum fields if provided
+      if (updates.theme && !['light', 'dark', 'auto'].includes(updates.theme)) {
+        throw new Error('Invalid theme value')
+      }
+      if (updates.language && !['pt', 'en'].includes(updates.language)) {
+        throw new Error('Invalid language value')
+      }
+      if (updates.email_frequency && !['daily', 'weekly', 'never'].includes(updates.email_frequency)) {
+        throw new Error('Invalid email_frequency value')
+      }
+      if (updates.daily_goal && (updates.daily_goal < 1 || updates.daily_goal > 20)) {
+        throw new Error('daily_goal must be between 1 and 20')
+      }
+
+      // Update preferences
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return {
+        success: true,
+        preferences: data,
+        message: 'Preferences updated successfully'
+      }
+    } catch (error) {
+      console.error(`❌ Error updating preferences for user ${userId}:`, error)
+      return {
+        success: false,
+        preferences: null,
+        message: error instanceof Error ? error.message : 'Failed to update preferences'
+      }
+    }
+  }
+
+  // Reset user preferences to defaults
+  async resetUserPreferences(userId: string): Promise<{ success: boolean; preferences: any; message: string }> {
+    try {
+      const defaults = {
+        daily_goal: 5,
+        notifications_enabled: true,
+        quiet_hours_start: null,
+        quiet_hours_end: null,
+        theme: 'auto',
+        language: 'pt',
+        email_frequency: 'weekly',
+        marketing_emails: true
+      }
+
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .update({
+          ...defaults,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return {
+        success: true,
+        preferences: data,
+        message: 'Preferences reset to defaults'
+      }
+    } catch (error) {
+      console.error(`❌ Error resetting preferences for user ${userId}:`, error)
+      return {
+        success: false,
+        preferences: null,
+        message: error instanceof Error ? error.message : 'Failed to reset preferences'
+      }
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()

@@ -26,6 +26,7 @@ export function DashboardSection() {
   const [userStats, setUserStats] = useState<any>(null)
   const [userRanking, setUserRanking] = useState<any>(null)
   const [currentStreak, setCurrentStreak] = useState(0)
+  const [dailyGoal, setDailyGoal] = useState(5) // Load from Supabase preferences
 
   // ✅ Sincronizar medalhas com pontos reais
   const getSyncedMedals = (userPoints: number) => {
@@ -68,6 +69,12 @@ export function DashboardSection() {
         // Load streak from Supabase (primary source, not localStorage)
         const streak = await supabaseClient.getUserStreak(profile.id)
         setCurrentStreak(streak)
+
+        // Load daily goal from Supabase preferences
+        const prefs = await supabaseClient.getUserPreferences(profile.id)
+        if (prefs?.daily_goal) {
+          setDailyGoal(prefs.daily_goal)
+        }
 
         // Carregar contador de desafios de hoje
         setDailyChallengesCompleted(getDailyCompletedCount())

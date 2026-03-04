@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { supabaseClient } from '../../../lib/supabase-client'
+import { supabase } from '../../../lib/supabase'
 import {
   User,
   Save,
@@ -15,7 +17,7 @@ import { AvatarUpload } from './profile/AvatarUpload'
 
 export function ProfileSection() {
   const { profile, updateProfile, signOut } = useAuth()
-  
+
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
     cpf: profile?.cpf || '',
@@ -33,6 +35,78 @@ export function ProfileSection() {
   })
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Preferences state
+  const [userPreferences, setUserPreferences] = useState<any>(null)
+  const [dailyGoal, setDailyGoal] = useState(5)
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true)
+
+  // Load preferences on mount
+  useEffect(() => {
+    if (!profile?.id) return
+
+    const loadPreferences = async () => {
+      try {
+        setIsLoadingPreferences(true)
+        const prefs = await supabaseClient.getUserPreferences(profile.id)
+        setUserPreferences(prefs)
+        setDailyGoal(prefs?.daily_goal || 5)
+      } catch (error) {
+        console.error('❌ Error loading preferences:', error)
+      } finally {
+        setIsLoadingPreferences(false)
+      }
+    }
+
+    loadPreferences()
+
+    // Setup real-time listener for preference changes
+    const subscription = supabase
+      .channel(`preferences-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_preferences',
+          filter: `user_id=eq.${profile.id}`
+        },
+        async () => {
+          try {
+            const updated = await supabaseClient.getUserPreferences(profile.id)
+            setUserPreferences(updated)
+            setDailyGoal(updated?.daily_goal || 5)
+            console.log('🔄 Preferences updated in real-time')
+          } catch (error) {
+            console.error('Error updating preferences:', error)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [profile?.id])
+
+  const handleSaveDailyGoal = async () => {
+    if (!profile?.id) return
+
+    try {
+      const result = await supabaseClient.updateUserPreferences(profile.id, {
+        daily_goal: dailyGoal
+      })
+
+      if (result.success) {
+        console.log('✅ Daily goal saved')
+      } else {
+        alert('Erro ao salvar meta diária: ' + result.message)
+      }
+    } catch (error) {
+      console.error('❌ Error saving daily goal:', error)
+      alert('Erro ao salvar meta diária')
+    }
+  }
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -378,6 +452,103 @@ export function ProfileSection() {
           </div>
         )}
       </div>
+
+      {/* Preferências */}
+      {!isLoadingPreferences && userPreferences && (
+        <div className="zayia-card p-6">
+          <h3 className="text-lg font-bold text-zayia-deep-violet mb-6">⚙️ Preferências</h3>
+
+          <div className="space-y-4">
+            {/* Daily Goal */}
+            <div>
+              <label className="block text-sm font-medium text-zayia-deep-violet mb-3">
+                Meta Diária de Desafios
+              </label>
+              <div className="flex items-center gap-4">
+                <select
+                  value={dailyGoal}
+                  onChange={(e) => setDailyGoal(parseInt(e.target.value, 10))}
+                  className="zayia-input px-4 py-2 rounded-lg border border-zayia-lilac/30"
+                >
+                  {[5, 10, 15, 20].map((goal) => (
+                    <option key={goal} value={goal}>
+                      {goal} desafios
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleSaveDailyGoal}
+                  className="bg-zayia-purple hover:bg-zayia-deep-violet text-white px-4 py-2 rounded-lg font-semibold transition"
+                >
+                  <Save className="w-4 h-4 inline mr-2" />
+                  Salvar
+                </button>
+              </div>
+              <p className="text-xs text-zayia-violet-gray mt-2">
+                Escolha quantos desafios você quer completar por dia
+              </p>
+            </div>
+
+            {/* Language */}
+            <div>
+              <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                Idioma
+              </label>
+              <select
+                value={userPreferences.language || 'pt'}
+                disabled
+                className="w-full zayia-input px-4 py-2 rounded-lg border border-zayia-lilac/30 disabled:bg-gray-50"
+              >
+                <option value="pt">Português (PT-BR)</option>
+                <option value="en">English (US)</option>
+              </select>
+              <p className="text-xs text-zayia-violet-gray mt-2">
+                Idioma de exibição da plataforma
+              </p>
+            </div>
+
+            {/* Theme */}
+            <div>
+              <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                Tema
+              </label>
+              <select
+                value={userPreferences.theme || 'auto'}
+                disabled
+                className="w-full zayia-input px-4 py-2 rounded-lg border border-zayia-lilac/30 disabled:bg-gray-50"
+              >
+                <option value="auto">Automático</option>
+                <option value="light">Claro</option>
+                <option value="dark">Escuro</option>
+              </select>
+              <p className="text-xs text-zayia-violet-gray mt-2">
+                Aparência da interface
+              </p>
+            </div>
+
+            {/* Notifications */}
+            <div>
+              <label className="block text-sm font-medium text-zayia-deep-violet mb-2">
+                Notificações
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={userPreferences.notifications_enabled || false}
+                  disabled
+                  className="w-5 h-5 rounded"
+                />
+                <span className="text-sm text-zayia-deep-violet">
+                  Ativar notificações de desafios
+                </span>
+              </div>
+              <p className="text-xs text-zayia-violet-gray mt-2">
+                Receba lembretes de novos desafios
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Informações da Conta */}
       <div className="zayia-card p-6">
