@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabaseClient, type CommunityMessage, type CommunityRules } from '../../lib/supabase-client'
+import { supabase } from '../../lib/supabase'
 import { Trash2, Shield, Edit, X, MessageSquare, AlertCircle, Calendar } from 'lucide-react'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 
@@ -61,6 +62,40 @@ export function AdminCommunitySection() {
 
     loadData()
   }, [])
+
+  // ✅ Setup real-time listener for messages (Ajuste 1)
+  useEffect(() => {
+    console.log('🔌 AdminCommunitySection: Setting up real-time listener')
+
+    let unsubscribe: (() => void) | null = null
+
+    const setupListener = async () => {
+      unsubscribe = supabaseClient.onMessagesChange((_change: any) => {
+        console.log('📱 AdminCommunitySection: Real-time update received')
+        // Reload messages when changes detected
+        loadAdminMessages()
+      })
+      console.log('✅ AdminCommunitySection: Real-time listener ready')
+    }
+
+    setupListener()
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe()
+        console.log('🧹 AdminCommunitySection: Listener unsubscribed')
+      }
+    }
+  }, [])
+
+  const loadAdminMessages = async () => {
+    try {
+      const messagesData = await supabaseClient.getMessages(50, 0)
+      setMessages(messagesData)
+    } catch (error) {
+      console.error('Error loading messages:', error)
+    }
+  }
 
   const handleDeleteMessage = async () => {
     if (!showDeleteModal) return
