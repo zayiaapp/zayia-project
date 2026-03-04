@@ -46,28 +46,20 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
       console.log(`📸 Compressing image: ${proofFile.name}...`)
       const compressedBlob = await compressImage(proofFile)
 
-      // 3. Upload to Supabase Storage + Complete Challenge
+      // 3. Upload proof to Supabase Storage
       console.log(`📤 Uploading proof to Supabase...`)
-      const result = await supabaseClient.completeChallengeWithProof(challengeId, userId, compressedBlob)
+      const proofUrl = await supabaseClient.uploadProof(userId, challengeId, compressedBlob)
+      console.log(`✅ Proof uploaded: ${proofUrl}`)
 
-      if (result.success) {
-        // Update local state
-        ChallengesDataMock.completeChallenge(challengeId, userId)
-        onChallengeCompleted(challengeId, proofFile)
+      // 4. Mark challenge complete (using mock data for now)
+      // TODO: When EPIC-001 is done, migrate to use supabaseClient.completeChallenge() directly
+      ChallengesDataMock.completeChallenge(challengeId, userId)
 
-        // Show success notification
-        console.log(`✅ Challenge completed! +${result.points_earned} points`)
-        window.dispatchEvent(
-          new CustomEvent('notificationUpdate', {
-            detail: {
-              type: 'success',
-              message: `Parabéns! +${result.points_earned} pontos`
-            }
-          })
-        )
-      } else {
-        throw new Error(result.message || 'Failed to complete challenge')
-      }
+      // 5. Notify parent component to handle points/medals calculation
+      // Parent (ChallengesSection) will dispatch events for real-time sync
+      onChallengeCompleted(challengeId, proofFile)
+
+      console.log(`✅ Challenge submitted with proof URL: ${proofUrl}`)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error'
       console.error(`❌ Error submitting proof: ${errorMsg}`)
