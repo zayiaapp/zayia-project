@@ -21,6 +21,8 @@ export function DashboardSection() {
   // ✅ State para Medalhas e Desafios Diários
   const [recentMedalsEarned, setRecentMedalsEarned] = useState<string[]>([])
   const [dailyChallengesCompleted, setDailyChallengesCompleted] = useState(0)
+  const [userStats, setUserStats] = useState<any>(null)
+  const [userRanking, setUserRanking] = useState<any>(null)
 
   // ✅ Sincronizar medalhas com pontos reais
   const getSyncedMedals = (userPoints: number) => {
@@ -69,7 +71,14 @@ export function DashboardSection() {
       try {
         const stats = await supabaseClient.getUserStats(profile.id)
         if (stats) {
+          setUserStats(stats)
           console.log('✅ Dashboard synced from Supabase:', stats)
+        }
+
+        const ranking = await supabaseClient.getUserRanking(profile.id)
+        if (ranking) {
+          setUserRanking(ranking)
+          console.log('✅ Ranking synced from Supabase:', ranking)
         }
       } catch (error) {
         console.error('Error syncing dashboard stats:', error)
@@ -178,6 +187,27 @@ export function DashboardSection() {
         <p className="text-sm text-zayia-deep-violet font-medium">
           Data: {getFormattedToday()}
         </p>
+      </div>
+
+      {/* ✅ Cards de Stats: Medalhas e Ranking */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Medalhas Conquistadas */}
+        <div className="zayia-card p-4 text-center">
+          <div className="text-3xl mb-2">🏆</div>
+          <div className="text-2xl font-bold text-zayia-deep-violet">
+            {userStats?.badgesCount || recentMedalsEarned.length || 0}
+          </div>
+          <div className="text-xs text-zayia-violet-gray">Medalhas</div>
+        </div>
+
+        {/* Ranking Atual */}
+        <div className="zayia-card p-4 text-center">
+          <div className="text-3xl mb-2">🥇</div>
+          <div className="text-2xl font-bold text-zayia-deep-violet">
+            {userRanking?.position ? `#${userRanking.position}` : '—'}
+          </div>
+          <div className="text-xs text-zayia-violet-gray">Posição</div>
+        </div>
       </div>
 
       {/* Card de Nível e Progresso */}
