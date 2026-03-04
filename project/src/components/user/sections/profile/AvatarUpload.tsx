@@ -59,9 +59,19 @@ export function AvatarUpload() {
           await updateProfile({
             avatar_url: base64String
           })
-          console.log('✅ Avatar salvo com sucesso no Supabase')
+
+          // Verify the avatar was actually saved (check context update)
+          console.log('✅ Avatar request sent to Supabase')
+
+          // Note: Sync happens via useEffect watching profile.avatar_url
+          // If sync doesn't happen within 3 seconds, log warning
+          setTimeout(() => {
+            if (profile?.avatar_url !== base64String) {
+              console.warn('⚠️ Avatar may not have synced - check network/RLS policies')
+            }
+          }, 3000)
         } catch (updateErr) {
-          console.error('⚠️ Erro ao salvar no Supabase:', updateErr)
+          console.error('❌ Erro ao salvar no Supabase:', updateErr)
           // Keep the preview even if Supabase save fails
           setError('Foto salva localmente, mas houve erro ao sincronizar. Tente novamente.')
         }
