@@ -26,6 +26,7 @@ interface UseRealtimeCommunityReturn {
  * - Automatic message fetching on mount
  * - Real-time listener with incremental INSERT/UPDATE/DELETE
  * - Optimistic UI updates with rollback on error
+ * - Retry/reconnect logic with exponential backoff
  * - Proper cleanup on unmount
  */
 export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}): UseRealtimeCommunityReturn {
@@ -34,6 +35,10 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   let subscription: (() => void) | null = null
+  let reconnectTimeout: NodeJS.Timeout | null = null
+  let reconnectAttempts = 0
+  const MAX_RECONNECT_ATTEMPTS = 5
+  const INITIAL_RECONNECT_DELAY = 1000 // 1 second
 
   // Load messages from Supabase
   const loadMessages = useCallback(async (limit = 50, offset = 0) => {
@@ -75,28 +80,46 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
   const setupRealtimeListener = useCallback(() => {
     if (!userId || !enabled) return
 
-    console.log('🔌 Setting up real-time listener for messages')
-    subscription = supabaseClient.onMessagesChange((change: any) => {
-      console.log('📱 Real-time message received:', change.eventType, change.new?.id)
+    try {
+      console.log('🔌 Setting up real-time listener for messages')
+      subscription = supabaseClient.onMessagesChange((change: any) => {
+        // Reset reconnect attempts on successful update
+        reconnectAttempts = 0
+        console.log('📱 Real-time message received:', change.eventType, change.new?.id)
 
-      if (change.eventType === 'INSERT') {
-        // Add new message to top (incremental)
-        if (change.new) {
-          addMessageOptimistic(change.new)
+        if (change.eventType === 'INSERT') {
+          // Add new message to top (incremental)
+          if (change.new) {
+            addMessageOptimistic(change.new)
+          }
+        } else if (change.eventType === 'UPDATE') {
+          // Update message in place (incremental)
+          if (change.new) {
+            updateMessageOptimistic(change.new.id, change.new)
+          }
+        } else if (change.eventType === 'DELETE') {
+          // Remove message (incremental)
+          if (change.old?.id) {
+            removeMessageOptimistic(change.old.id)
+          }
         }
-      } else if (change.eventType === 'UPDATE') {
-        // Update message in place (incremental)
-        if (change.new) {
-          updateMessageOptimistic(change.new.id, change.new)
-        }
-      } else if (change.eventType === 'DELETE') {
-        // Remove message (incremental)
-        if (change.old?.id) {
-          removeMessageOptimistic(change.old.id)
-        }
+      })
+      console.log('✅ Real-time listener ready')
+    } catch (err) {
+      console.error('❌ Error setting up real-time listener:', err)
+      // Attempt reconnection with exponential backoff
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const delay = INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts)
+        console.log(`🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`)
+        reconnectTimeout = setTimeout(() => {
+          reconnectAttempts++
+          setupRealtimeListener()
+        }, delay)
+      } else {
+        setError(new Error('Failed to establish real-time connection after multiple attempts'))
+        console.error('❌ Max reconnect attempts reached')
       }
-    })
-    console.log('✅ Real-time listener ready')
+    }
   }, [userId, enabled, addMessageOptimistic, updateMessageOptimistic, removeMessageOptimistic])
 
   const subscribe = useCallback(() => {
@@ -108,6 +131,11 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
       subscription()
       subscription = null
       console.log('🧹 Real-time listener unsubscribed')
+    }
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout)
+      reconnectTimeout = null
+      console.log('🧹 Reconnect timeout cleared')
     }
   }, [])
 
