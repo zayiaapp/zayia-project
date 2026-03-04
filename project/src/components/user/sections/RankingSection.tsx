@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { supabaseClient } from '../../../lib/supabase-client'
+import { supabase } from '../../../lib/supabase'
 import {
   Trophy,
   Crown,
@@ -49,11 +51,49 @@ export function RankingSection() {
 
     window.addEventListener('pointsUpdated', handlePointsUpdated)
 
+    // ✅ Sincronizar ranking com Supabase
+    let rankingSubscription: any = null
+
+    if (profile?.id) {
+      const syncUserRanking = async () => {
+        try {
+          const ranking = await supabaseClient.getUserRanking(profile.id)
+          if (ranking) {
+            console.log('✅ Ranking synced from Supabase:', ranking)
+          }
+        } catch (error) {
+          console.error('Error syncing ranking:', error)
+        }
+
+        // Setup real-time listener for ranking changes
+        rankingSubscription = supabase
+          .channel(`ranking-changes-${profile.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'monthly_rankings',
+              filter: `user_id=eq.${profile.id}`
+            },
+            () => {
+              console.log('🔄 Ranking real-time update triggered')
+              updateRanking()
+            }
+          )
+          .subscribe()
+      }
+
+      syncUserRanking()
+    }
+
+    // ✅ Cleanup function - consolidado em um único return
     return () => {
       clearInterval(interval)
       window.removeEventListener('pointsUpdated', handlePointsUpdated)
+      if (rankingSubscription) rankingSubscription.unsubscribe()
     }
-  }, [profile?.points])
+  }, [profile?.id])
 
   const loadRanking = async () => {
     setLoading(true)

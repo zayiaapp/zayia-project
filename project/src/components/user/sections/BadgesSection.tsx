@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { supabaseClient } from '../../../lib/supabase-client'
+import { supabase } from '../../../lib/supabase'
 import { Gift, Sparkles } from 'lucide-react'
 import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getEarnedBadges } from '../../../lib/badges-storage'
@@ -17,7 +19,7 @@ export function BadgesSection() {
     setCurrentPoints(profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10))
   }, [profile?.points])
 
-  // ✅ Listener para atualizar quando medalhas mudam
+  // ✅ Listener para atualizar quando medalhas mudam (local)
   useEffect(() => {
     const handleMedalsUpdated = () => {
       const earned = getEarnedBadges()
@@ -26,6 +28,52 @@ export function BadgesSection() {
     window.addEventListener('medalsUpdated', handleMedalsUpdated)
     return () => window.removeEventListener('medalsUpdated', handleMedalsUpdated)
   }, [])
+
+  // ✅ Sincronizar medalhas com Supabase em tempo real
+  useEffect(() => {
+    if (!profile?.id) return
+
+    let subscription: any = null
+
+    const initSync = async () => {
+      try {
+        const medals = await supabaseClient.getUserEarnedMedals(profile.id)
+        if (medals.length > 0) {
+          console.log('✅ Badges synced from Supabase:', medals)
+        }
+      } catch (error) {
+        console.error('Error syncing badges from Supabase:', error)
+      }
+
+      // Setup real-time listener
+      subscription = supabase
+        .channel(`badges-changes-${profile.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'user_earned_badges',
+            filter: `user_id=eq.${profile.id}`
+          },
+          async () => {
+            try {
+              await supabaseClient.getUserEarnedMedals(profile.id)
+              console.log('🔄 Badges real-time update triggered')
+            } catch (error) {
+              console.error('Error updating badges:', error)
+            }
+          }
+        )
+        .subscribe()
+    }
+
+    initSync()
+
+    return () => {
+      if (subscription) subscription.unsubscribe()
+    }
+  }, [profile?.id])
 
   // ✅ Listener para atualizar quando pontos mudam
   useEffect(() => {

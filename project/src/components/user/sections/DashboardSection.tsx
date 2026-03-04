@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { supabaseClient } from '../../../lib/supabase-client'
+import { supabase } from '../../../lib/supabase'
 import {
   Target,
   Flame,
@@ -56,6 +58,52 @@ export function DashboardSection() {
     // Carregar contador de desafios de hoje
     setDailyChallengesCompleted(getDailyCompletedCount())
   }, [profile?.points])
+
+  // ✅ Sincronizar stats com Supabase em tempo real
+  useEffect(() => {
+    if (!profile?.id) return
+
+    let subscription: any = null
+
+    const initSync = async () => {
+      try {
+        const stats = await supabaseClient.getUserStats(profile.id)
+        if (stats) {
+          console.log('✅ Dashboard synced from Supabase:', stats)
+        }
+      } catch (error) {
+        console.error('Error syncing dashboard stats:', error)
+      }
+
+      // Setup real-time listener
+      subscription = supabase
+        .channel(`dashboard-changes-${profile.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${profile.id}`
+          },
+          async () => {
+            try {
+              await supabaseClient.getUserStats(profile.id)
+              console.log('🔄 Dashboard real-time update triggered')
+            } catch (error) {
+              console.error('Error updating dashboard:', error)
+            }
+          }
+        )
+        .subscribe()
+    }
+
+    initSync()
+
+    return () => {
+      if (subscription) subscription.unsubscribe()
+    }
+  }, [profile?.id])
 
   // ✅ Listener para atualizar quando pontos mudam (em tempo real)
   // O componente atualiza automaticamente via profile.points do AuthContext
