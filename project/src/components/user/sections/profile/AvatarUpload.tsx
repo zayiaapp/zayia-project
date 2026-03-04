@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Camera, Upload, X } from 'lucide-react'
 import { useAuth } from '../../../../contexts/AuthContext'
 import { LoadingSpinner } from '../../../ui/LoadingSpinner'
@@ -9,6 +9,14 @@ export function AvatarUpload() {
   const [isUploading, setIsUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(profile?.avatar_url || null)
   const [error, setError] = useState<string | null>(null)
+
+  // ✅ Sincronizar preview com profile.avatar_url (Ajuste 2)
+  useEffect(() => {
+    if (profile?.avatar_url && preview !== profile.avatar_url) {
+      setPreview(profile.avatar_url)
+      console.log('📸 Avatar atualizado via AuthContext:', profile.avatar_url.substring(0, 50) + '...')
+    }
+  }, [profile?.avatar_url])
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -31,23 +39,32 @@ export function AvatarUpload() {
     setIsUploading(true)
 
     try {
-      // 1. Converter para base64
+      // 1. Converter para base64 e mostrar preview
       const reader = new FileReader()
       reader.onloadend = async () => {
         const base64String = reader.result as string
 
-        // 2. Salvar base64 em localStorage para preview persistente
-        localStorage.setItem(`zayia_avatar_${profile?.id}`, base64String)
+        // 2. Mostrar preview imediatamente (local)
+        console.log('📸 Preview local:', base64String.substring(0, 50) + '...')
         setPreview(base64String)
 
-        // 3. Atualizar profile com nova URL
-        // Em produção, isto seria uma URL de Supabase Storage
-        // Por agora, salvamos o base64 diretamente
-        await updateProfile({
-          avatar_url: base64String
-        })
+        // 3. Salvar em localStorage como fallback
+        if (profile?.id) {
+          localStorage.setItem(`zayia_avatar_${profile.id}`, base64String)
+        }
 
-        console.log('✅ Avatar atualizado com sucesso')
+        // 4. Atualizar perfil no Supabase (persistência)
+        try {
+          console.log('💾 Salvando avatar no Supabase...')
+          await updateProfile({
+            avatar_url: base64String
+          })
+          console.log('✅ Avatar salvo com sucesso no Supabase')
+        } catch (updateErr) {
+          console.error('⚠️ Erro ao salvar no Supabase:', updateErr)
+          // Keep the preview even if Supabase save fails
+          setError('Foto salva localmente, mas houve erro ao sincronizar. Tente novamente.')
+        }
       }
       reader.readAsDataURL(file)
     } catch (err) {
