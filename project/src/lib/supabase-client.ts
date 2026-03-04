@@ -2380,6 +2380,162 @@ export class SupabaseClient {
       }
     }
   }
+
+  // =====================================================================
+  // USER DASHBOARD FUNCTIONS (EPIC-003)
+  // =====================================================================
+
+  /**
+   * Get user statistics for dashboard display
+   * Returns: points, level, badges_count, completed_challenges
+   */
+  async getUserStats(userId: string) {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('id, points, completed_challenges, created_at, updated_at')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      if (!profile) return null
+
+      // Calculate level from points (every 100 points = 1 level)
+      const level = Math.floor((profile.points || 0) / 100)
+
+      // Get badge count
+      const { count: badgesCount } = await supabase
+        .from('user_earned_badges')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId)
+
+      return {
+        userId,
+        points: profile.points || 0,
+        level: Math.min(level, 9), // Max level 9
+        badgesCount: badgesCount || 0,
+        completedChallenges: profile.completed_challenges || 0,
+        memberSince: profile.created_at,
+        lastAccess: profile.updated_at
+      }
+    } catch (error) {
+      console.error('❌ Error getting user stats:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get user's current ranking position
+   * Returns: position, month, year, total_users
+   */
+  async getUserRanking(userId: string) {
+    try {
+      const now = new Date()
+      const month = now.getMonth() + 1
+      const year = now.getFullYear()
+
+      const { data: ranking, error } = await supabase
+        .from('monthly_rankings')
+        .select('position, points, badges_count, completed_challenges')
+        .eq('user_id', userId)
+        .eq('month', month)
+        .eq('year', year)
+        .single()
+
+      if (error && error.code === 'PGRST116') {
+        // No ranking found for this month, return null
+        return null
+      }
+
+      if (error) throw error
+
+      return {
+        position: ranking?.position || null,
+        points: ranking?.points || 0,
+        month,
+        year,
+        badgesCount: ranking?.badges_count || 0
+      }
+    } catch (error) {
+      console.error('❌ Error getting user ranking:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get all badges earned by user
+   * Returns: array of earned badge objects with earned_at date
+   */
+  async getUserEarnedMedals(userId: string) {
+    try {
+      const { data: earnedMedals, error } = await supabase
+        .from('user_earned_badges')
+        .select(`
+          id,
+          badge_id,
+          earned_at,
+          badges:badge_id (
+            id,
+            name,
+            description,
+            icon,
+            rarity,
+            points_value
+          )
+        `)
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false })
+
+      if (error) throw error
+
+      // Flatten the response
+      return earnedMedals?.map((item: any) => ({
+        id: item.id,
+        badgeId: item.badge_id,
+        earnedAt: item.earned_at,
+        ...item.badges
+      })) || []
+    } catch (error) {
+      console.error('❌ Error getting user earned medals:', error)
+      return []
+    }
+  }
+
+  /**
+   * Get all available badges (for showing locked status)
+   * Returns: array of all badges with user's earned status
+   */
+  async getAllBadgesWithUserStatus(userId: string) {
+    try {
+      const { data: allBadges, error: badgesError } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('is_active', true)
+        .order('rarity', { ascending: false })
+
+      if (badgesError) throw badgesError
+
+      // Get earned badges with dates
+      const { data: earnedData, error: earnedError } = await supabase
+        .from('user_earned_badges')
+        .select('badge_id, earned_at')
+        .eq('user_id', userId)
+
+      if (earnedError) throw earnedError
+
+      const earnedMap = new Map(earnedData?.map(e => [e.badge_id, e.earned_at]) || [])
+
+      // Add earned status to each badge
+      return allBadges?.map(badge => ({
+        ...badge,
+        isEarned: earnedMap.has(badge.id),
+        earnedAt: earnedMap.get(badge.id) || null
+      })) || []
+    } catch (error) {
+      console.error('❌ Error getting badges with user status:', error)
+      return []
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()

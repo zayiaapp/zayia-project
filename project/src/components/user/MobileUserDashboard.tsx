@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 
 // Import das seções
-import { DashboardSection } from './sections/DashboardSection'
+import { DashboardOverviewSection } from './sections/DashboardOverviewSection'
 import { RankingSection } from './sections/RankingSection'
 import { ChallengesSection } from './sections/ChallengesSection'
 import { BadgesSection } from './sections/BadgesSection'
@@ -78,7 +78,7 @@ export function MobileUserDashboard() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'dashboard': return <DashboardSection />
+      case 'dashboard': return <DashboardOverviewSection />
       case 'ranking': return <RankingSection />
       case 'challenges': return <ChallengesSection />
       case 'badges': return <BadgesSection />
@@ -86,7 +86,7 @@ export function MobileUserDashboard() {
       case 'subscription': return <SubscriptionSection />
       case 'profile': return <ProfileSection />
       case 'settings': return <SettingsSection />
-      default: return <DashboardSection />
+      default: return <DashboardOverviewSection />
     }
   }
 
