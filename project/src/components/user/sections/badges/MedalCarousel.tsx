@@ -5,9 +5,10 @@ interface MedalCarouselProps {
   medals: any[]
   categoryName: string
   categoryIcon?: string
+  onMedalClick?: (medal: any) => void
 }
 
-export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: MedalCarouselProps) {
+export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅', onMedalClick }: MedalCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const goToPrevious = () => {
@@ -53,7 +54,10 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
         </button>
 
         {/* MEDALHA - Moldura QUADRADA FIXA */}
-        <div className="w-64 p-6 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center gap-3 shadow-lg">
+        <button
+          onClick={() => onMedalClick?.(currentMedal)}
+          className="w-64 p-6 border-4 border-zayia-lilac rounded-2xl bg-gradient-to-br from-zayia-cream to-white flex flex-col items-center justify-center gap-3 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
+        >
 
           {/* ÍCONE - SEMPRE PEQUENO E ENQUADRADO */}
           <div className="w-24 h-24 flex items-center justify-center flex-shrink-0">
@@ -101,7 +105,7 @@ export function MedalCarousel({ medals, categoryName, categoryIcon = '🏅' }: M
               <p className="text-sm font-bold text-zayia-soft-purple text-center">🔒</p>
             )}
           </div>
-        </div>
+        </button>
 
         {/* Botão Direita */}
         <button
