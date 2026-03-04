@@ -2772,99 +2772,6 @@ export class SupabaseClient {
     }
   }
 
-  async updateStreak(
-    userId: string,
-    lastChallengeDate?: string
-  ): Promise<{
-    currentStreak: number
-    streakBroken: boolean
-    newStreak: boolean
-  }> {
-    try {
-      // Get current streak from localStorage (temporary until EPIC-001 migration)
-      const streakStr = localStorage.getItem('user_streak')
-      const currentStreak = streakStr ? parseInt(streakStr, 10) : 0
-
-      const lastDateStr = lastChallengeDate || localStorage.getItem('last_challenge_date')
-      const today = new Date().toDateString()
-
-      // If no previous date, this is first challenge
-      if (!lastDateStr) {
-        localStorage.setItem('user_streak', '1')
-        localStorage.setItem('last_challenge_date', today)
-        localStorage.setItem('streak_start_date', today)
-        return {
-          currentStreak: 1,
-          streakBroken: false,
-          newStreak: true
-        }
-      }
-
-      // Check if last challenge was today (don't increment twice)
-      if (lastDateStr === today) {
-        return {
-          currentStreak,
-          streakBroken: false,
-          newStreak: false
-        }
-      }
-
-      // Check if < 24 hours since last challenge
-      const lastDate = new Date(lastDateStr)
-      const now = new Date()
-      const hoursDiff = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60)
-
-      if (hoursDiff < 24) {
-        // Continue streak
-        const newStreak = currentStreak + 1
-        localStorage.setItem('user_streak', newStreak.toString())
-        localStorage.setItem('last_challenge_date', today)
-
-        console.log(`🔥 Streak incremented: ${currentStreak} → ${newStreak} days`)
-
-        window.dispatchEvent(
-          new CustomEvent('streakUpdated', {
-            detail: { streak: newStreak, streakBroken: false }
-          })
-        )
-
-        return {
-          currentStreak: newStreak,
-          streakBroken: false,
-          newStreak: false
-        }
-      } else {
-        // Streak broken - reset to 1
-        localStorage.setItem('user_streak', '1')
-        localStorage.setItem('last_challenge_date', today)
-        localStorage.setItem('streak_start_date', today)
-
-        console.log(
-          `⚠️ Streak broken! Previous streak: ${currentStreak} days`
-        )
-
-        window.dispatchEvent(
-          new CustomEvent('streakBroken', {
-            detail: { previousStreak: currentStreak }
-          })
-        )
-
-        return {
-          currentStreak: 1,
-          streakBroken: true,
-          newStreak: true
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error updating streak:', error)
-      return {
-        currentStreak: 0,
-        streakBroken: false,
-        newStreak: false
-      }
-    }
-  }
-
   async checkStreakMilestone(
     userId: string,
     streakCount: number
@@ -2995,24 +2902,27 @@ export class SupabaseClient {
   // RANKING - Get user rank by points
   async getUserRankingByPoints(userId: string): Promise<{ rank: number; totalUsers: number; userPoints: number }> {
     try {
-      // Get user's current points from localStorage (temporary solution)
-      const userPointsStr = localStorage.getItem('user_points')
-      const userPoints = userPointsStr ? parseInt(userPointsStr, 10) : 0
+      // Get user's current points from Supabase (primary source, not localStorage)
+      const { data: userData, error: userError } = await supabase
+        .from('profiles')
+        .select('total_points')
+        .eq('id', userId)
+        .single()
 
-      // For now, calculate rank based on localStorage (would query Supabase in production)
-      // In a real scenario, this would be: COUNT(users with points > userPoints) + 1
-      // For MVP, we'll use a simple calculation based on available data
+      if (userError) throw userError
 
-      // Get all profiles for ranking (this would be optimized with a DB view in production)
+      const userPoints = userData?.total_points || 0
+
+      // Get all profiles for ranking (ordered by total_points descending)
       const { data: allProfiles, error } = await supabase
         .from('profiles')
-        .select('id, points')
-        .not('points', 'is', null)
-        .order('points', { ascending: false })
+        .select('id, total_points')
+        .not('total_points', 'is', null)
+        .order('total_points', { ascending: false })
 
       if (error) throw error
 
-      // Calculate rank
+      // Calculate rank (position in descending points list)
       const userRank = (allProfiles?.findIndex(p => p.id === userId) || 0) + 1
       const totalUsers = allProfiles?.length || 1
 
@@ -3216,6 +3126,191 @@ export class SupabaseClient {
     } catch (error) {
       console.error(`❌ Error calculating level for user ${userId}:`, error)
       return null
+    }
+  }
+
+  // ===== POINTS & STREAK MANAGEMENT =====
+
+  // Add points to user and record in history
+  async addUserPoints(userId: string, amount: number, reason: 'challenge_complete' | 'medal_unlock' | 'level_bonus' | 'admin_adjust', referenceId?: string): Promise<{ success: boolean; newTotal: number; message: string }> {
+    try {
+      // Get current total from profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('total_points')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) throw profileError
+
+      const currentTotal = profileData?.total_points || 0
+      const newTotal = Math.max(0, currentTotal + amount)
+
+      // Update profile with new total
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          total_points: newTotal,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      // Record in history (Supabase functions would do this via trigger, but we do it from client)
+      const { error: historyError } = await supabase
+        .from('user_point_history')
+        .insert({
+          user_id: userId,
+          amount,
+          reason,
+          reference_id: referenceId,
+          created_at: new Date().toISOString()
+        })
+
+      if (historyError) {
+        console.warn('❌ Warning: Points recorded but history insert failed:', historyError)
+        // Don't fail the whole operation if history insert fails
+      }
+
+      return {
+        success: true,
+        newTotal,
+        message: `Added ${amount} points successfully`
+      }
+    } catch (error) {
+      console.error(`❌ Error adding ${amount} points to user ${userId}:`, error)
+      return {
+        success: false,
+        newTotal: 0,
+        message: error instanceof Error ? error.message : 'Failed to add points'
+      }
+    }
+  }
+
+  // Update user streak (check if challenge completed today, increment or reset streak)
+  async updateStreak(userId: string): Promise<{ currentStreak: number; streakBroken: boolean; bonus: number }> {
+    try {
+      // Get user's profile with last_activity_date
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('current_streak, best_streak, last_activity_date')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) throw profileError
+
+      const currentStreak = profileData?.current_streak || 0
+      const bestStreak = profileData?.best_streak || 0
+      const lastActivityDate = profileData?.last_activity_date ? new Date(profileData.last_activity_date) : null
+
+      // Get today's date (UTC)
+      const today = new Date()
+      today.setUTCHours(0, 0, 0, 0)
+
+      let newStreak = currentStreak
+      let streakBroken = false
+      let bonus = 0
+
+      if (!lastActivityDate) {
+        // First activity ever
+        newStreak = 1
+      } else {
+        // Check if there's a gap > 1 day
+        const lastActivity = new Date(lastActivityDate)
+        lastActivity.setUTCHours(0, 0, 0, 0)
+
+        const daysSinceLastActivity = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
+
+        if (daysSinceLastActivity === 0) {
+          // Same day - streak continues (no change)
+          newStreak = currentStreak
+        } else if (daysSinceLastActivity === 1) {
+          // Next day - increment streak
+          newStreak = currentStreak + 1
+          bonus = 10 // Streak bonus points
+        } else {
+          // Gap > 1 day - reset streak
+          newStreak = 1
+          streakBroken = true
+        }
+      }
+
+      // Update profile with new streak
+      const newBestStreak = Math.max(bestStreak, newStreak)
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          current_streak: newStreak,
+          best_streak: newBestStreak,
+          last_activity_date: today.toISOString().split('T')[0], // Store as date only
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      // Record in streak history
+      if (streakBroken) {
+        const { error: historyError } = await supabase
+          .from('user_streak_history')
+          .insert({
+            user_id: userId,
+            streak_value: currentStreak,
+            break_reason: 'inactivity',
+            created_at: new Date().toISOString()
+          })
+
+        if (historyError) console.warn('❌ Warning: Streak break not recorded:', historyError)
+      }
+
+      return {
+        currentStreak: newStreak,
+        streakBroken,
+        bonus
+      }
+    } catch (error) {
+      console.error(`❌ Error updating streak for user ${userId}:`, error)
+      return {
+        currentStreak: 0,
+        streakBroken: false,
+        bonus: 0
+      }
+    }
+  }
+
+  // Get user's total points from Supabase (not localStorage)
+  async getUserTotalPoints(userId: string): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('total_points')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      return data?.total_points || 0
+    } catch (error) {
+      console.error(`❌ Error fetching total points for user ${userId}:`, error)
+      return 0
+    }
+  }
+
+  // Get user's current streak from Supabase (not localStorage)
+  async getUserStreak(userId: string): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('current_streak')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      return data?.current_streak || 0
+    } catch (error) {
+      console.error(`❌ Error fetching streak for user ${userId}:`, error)
+      return 0
     }
   }
 }

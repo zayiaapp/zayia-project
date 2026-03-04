@@ -54,19 +54,30 @@ export function DashboardSection() {
     return validMedals
   }
 
-  // ✅ Carregar dados iniciais
+  // ✅ Carregar dados iniciais (from Supabase, not localStorage)
   useEffect(() => {
-    const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
-    const syncedMedals = getSyncedMedals(userPoints)
-    setRecentMedalsEarned(syncedMedals)
+    if (!profile?.id) return
 
-    // Carregar contador de desafios de hoje
-    setDailyChallengesCompleted(getDailyCompletedCount())
+    const loadInitialData = async () => {
+      try {
+        // Load points from Supabase (primary source, not localStorage)
+        const totalPoints = await supabaseClient.getUserTotalPoints(profile.id)
+        const syncedMedals = getSyncedMedals(totalPoints)
+        setRecentMedalsEarned(syncedMedals)
 
-    // Carregar streak
-    const streakStr = localStorage.getItem('user_streak') || '0'
-    setCurrentStreak(parseInt(streakStr, 10))
-  }, [profile?.points])
+        // Load streak from Supabase (primary source, not localStorage)
+        const streak = await supabaseClient.getUserStreak(profile.id)
+        setCurrentStreak(streak)
+
+        // Carregar contador de desafios de hoje
+        setDailyChallengesCompleted(getDailyCompletedCount())
+      } catch (error) {
+        console.error('Error loading initial dashboard data:', error)
+      }
+    }
+
+    loadInitialData()
+  }, [profile?.id])
 
   // ✅ Sincronizar stats com Supabase em tempo real
   useEffect(() => {
@@ -91,7 +102,7 @@ export function DashboardSection() {
         console.error('Error syncing dashboard stats:', error)
       }
 
-      // Setup real-time listener
+      // Setup real-time listener for points and streak changes
       subscription = supabase
         .channel(`dashboard-changes-${profile.id}`)
         .on(
@@ -104,8 +115,16 @@ export function DashboardSection() {
           },
           async () => {
             try {
-              await supabaseClient.getUserStats(profile.id)
-              console.log('🔄 Dashboard real-time update triggered')
+              // Update points from Supabase
+              const totalPoints = await supabaseClient.getUserTotalPoints(profile.id)
+              const syncedMedals = getSyncedMedals(totalPoints)
+              setRecentMedalsEarned(syncedMedals)
+
+              // Update streak from Supabase
+              const streak = await supabaseClient.getUserStreak(profile.id)
+              setCurrentStreak(streak)
+
+              console.log('🔄 Dashboard real-time update: points and streak synced')
             } catch (error) {
               console.error('Error updating dashboard:', error)
             }

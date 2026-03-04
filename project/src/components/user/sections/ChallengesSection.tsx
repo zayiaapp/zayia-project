@@ -13,7 +13,7 @@ import { BADGES, type Badge } from '../../../lib/badges-data-mock'
 import { supabaseClient } from '../../../lib/supabase-client'
 
 export function ChallengesSection() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
 
   // State
   const [activeCategory, setActiveCategory] = useState<ChallengeCategory | null>(null)
@@ -103,26 +103,21 @@ export function ChallengesSection() {
   const handleChallengeCompleted = (challengeId: string) => {
     if (!activeCategory || !user?.id) return
 
-
     // 1. PEGAR VALORES INICIAIS
     const challenge = ChallengesDataMock.getChallengeById(challengeId)
     if (!challenge) {
       return
     }
 
-    // ⚠️ CRÍTICO: Ler localStorage EXATAMENTE como está
-    const beforeStorage = localStorage.getItem('user_points')
-    const previousPoints = beforeStorage ? parseInt(beforeStorage, 10) : 0
-
-
+    // ⚠️ CRÍTICO: Ler pontos do Supabase (não localStorage)
+    // Use profile.points que já está sincronizado do AuthContext
+    const previousPoints = profile?.points || 0
 
     // 2. CALCULAR PONTOS DO DESAFIO
     const pointsFromChallenge = challenge.points
     const totalAfterChallenge = previousPoints + pointsFromChallenge
 
-
     // 3. IMPORTANTE: Marcar desafio como completo ANTES de verificar medalhas globais
-    // Isso incrementa totalCompleted para que checkAndUnlockMedals() leia o valor correto
     const completeSuccess = ChallengesDataMock.completeChallenge(challengeId, user.id)
 
     // 4. Update local state
@@ -130,116 +125,119 @@ export function ChallengesSection() {
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
 
-    // 5. VERIFICAR MEDALHAS (checkAndUnlockMedals já chama addEarnedBadge)
+    // 5. VERIFICAR MEDALHAS
     const allNewMedals = checkAndUnlockMedals(totalAfterChallenge, previousPoints, user.id)
 
     // Atualizar previousEarnedBadges para próxima vez
     const currentEarnedBadges = getEarnedBadges()
     setPreviousEarnedBadges(new Set(currentEarnedBadges))
 
-
     // 6. CALCULAR PONTOS DAS MEDALHAS
     let medalPointsAdded = 0
 
     if (allNewMedals.length > 0) {
-      allNewMedals.forEach((medalId, index) => {
+      allNewMedals.forEach((medalId) => {
         const medalObj = BADGES.find(b => b.id === medalId)
-        if (medalObj) {
-          if (medalObj.points) {
-            medalPointsAdded += medalObj.points
-          }
+        if (medalObj?.points) {
+          medalPointsAdded += medalObj.points
         }
       })
     }
 
-
     // 7. CALCULAR TOTAL FINAL
     let finalTotalPoints = totalAfterChallenge + medalPointsAdded
 
-    // 8. VERIFICAR LEVEL-UP
-    let levelUpBonus = 0
-    const checkLevelUp = async () => {
-      // Get current level from localStorage or profile
-      const levelStr = localStorage.getItem('user_level')
-      const currentLevel = levelStr ? parseInt(levelStr, 10) : 0
-      const levelUpResult = await supabaseClient.checkAndAwardLevelUp(
-        user.id,
-        finalTotalPoints,
-        currentLevel
-      )
-
-      if (levelUpResult.leveledUp) {
-        levelUpBonus = levelUpResult.totalBonus
-        finalTotalPoints += levelUpBonus
-
-        // Mostrar nível-up modal
-        setLevelUpData({
-          newLevel: levelUpResult.newLevel,
-          bonusPoints: levelUpBonus,
-          challengePoints: pointsFromChallenge,
-          medalPoints: medalPointsAdded
-        })
-      }
-
-      // 8.5 VERIFICAR MEDALHAS GLOBAIS
-      const globalMedalResult = await supabaseClient.checkAndAwardGlobalMedals(
-        user.id,
-        currentEarnedBadges,
-        finalTotalPoints
-      )
-      if (globalMedalResult.newGlobalMedals.length > 0) {
-        console.log(`🌟 Global medals unlocked:`, globalMedalResult.newGlobalMedals)
-      }
-
-      // 8.7 ATUALIZAR SEQUÊNCIA (STREAK)
-      const streakResult = await supabaseClient.updateStreak(user.id)
-      const streakMultiplier = Math.min(streakResult.currentStreak * 0.01, 0.5) // 1% per day, max 50%
-      const streakBonus = Math.floor(pointsFromChallenge * streakMultiplier)
-      finalTotalPoints += streakBonus
-
-      // Check for milestone
-      if (streakResult.currentStreak > 0) {
-        await supabaseClient.checkStreakMilestone(user.id, streakResult.currentStreak)
-      }
-
-      console.log(`🔥 Streak: ${streakResult.currentStreak} days (+${streakBonus} bonus)`)
-
-      // Show warning if streak was broken
-      if (streakResult.streakBroken) {
-        window.dispatchEvent(
-          new CustomEvent('showStreakWarning', {
-            detail: { previousStreak: streakResult.currentStreak }
-          })
+    // 8. Async function to save points and handle level-up/medals
+    const savePointsAndCheck = async () => {
+      try {
+        // 8.1 VERIFICAR LEVEL-UP
+        const levelUpResult = await supabaseClient.checkAndAwardLevelUp(
+          user.id,
+          finalTotalPoints,
+          0
         )
-      }
 
-      // 9. SALVAR PONTOS FINAIS
-      localStorage.setItem('user_points', finalTotalPoints.toString())
-      const afterStorage = localStorage.getItem('user_points')
+        if (levelUpResult.leveledUp) {
+          finalTotalPoints += levelUpResult.totalBonus
 
-      // 10. MOSTRAR POP-UP DE MEDALHA (se houver)
-      if (allNewMedals.length > 0) {
-        const newMedalId = allNewMedals[0]
-        const medalObj = BADGES.find(b => b.id === newMedalId)
-        if (medalObj) {
-          setUnlockedMedalPopup(medalObj)
+          setLevelUpData({
+            newLevel: levelUpResult.newLevel,
+            bonusPoints: levelUpResult.totalBonus,
+            challengePoints: pointsFromChallenge,
+            medalPoints: medalPointsAdded
+          })
         }
-      }
 
-      // 11. INCREMENTAR DESAFIOS HOJE
-      incrementDailyCount()
+        // 8.5 VERIFICAR MEDALHAS GLOBAIS
+        const globalMedalResult = await supabaseClient.checkAndAwardGlobalMedals(
+          user.id,
+          currentEarnedBadges,
+          finalTotalPoints
+        )
+        if (globalMedalResult.newGlobalMedals.length > 0) {
+          console.log(`🌟 Global medals unlocked:`, globalMedalResult.newGlobalMedals)
+        }
 
-      // 12. DISPARAR EVENTOS
-      window.dispatchEvent(new Event('pointsUpdated'))
-      window.dispatchEvent(new Event('rankingUpdated'))
-      window.dispatchEvent(new Event('dailyProgressUpdated'))
-      if (allNewMedals.length > 0) {
-        window.dispatchEvent(new Event('medalsUpdated'))
+        // 8.7 ATUALIZAR STREAK (now uses Supabase)
+        const streakResult = await supabaseClient.updateStreak(user.id)
+        const streakMultiplier = Math.min(streakResult.currentStreak * 0.01, 0.5)
+        const streakBonus = Math.floor(pointsFromChallenge * streakMultiplier)
+        finalTotalPoints += streakBonus
+
+        if (streakResult.currentStreak > 0) {
+          await supabaseClient.checkStreakMilestone(user.id, streakResult.currentStreak)
+        }
+
+        console.log(`🔥 Streak: ${streakResult.currentStreak} days (+${streakBonus} bonus)`)
+
+        if (streakResult.streakBroken) {
+          window.dispatchEvent(
+            new CustomEvent('showStreakWarning', {
+              detail: { previousStreak: streakResult.currentStreak }
+            })
+          )
+        }
+
+        // 9. SALVAR PONTOS FINAIS NA SUPABASE (primary source, not localStorage)
+        const totalPointsToAdd = finalTotalPoints - previousPoints
+        await supabaseClient.addUserPoints(
+          user.id,
+          totalPointsToAdd,
+          'challenge_complete',
+          challengeId
+        )
+
+        // Also save to localStorage as secondary cache
+        localStorage.setItem('user_points', finalTotalPoints.toString())
+
+        // 10. MOSTRAR POP-UP DE MEDALHA (se houver)
+        if (allNewMedals.length > 0) {
+          const newMedalId = allNewMedals[0]
+          const medalObj = BADGES.find(b => b.id === newMedalId)
+          if (medalObj) {
+            setUnlockedMedalPopup(medalObj)
+          }
+        }
+
+        // 11. INCREMENTAR DESAFIOS HOJE
+        incrementDailyCount()
+
+        // 12. DISPARAR EVENTOS
+        window.dispatchEvent(new Event('pointsUpdated'))
+        window.dispatchEvent(new Event('rankingUpdated'))
+        window.dispatchEvent(new Event('dailyProgressUpdated'))
+        if (allNewMedals.length > 0) {
+          window.dispatchEvent(new Event('medalsUpdated'))
+        }
+      } catch (error) {
+        console.error('❌ Error saving points to Supabase:', error)
+        // Fallback: still save to localStorage if Supabase fails
+        localStorage.setItem('user_points', finalTotalPoints.toString())
+        window.dispatchEvent(new Event('pointsUpdated'))
       }
     }
 
-    checkLevelUp()
-
+    savePointsAndCheck()
   }
 
   // Loading state
