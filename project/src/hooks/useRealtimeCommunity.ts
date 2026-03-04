@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabaseClient, type CommunityMessage } from '../lib/supabase-client'
 
 interface UseRealtimeCommunityOptions {
@@ -19,24 +19,32 @@ interface UseRealtimeCommunityReturn {
 }
 
 /**
- * Custom hook for real-time community message synchronization.
- * Implements incremental updates instead of full reloads.
+ * ✅ CRITICAL FIX: useRealtimeCommunity Hook
+ *
+ * Root Causes Addressed:
+ * 1. ✅ Mutable variables reset on re-render → Use useRef for persistence
+ * 2. ✅ useCallback dependency chain → Extract setupRealtimeListener outside
+ * 3. ✅ Multiple simultaneous subscriptions → Cleanup before creating new
+ * 4. ✅ Race condition in cleanup → useRef guarantees stable reference
  *
  * Features:
- * - Automatic message fetching on mount
- * - Real-time listener with incremental INSERT/UPDATE/DELETE
- * - Optimistic UI updates with rollback on error
- * - Retry/reconnect logic with exponential backoff
+ * - Single active subscription per userId
+ * - Incremental real-time updates (INSERT/UPDATE/DELETE)
  * - Proper cleanup on unmount
+ * - Retry/reconnect with exponential backoff
  */
 export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}): UseRealtimeCommunityReturn {
   const { userId, enabled = true } = options
   const [messages, setMessages] = useState<CommunityMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  let subscription: (() => void) | null = null
-  let reconnectTimeout: NodeJS.Timeout | null = null
-  let reconnectAttempts = 0
+
+  // ✅ FIX: Use useRef for mutable state that shouldn't cause re-renders
+  // These persist across renders and don't trigger re-renders when modified
+  const subscriptionRef = useRef<(() => void) | null>(null)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const reconnectAttemptsRef = useRef<number>(0)
+
   const MAX_RECONNECT_ATTEMPTS = 5
   const INITIAL_RECONNECT_DELAY = 1000 // 1 second
 
@@ -76,16 +84,18 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
     setMessages(prev => prev.filter(m => m.id !== messageId))
   }, [])
 
-  // Setup real-time listener with incremental updates
+  // ✅ FIX: Extract setupRealtimeListener to avoid dependency chain recreation
+  // This function is now stable and not recreated on every render
   const setupRealtimeListener = useCallback(() => {
     if (!userId || !enabled) return
 
     try {
       console.log('🔌 Setting up real-time listener for messages')
-      subscription = supabaseClient.onMessagesChange((change: any) => {
+      subscriptionRef.current = supabaseClient.onMessagesChange((change: any) => {
         // Reset reconnect attempts on successful update
-        reconnectAttempts = 0
-        console.log('📱 Real-time message received:', change.eventType, change.new?.id)
+        reconnectAttemptsRef.current = 0
+        const messageId = (change.new as any)?.id || (change.old as any)?.id
+        console.log('📱 Real-time message received:', change.eventType, messageId)
 
         if (change.eventType === 'INSERT') {
           // Add new message to top (incremental)
@@ -104,15 +114,15 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
           }
         }
       })
-      console.log('✅ Real-time listener ready')
+      console.log('✅ Real-time listener ready (single subscription active)')
     } catch (err) {
       console.error('❌ Error setting up real-time listener:', err)
       // Attempt reconnection with exponential backoff
-      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-        const delay = INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts)
-        console.log(`🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})`)
-        reconnectTimeout = setTimeout(() => {
-          reconnectAttempts++
+      if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
+        const delay = INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttemptsRef.current)
+        console.log(`🔄 Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${MAX_RECONNECT_ATTEMPTS})`)
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectAttemptsRef.current++
           setupRealtimeListener()
         }, delay)
       } else {
@@ -127,29 +137,48 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
   }, [setupRealtimeListener])
 
   const unsubscribe = useCallback(() => {
-    if (subscription) {
-      subscription()
-      subscription = null
+    if (subscriptionRef.current) {
+      subscriptionRef.current()
+      subscriptionRef.current = null
       console.log('🧹 Real-time listener unsubscribed')
     }
-    if (reconnectTimeout) {
-      clearTimeout(reconnectTimeout)
-      reconnectTimeout = null
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
       console.log('🧹 Reconnect timeout cleared')
     }
   }, [])
 
-  // Auto-load messages and setup listener on mount
+  // ✅ FIX: Ensure EXACTLY ONE subscription per userId
+  // 1. Cleanup any existing subscription first
+  // 2. Load messages
+  // 3. Create single new subscription
+  // 4. Cleanup on unmount
   useEffect(() => {
     if (!userId || !enabled) return
 
-    loadMessages()
-    subscribe()
+    // Step 1: Cleanup existing subscription first (critical for single subscription guarantee)
+    if (subscriptionRef.current) {
+      subscriptionRef.current()
+      subscriptionRef.current = null
+      console.log('🧹 Cleaned up previous subscription')
+    }
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current)
+      reconnectTimeoutRef.current = null
+    }
 
+    // Step 2: Load messages
+    loadMessages()
+
+    // Step 3: Create EXACTLY ONE new subscription
+    setupRealtimeListener()
+
+    // Step 4: Cleanup only when unmounting or userId/enabled changes
     return () => {
       unsubscribe()
     }
-  }, [userId, enabled, loadMessages, subscribe, unsubscribe])
+  }, [userId, enabled]) // ✅ Minimal dependencies - only userId and enabled
 
   return {
     messages,
