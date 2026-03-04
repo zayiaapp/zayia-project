@@ -1736,7 +1736,7 @@ export class SupabaseClient {
     try {
       const { data, error } = await supabase
         .from('community_messages')
-        .select(`id, user_id, content, deleted_by_admin, deleted_at, deletion_reason, created_at, updated_at, user_profile:user_id(id, full_name, avatar_url, email)`, { count: 'exact' })
+        .select(`id, user_id, content, deleted_by_admin, deleted_at, deletion_reason, created_at, updated_at, user_profile:user_id(id, full_name, avatar_url, email, role, created_at, updated_at)`, { count: 'exact' })
         // Load ALL messages including deleted ones (soft delete will show placeholder)
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1)
@@ -1747,6 +1747,23 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching messages:', error)
       return []
+    }
+  }
+
+  // ✅ Fetch single message with full profile data (used by real-time to enrich payload)
+  async getMessageWithProfile(messageId: string): Promise<CommunityMessage | null> {
+    try {
+      const { data, error } = await supabase
+        .from('community_messages')
+        .select(`id, user_id, content, deleted_by_admin, deleted_at, deletion_reason, created_at, updated_at, user_profile:user_id(id, full_name, avatar_url, email, role, created_at, updated_at)`)
+        .eq('id', messageId)
+        .single()
+
+      if (error) throw error
+      return (data as unknown as CommunityMessage) || null
+    } catch (error) {
+      console.error('Error fetching message with profile:', error)
+      return null
     }
   }
 

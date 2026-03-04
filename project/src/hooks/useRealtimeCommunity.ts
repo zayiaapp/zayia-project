@@ -99,7 +99,7 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
 
     try {
       console.log('🔌 Setting up real-time listener for messages')
-      subscriptionRef.current = supabaseClient.onMessagesChange((change: any) => {
+      subscriptionRef.current = supabaseClient.onMessagesChange(async (change: any) => {
         // Reset reconnect attempts on successful update
         reconnectAttemptsRef.current = 0
         const messageId = (change.new as any)?.id || (change.old as any)?.id
@@ -107,14 +107,21 @@ export function useRealtimeCommunity(options: UseRealtimeCommunityOptions = {}):
 
         if (change.eventType === 'INSERT') {
           // Add new message to top (incremental, with deduplication)
+          // ✅ CRITICAL: Fetch full message data with profile to avoid incomplete display
           if (change.new) {
-            console.log('📱 Real-time INSERT:', change.new.id)
-            addMessageOptimistic(change.new)
+            console.log('📱 Real-time INSERT:', change.new.id, '- fetching full data...')
+            const fullMessage = await supabaseClient.getMessageWithProfile(change.new.id)
+            if (fullMessage) {
+              addMessageOptimistic(fullMessage)
+            }
           }
         } else if (change.eventType === 'UPDATE') {
           // Update message in place (incremental)
           if (change.new) {
-            updateMessageOptimistic(change.new.id, change.new)
+            const fullMessage = await supabaseClient.getMessageWithProfile(change.new.id)
+            if (fullMessage) {
+              updateMessageOptimistic(change.new.id, fullMessage)
+            }
           }
         } else if (change.eventType === 'DELETE') {
           // Remove message (incremental)
