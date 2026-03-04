@@ -2771,6 +2771,85 @@ export class SupabaseClient {
       }
     }
   }
+
+  async checkAndAwardGlobalMedals(
+    userId: string,
+    earnedMedalIds: string[],
+    currentPoints: number
+  ): Promise<{
+    newGlobalMedals: string[]
+  }> {
+    try {
+      const { BADGES } = await import('./badges-data-mock')
+
+      const globalMedals = BADGES.filter(b => b.category === 'Global')
+      const newUnlocks: string[] = []
+
+      // Check each global medal requirement
+      for (const medal of globalMedals) {
+        // Skip if already earned
+        if (earnedMedalIds.includes(medal.id)) {
+          continue
+        }
+
+        let shouldUnlock = false
+        const medalRequirement = medal.requirement || 0
+
+        // Check requirement type based on medal ID
+        if (medal.id === 'global_ovo') {
+          // Unlock first medal in any category
+          shouldUnlock = earnedMedalIds.length >= 1
+        } else if (medal.id === 'global_lagarta') {
+          // 20 total challenges completed
+          shouldUnlock = earnedMedalIds.length >= 20
+        } else if (medal.id === 'global_crisalida') {
+          // 50 total challenges completed
+          shouldUnlock = earnedMedalIds.length >= 50
+        } else if (medal.id === 'global_borboleta_emergente') {
+          // 100 total challenges completed
+          shouldUnlock = earnedMedalIds.length >= 100
+        } else if (medal.id === 'global_borboleta_radiante') {
+          // 840 total challenges completed (legendary)
+          shouldUnlock = earnedMedalIds.length >= 840
+        }
+
+        if (shouldUnlock) {
+          // Add to user_earned_badges
+          const { error } = await supabase.from('user_earned_badges').insert({
+            user_id: userId,
+            badge_id: medal.id,
+            earned_at: new Date().toISOString()
+          })
+
+          if (!error) {
+            newUnlocks.push(medal.id)
+            console.log(
+              `🌟 Global medal unlocked: ${medal.name} (${medal.id})`
+            )
+
+            // Dispatch global medal unlock event
+            window.dispatchEvent(
+              new CustomEvent('globalMedalUnlocked', {
+                detail: {
+                  medalId: medal.id,
+                  medalName: medal.name,
+                  medalIcon: medal.icon,
+                  points: medal.points
+                }
+              })
+            )
+          } else {
+            console.error(`Error unlocking global medal ${medal.id}:`, error)
+          }
+        }
+      }
+
+      return { newGlobalMedals: newUnlocks }
+    } catch (error) {
+      console.error('❌ Error checking global medals:', error)
+      return { newGlobalMedals: [] }
+    }
+  }
 }
 
 export const supabaseClient = new SupabaseClient()

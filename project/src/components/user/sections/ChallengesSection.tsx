@@ -165,6 +165,16 @@ export function ChallengesSection() {
         })
       }
 
+      // 8.5 VERIFICAR MEDALHAS GLOBAIS
+      const globalMedalResult = await supabaseClient.checkAndAwardGlobalMedals(
+        user.id,
+        currentEarnedBadges,
+        finalTotalPoints
+      )
+      if (globalMedalResult.newGlobalMedals.length > 0) {
+        console.log(`🌟 Global medals unlocked:`, globalMedalResult.newGlobalMedals)
+      }
+
       // 9. SALVAR PONTOS FINAIS
       localStorage.setItem('user_points', finalTotalPoints.toString())
       const afterStorage = localStorage.getItem('user_points')
