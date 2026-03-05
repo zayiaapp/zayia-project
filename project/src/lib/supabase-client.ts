@@ -3140,6 +3140,21 @@ export class SupabaseClient {
     }
   }
 
+  // Get badge IDs earned by user (lightweight — only IDs, no joins)
+  async getUserEarnedBadgeIds(userId: string): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from('user_earned_badges')
+        .select('badge_id')
+        .eq('user_id', userId)
+      if (error) throw error
+      return (data || []).map((b: any) => b.badge_id)
+    } catch (err) {
+      console.error('❌ getUserEarnedBadgeIds error:', err)
+      return []
+    }
+  }
+
   // Award badge to user if not already earned
   async checkAndAwardBadge(userId: string, badgeId: string): Promise<{ success: boolean; message: string }> {
     try {

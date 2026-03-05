@@ -60,7 +60,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
     loadChallenges()
   }, [category.id])
 
-  const totalChallenges = 120
+  const totalChallenges = dailyChallenges.length || 1 // evita divisão por zero
   const totalCompleted = completedChallengeIds.size
   const progressPercent = (totalCompleted / totalChallenges) * 100
 
@@ -117,7 +117,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
       {/* Header com progresso */}
       <div className="bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 p-6 rounded-xl border border-zayia-lilac/50">
         <h3 className="text-xl font-bold text-zayia-deep-violet mb-2">{category.label}</h3>
-        <p className="text-zayia-violet-gray mb-4">Categoria Ativa • {totalCompleted}/120 desafios completados</p>
+        <p className="text-zayia-violet-gray mb-4">Categoria Ativa • {totalCompleted}/{totalChallenges} desafios completados</p>
 
         {/* Barra de progresso */}
         <div className="space-y-2">

@@ -7,6 +7,7 @@ import { FC } from 'react'
 import { addEarnedBadge, getEarnedBadges } from './badges-storage'
 import { LEVELS, BADGES } from './badges-data-mock'
 import ChallengesDataMock from './challenges-data-mock'
+import { supabaseClient } from './supabase-client'
 
 /**
  * Verificar e desbloquear medalhas baseado em pontos (NÍVEIS)
@@ -81,6 +82,39 @@ export function checkAndUnlockMedals(newPoints: number, previousPoints: number, 
   }
 
   return unlockedMedalIds
+}
+
+/**
+ * Verificar e desbloquear medalhas de categoria (ASSÍNCRONO — usa Supabase, não localStorage)
+ * Medalhas globais são checadas separadamente via checkAndAwardGlobalMedals()
+ */
+export async function checkAndUnlockMedalsAsync(
+  newPoints: number,
+  previousPoints: number,
+  userId: string
+): Promise<string[]> {
+  // 1. Buscar dados reais do Supabase
+  const totalCompleted = await supabaseClient.getUserTotalCompletedCount(userId)
+  const earnedBadgeIds = await supabaseClient.getUserEarnedBadgeIds(userId)
+
+  // 2. Verificar medalhas de categoria (não globais)
+  const newMedals: string[] = []
+
+  for (const badge of BADGES) {
+    if (earnedBadgeIds.includes(badge.id)) continue // já tem
+    if (badge.category === 'Global') continue // globais checadas separadamente
+
+    let unlocked = false
+    if (badge.requirement && totalCompleted >= badge.requirement) {
+      unlocked = true
+    }
+
+    if (unlocked) {
+      newMedals.push(badge.id)
+    }
+  }
+
+  return newMedals
 }
 
 /**
