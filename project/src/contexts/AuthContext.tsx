@@ -307,15 +307,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const signOut = async () => {
     try {
+      // 1. Encerra sessão no Supabase Auth
       await supabase.auth.signOut()
+    } catch (err) {
+      console.error('❌ Erro no signOut Supabase:', err)
+      // Continua mesmo com erro — limpeza local é crítica
+    } finally {
+      // 2. Limpa TODAS as keys do localStorage relacionadas ao usuário
+      const keysToRemove = [
+        'user_points',
+        'user_points_history',
+        'zayia_user',
+        'zayia_profile',
+        'zayia_integrations',
+      ]
+      keysToRemove.forEach(key => localStorage.removeItem(key))
+
+      // 3. Limpa keys dinâmicas (padrão: zayia_user_challenges_*, earned_badges_*, user_streak*)
+      const allKeys = Object.keys(localStorage)
+      allKeys.forEach(key => {
+        if (
+          key.startsWith('zayia_user_challenges_') ||
+          key.startsWith('earned_badges_') ||
+          key.startsWith('user_streak')
+        ) {
+          localStorage.removeItem(key)
+        }
+      })
+
+      // 4. Limpa estado React
       setUser(null)
       setProfile(null)
-      localStorage.removeItem('zayia_user')
-      localStorage.removeItem('zayia_profile')
-      console.log('✅ Sign out successful')
-    } catch (error) {
-      console.error('Error signing out:', error)
-      throw error
+
+      console.log('✅ Logout completo — localStorage limpo')
     }
   }
 

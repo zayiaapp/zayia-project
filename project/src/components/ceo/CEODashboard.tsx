@@ -53,6 +53,13 @@ export function CEODashboard() {
   const { profile, signOut } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
   const [rankingUsers] = useState(() => generateMockRankingUsers())
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    await signOut()
+    // setIsLoggingOut(false) não é necessário — componente desmonta após signOut
+  }
 
   const sections = [
     { id: 'dashboard2', label: 'Dashboard 2.0', icon: TrendingUp },
@@ -310,11 +317,12 @@ export function CEODashboard() {
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-zayia-lilac/30">
             <button
-              onClick={signOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
             >
               <LogOut className="w-5 h-5" />
-              <span className="font-medium">Sair</span>
+              <span className="font-medium">{isLoggingOut ? 'Saindo...' : 'Sair'}</span>
             </button>
           </div>
         </div>

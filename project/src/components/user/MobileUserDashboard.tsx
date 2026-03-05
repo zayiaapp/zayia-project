@@ -31,6 +31,13 @@ export function MobileUserDashboard() {
   const greeting = getGreeting()
   const [activeSection, setActiveSection] = useState('dashboard')
   const [isDrawerOpen, setIsDrawerOpen] = useState(false) // CLOSED by default
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    await signOut()
+    // setIsLoggingOut(false) não é necessário — componente desmonta após signOut
+  }
 
   const sections = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, description: 'Visão geral do seu progresso' },
@@ -167,11 +174,12 @@ export function MobileUserDashboard() {
         {/* Footer do Drawer - FIXED POSITIONING */}
         <div className="flex-shrink-0 p-4 border-t border-zayia-lilac/30 bg-white">
           <button
-            onClick={signOut}
-            className="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 active:bg-red-100 rounded-xl transition-all duration-200 touch-manipulation active:scale-95"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 active:bg-red-100 rounded-xl transition-all duration-200 touch-manipulation active:scale-95 disabled:opacity-50"
           >
             <X className="w-5 h-5" />
-            <span className="font-medium">Sair da Conta</span>
+            <span className="font-medium">{isLoggingOut ? 'Saindo...' : 'Sair da Conta'}</span>
           </button>
         </div>
       </div>
