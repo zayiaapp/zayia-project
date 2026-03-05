@@ -300,6 +300,28 @@ export interface PrizePayment {
   updated_at: string
 }
 
+export interface ActivityLogEntry {
+  id: string
+  user_id: string
+  action_type: 'challenge_completed' | 'badge_earned' | 'level_up' | 'community_post' | 'subscription_changed' | 'user_registered' | 'streak_milestone'
+  action_data: Record<string, unknown>
+  created_at: string
+  user_profile?: { id: string; full_name: string; avatar_url?: string }
+}
+
+export interface DailyAnalytics {
+  id: string
+  date: string
+  active_users: number
+  new_users: number
+  challenges_completed: number
+  community_posts: number
+  badges_earned: number
+  revenue_brl: number
+  created_at: string
+  updated_at: string
+}
+
 export class SupabaseClient {
   // PROFILES
   async getProfiles(): Promise<Profile[]> {
@@ -3677,6 +3699,59 @@ export class SupabaseClient {
     } catch (error) {
       console.error('❌ Error saving prize payment:', error)
       return { success: false, data: null }
+    }
+  }
+
+  // =========================================================================
+  // ACTIVITY LOG
+  // =========================================================================
+
+  async getActivityLog(limit = 10): Promise<ActivityLogEntry[]> {
+    try {
+      const { data, error } = await supabase
+        .from('activity_log')
+        .select(`
+          *,
+          user_profile:profiles(id, full_name, avatar_url)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      if (error) throw error
+      return data || []
+    } catch (err) {
+      console.error('❌ getActivityLog error:', err)
+      return []
+    }
+  }
+
+  async getDailyAnalytics(days = 30): Promise<DailyAnalytics[]> {
+    try {
+      const { data, error } = await supabase
+        .from('daily_analytics')
+        .select('*')
+        .order('date', { ascending: true })
+        .limit(days)
+      if (error) throw error
+      return data || []
+    } catch (err) {
+      console.error('❌ getDailyAnalytics error:', err)
+      return []
+    }
+  }
+
+  async logActivity(
+    userId: string,
+    actionType: ActivityLogEntry['action_type'],
+    data: Record<string, unknown> = {}
+  ): Promise<void> {
+    try {
+      await supabase.from('activity_log').insert({
+        user_id: userId,
+        action_type: actionType,
+        action_data: data,
+      })
+    } catch (err) {
+      console.error('❌ logActivity error:', err) // Non-critical — do not throw
     }
   }
 

@@ -189,6 +189,14 @@ export function ChallengesSection() {
         // Record completion to Supabase challenge_completions table
         await supabaseClient.recordChallengeCompletion(user.id, challengeId, activeCategory.id, difficulty, pointsFromChallenge)
 
+        // Register in activity_log (non-critical — fire and forget)
+        await supabaseClient.logActivity(user.id, 'challenge_completed', {
+          challenge_id: challengeId,
+          points_earned: pointsFromChallenge,
+          category_id: activeCategory.id,
+          difficulty,
+        })
+
         localStorage.setItem('user_points', finalTotalPoints.toString())
 
         // Show medal popup
