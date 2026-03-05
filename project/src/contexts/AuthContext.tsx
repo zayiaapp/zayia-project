@@ -1,52 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabaseClient, type Profile as SupabaseProfile } from '../lib/supabase-client'
+import { supabaseClient, type Profile } from '../lib/supabase-client'
 import { supabase } from '../lib/supabase'
 import { integrationsManager } from '../lib/integrations-manager'
-
-interface Profile {
-  id: string
-  email: string
-  full_name: string
-  role: 'user' | 'ceo'
-  created_at: string
-  updated_at: string
-  avatar_url?: string
-  interests?: string[]
-  goals?: string[]
-  cpf?: string
-  phone?: string
-  birth_date?: string
-  bio?: string
-  street?: string
-  street_number?: string
-  complement?: string
-  neighborhood?: string
-  city?: string
-  state?: string
-  postal_code?: string
-  location?: string
-  profession?: string
-  education?: string
-  streak?: number
-  total_sessions?: number
-  points?: number
-  level?: number
-  completed_challenges?: number
-  subscription_plan?: string
-  subscription_status?: string
-  notifications_enabled?: boolean
-  community_access?: boolean
-  mentor_status?: string
-  address?: {
-    street?: string
-    number?: string
-    complement?: string
-    neighborhood?: string
-    city?: string
-    state?: string
-    zipcode?: string
-  }
-}
 
 interface User {
   id: string
@@ -115,8 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           // Fetch profile from Supabase
           try {
-            const profiles = await supabaseClient.getProfiles()
-            const userProfile = profiles.find((p: SupabaseProfile) => p.id === session.user.id)
+            const userProfile = await supabaseClient.getProfile(session.user.id)
 
             if (userProfile) {
               setProfile(userProfile)
@@ -236,8 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Fetch profile from database
         try {
-          const profiles = await supabaseClient.getProfiles()
-          const userProfile = profiles.find((p: SupabaseProfile) => p.id === data.session.user.id)
+          const userProfile = await supabaseClient.getProfile(data.session.user.id)
 
           if (userProfile) {
             setUser(userData)

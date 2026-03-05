@@ -8,10 +8,21 @@ export interface Profile {
   avatar_url?: string
   phone?: string
   birth_date?: string
+  cpf?: string
   location?: string
   profession?: string
   education?: string
   bio?: string
+  interests?: string[]
+  goals?: string[]
+  // Address fields (flat — DB stores these as separate columns)
+  street?: string
+  street_number?: string
+  complement?: string
+  neighborhood?: string
+  city?: string
+  state?: string
+  postal_code?: string
   streak?: number
   total_sessions?: number
   points?: number

@@ -24,13 +24,13 @@ export function ProfileSection() {
     email: profile?.email || '',
     phone: profile?.phone || '',
     address: {
-      street: profile?.address?.street || '',
-      number: profile?.address?.number || '',
-      complement: profile?.address?.complement || '',
-      neighborhood: profile?.address?.neighborhood || '',
-      city: profile?.address?.city || '',
-      state: profile?.address?.state || '',
-      zipcode: profile?.address?.zipcode || ''
+      street: profile?.street || '',
+      number: profile?.street_number || '',
+      complement: profile?.complement || '',
+      neighborhood: profile?.neighborhood || '',
+      city: profile?.city || '',
+      state: profile?.state || '',
+      zipcode: profile?.postal_code || ''
     }
   })
   const [isEditing, setIsEditing] = useState(false)
