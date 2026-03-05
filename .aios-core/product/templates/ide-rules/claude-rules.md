@@ -1,19 +1,67 @@
-# Synkra AIOS Development Rules for Claude Code
+# Synkra AIOX Development Rules for Claude Code
 
-You are working with Synkra AIOS, an AI-Orchestrated System for Full Stack Development.
+You are working with Synkra AIOX, an AI-Orchestrated System for Full Stack Development.
 
-<!-- AIOS-MANAGED-START: core-framework -->
+<!-- AIOX-MANAGED-START: core-framework -->
 ## Core Framework Understanding
 
-Synkra AIOS is a meta-framework that orchestrates AI agents to handle complex development workflows. Always recognize and work within this architecture.
-<!-- AIOS-MANAGED-END: core-framework -->
+Synkra AIOX is a meta-framework that orchestrates AI agents to handle complex development workflows. Always recognize and work within this architecture.
+<!-- AIOX-MANAGED-END: core-framework -->
 
-<!-- AIOS-MANAGED-START: agent-system -->
+<!-- AIOX-MANAGED-START: constitution -->
+## Constitution
+
+O AIOX possui uma **Constitution formal** com princípios inegociáveis e gates automáticos.
+
+**Documento completo:** `.aiox-core/constitution.md`
+
+**Princípios fundamentais:**
+
+| Artigo | Princípio | Severidade |
+|--------|-----------|------------|
+| I | CLI First | NON-NEGOTIABLE |
+| II | Agent Authority | NON-NEGOTIABLE |
+| III | Story-Driven Development | MUST |
+| IV | No Invention | MUST |
+| V | Quality First | MUST |
+| VI | Absolute Imports | SHOULD |
+
+**Gates automáticos bloqueiam violações.** Consulte a Constitution para detalhes completos.
+<!-- AIOX-MANAGED-END: constitution -->
+
+<!-- AIOX-MANAGED-START: sistema-de-agentes -->
+## Sistema de Agentes
+
+### Ativação de Agentes
+Use `@agent-name` ou `/AIOX:agents:agent-name`:
+
+| Agente | Persona | Escopo Principal |
+|--------|---------|------------------|
+| `@dev` | Dex | Implementação de código |
+| `@qa` | Quinn | Testes e qualidade |
+| `@architect` | Aria | Arquitetura e design técnico |
+| `@pm` | Morgan | Product Management |
+| `@po` | Pax | Product Owner, stories/epics |
+| `@sm` | River | Scrum Master |
+| `@analyst` | Alex | Pesquisa e análise |
+| `@data-engineer` | Dara | Database design |
+| `@ux-design-expert` | Uma | UX/UI design |
+| `@devops` | Gage | CI/CD, git push (EXCLUSIVO) |
+
+### Comandos de Agentes
+Use prefixo `*` para comandos:
+- `*help` - Mostrar comandos disponíveis
+- `*create-story` - Criar story de desenvolvimento
+- `*task {name}` - Executar task específica
+- `*exit` - Sair do modo agente
+<!-- AIOX-MANAGED-END: sistema-de-agentes -->
+
+<!-- AIOX-MANAGED-START: agent-system -->
 ## Agent System
 
 ### Agent Activation
 - Agents are activated with @agent-name syntax: @dev, @qa, @architect, @pm, @po, @sm, @analyst
-- The master agent is activated with @aios-master
+- The master agent is activated with @aiox-master
 - Agent commands use the * prefix: *help, *create-story, *task, *exit
 
 ### Agent Context
@@ -21,7 +69,7 @@ When an agent is active:
 - Follow that agent's specific persona and expertise
 - Use the agent's designated workflow patterns
 - Maintain the agent's perspective throughout the interaction
-<!-- AIOS-MANAGED-END: agent-system -->
+<!-- AIOX-MANAGED-END: agent-system -->
 
 ## Development Methodology
 
@@ -45,11 +93,11 @@ When an agent is active:
 - Add tests for new features
 - Test edge cases and error scenarios
 
-<!-- AIOS-MANAGED-START: framework-structure -->
-## AIOS Framework Structure
+<!-- AIOX-MANAGED-START: framework-structure -->
+## AIOX Framework Structure
 
 ```
-aios-core/
+aiox-core/
 ├── agents/         # Agent persona definitions (YAML/Markdown)
 ├── tasks/          # Executable task workflows
 ├── workflows/      # Multi-step workflow definitions
@@ -63,7 +111,84 @@ docs/
 ├── architecture/   # System architecture documentation
 └── guides/         # User and developer guides
 ```
-<!-- AIOS-MANAGED-END: framework-structure -->
+<!-- AIOX-MANAGED-END: framework-structure -->
+
+<!-- AIOX-MANAGED-START: framework-boundary -->
+## Framework vs Project Boundary
+
+O AIOX usa um modelo de 4 camadas (L1-L4) para separar artefatos do framework e do projeto. Deny rules em `.claude/settings.json` reforçam isso deterministicamente.
+
+| Camada | Mutabilidade | Paths | Notas |
+|--------|-------------|-------|-------|
+| **L1** Framework Core | NEVER modify | `.aiox-core/core/`, `.aiox-core/constitution.md`, `bin/aiox.js`, `bin/aiox-init.js` | Protegido por deny rules |
+| **L2** Framework Templates | NEVER modify | `.aiox-core/development/tasks/`, `.aiox-core/development/templates/`, `.aiox-core/development/checklists/`, `.aiox-core/development/workflows/`, `.aiox-core/infrastructure/` | Extend-only |
+| **L3** Project Config | Mutable (exceptions) | `.aiox-core/data/`, `agents/*/MEMORY.md`, `core-config.yaml` | Allow rules permitem |
+| **L4** Project Runtime | ALWAYS modify | `docs/stories/`, `packages/`, `squads/`, `tests/` | Trabalho do projeto |
+
+**Toggle:** `core-config.yaml` → `boundary.frameworkProtection: true/false` controla se deny rules são ativas (default: true para projetos, false para contribuidores do framework).
+
+> **Referência formal:** `.claude/settings.json` (deny/allow rules), `.claude/rules/agent-authority.md`
+<!-- AIOX-MANAGED-END: framework-boundary -->
+
+<!-- AIOX-MANAGED-START: rules-system -->
+## Rules System
+
+O AIOX carrega regras contextuais de `.claude/rules/` automaticamente. Regras com frontmatter `paths:` só carregam quando arquivos correspondentes são editados.
+
+| Rule File | Description |
+|-----------|-------------|
+| `agent-authority.md` | Agent delegation matrix and exclusive operations |
+| `agent-handoff.md` | Agent switch compaction protocol for context optimization |
+| `agent-memory-imports.md` | Agent memory lifecycle and CLAUDE.md ownership |
+| `coderabbit-integration.md` | Automated code review integration rules |
+| `ids-principles.md` | Incremental Development System principles |
+| `mcp-usage.md` | MCP server usage rules and tool selection priority |
+| `story-lifecycle.md` | Story status transitions and quality gates |
+| `workflow-execution.md` | 4 primary workflows (SDC, QA Loop, Spec Pipeline, Brownfield) |
+
+> **Diretório:** `.claude/rules/` — rules são carregadas automaticamente pelo Claude Code quando relevantes.
+<!-- AIOX-MANAGED-END: rules-system -->
+
+<!-- AIOX-MANAGED-START: code-intelligence -->
+## Code Intelligence
+
+O AIOX possui um sistema de code intelligence opcional que enriquece operações com dados de análise de código.
+
+| Status | Descrição | Comportamento |
+|--------|-----------|---------------|
+| **Configured** | Provider ativo e funcional | Enrichment completo disponível |
+| **Fallback** | Provider indisponível | Sistema opera normalmente sem enrichment — graceful degradation |
+| **Disabled** | Nenhum provider configurado | Funcionalidade de code-intel ignorada silenciosamente |
+
+**Graceful Fallback:** Code intelligence é sempre opcional. `isCodeIntelAvailable()` verifica disponibilidade antes de qualquer operação. Se indisponível, o sistema retorna o resultado base sem modificação — nunca falha.
+
+**Diagnóstico:** `aiox doctor` inclui check de code-intel provider status.
+
+> **Referência:** `.aiox-core/core/code-intel/` — provider interface, enricher, client
+<!-- AIOX-MANAGED-END: code-intelligence -->
+
+<!-- AIOX-MANAGED-START: graph-dashboard -->
+## Graph Dashboard
+
+O CLI `aiox graph` visualiza dependências, estatísticas de entidades e status de providers.
+
+### Comandos
+
+```bash
+aiox graph --deps                        # Dependency tree (ASCII)
+aiox graph --deps --format=json          # Output como JSON
+aiox graph --deps --format=html          # Interactive HTML (abre browser)
+aiox graph --deps --format=mermaid       # Mermaid diagram
+aiox graph --deps --format=dot           # DOT format (Graphviz)
+aiox graph --deps --watch                # Live mode com auto-refresh
+aiox graph --deps --watch --interval=10  # Refresh a cada 10 segundos
+aiox graph --stats                       # Entity stats e cache metrics
+```
+
+**Formatos de saída:** ascii (default), json, dot, mermaid, html
+
+> **Referência:** `.aiox-core/core/graph-dashboard/` — CLI, renderers, data sources
+<!-- AIOX-MANAGED-END: graph-dashboard -->
 
 ## Workflow Execution
 
@@ -118,8 +243,8 @@ try {
 - Use for PR creation: `gh pr create`
 - Check org access: `gh api user/memberships`
 
-<!-- AIOS-MANAGED-START: aios-patterns -->
-## AIOS-Specific Patterns
+<!-- AIOX-MANAGED-START: aiox-patterns -->
+## AIOX-Specific Patterns
 
 ### Working with Templates
 ```javascript
@@ -142,7 +267,7 @@ const story = await loadStory(storyId);
 story.updateTask(taskId, { status: 'completed' });
 await story.save();
 ```
-<!-- AIOS-MANAGED-END: aios-patterns -->
+<!-- AIOX-MANAGED-END: aiox-patterns -->
 
 ## Environment Setup
 
@@ -153,14 +278,14 @@ await story.save();
 - Your preferred package manager (npm/yarn/pnpm)
 
 ### Configuration Files
-- `.aios/config.yaml` - Framework configuration
+- `.aiox/config.yaml` - Framework configuration
 - `.env` - Environment variables
-- `aios.config.js` - Project-specific settings
+- `aiox.config.js` - Project-specific settings
 
-<!-- AIOS-MANAGED-START: common-commands -->
+<!-- AIOX-MANAGED-START: common-commands -->
 ## Common Commands
 
-### AIOS Master Commands
+### AIOX Master Commands
 - `*help` - Show available commands
 - `*create-story` - Create new story
 - `*task {name}` - Execute specific task
@@ -171,18 +296,18 @@ await story.save();
 - `npm test` - Run tests
 - `npm run lint` - Check code style
 - `npm run build` - Build project
-<!-- AIOS-MANAGED-END: common-commands -->
+<!-- AIOX-MANAGED-END: common-commands -->
 
 ## Debugging
 
 ### Enable Debug Mode
 ```bash
-export AIOS_DEBUG=true
+export AIOX_DEBUG=true
 ```
 
 ### View Agent Logs
 ```bash
-tail -f .aios/logs/agent.log
+tail -f .aiox/logs/agent.log
 ```
 
 ### Trace Workflow Execution
@@ -228,4 +353,4 @@ npm run trace -- workflow-name
 - Document breaking changes prominently
 
 ---
-*Synkra AIOS Claude Code Configuration v2.0*
+*Synkra AIOX Claude Code Configuration v2.0*

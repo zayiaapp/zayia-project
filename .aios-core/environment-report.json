@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-02-21T00:00:00Z",
+  "project_name": "zayia-project",
+  "bootstrap_mode": "yolo",
+  "system": {
+    "os": "Linux (WSL2)",
+    "architecture": "x64"
+  },
+  "cli_tools": {
+    "git": { "status": "✅", "version": "2.43.0" },
+    "gh": { "status": "⚠️ NEEDS_AUTH", "version": "2.63.0" },
+    "node": { "status": "✅", "version": "20.20.0" },
+    "npm": { "status": "✅", "version": "10.8.2" },
+    "docker": { "status": "❌" },
+    "supabase": { "status": "❌" }
+  },
+  "repository": {
+    "initialized": true,
+    "remote": "https://github.com/zayiaapp/zayla-project.git",
+    "branch": "main"
+  },
+  "validation": {
+    "ready_for_development": true,
+    "gh_authenticated": false
+  }
+}
