@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { TrendingUp, Trophy, DollarSign, Users } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 
 interface AnalyticsSectionProps {
   monthlyWinnersState?: any[]
@@ -10,100 +11,45 @@ export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionP
   // Estados
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [allWinners, setAllWinners] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Dados mockados (depois integra com monthlyWinnersState)
-  const mockAllWinners = [
-    {
-      id: 'user1',
-      name: 'Ana Silva',
-      month: 2,
-      year: 2024,
-      position: 1,
-      amount: 500,
-      date: '2024-02-26'
-    },
-    {
-      id: 'user2',
-      name: 'Maria Santos',
-      month: 2,
-      year: 2024,
-      position: 2,
-      amount: 300,
-      date: '2024-02-26'
-    },
-    {
-      id: 'user3',
-      name: 'Julia Costa',
-      month: 2,
-      year: 2024,
-      position: 3,
-      amount: 100,
-      date: '2024-02-26'
-    },
-    {
-      id: 'user1',
-      name: 'Ana Silva',
-      month: 1,
-      year: 2024,
-      position: 1,
-      amount: 500,
-      date: '2024-01-31'
-    },
-    {
-      id: 'user4',
-      name: 'Helena Rodrigues',
-      month: 1,
-      year: 2024,
-      position: 2,
-      amount: 300,
-      date: '2024-01-31'
-    },
-    {
-      id: 'user5',
-      name: 'Larissa Martins',
-      month: 1,
-      year: 2024,
-      position: 3,
-      amount: 100,
-      date: '2024-01-31'
-    }
-  ]
+  useEffect(() => {
+    const loadWinners = async () => {
+      try {
+        const { data } = await supabase
+          .from('monthly_rankings')
+          .select(`
+            *,
+            user:profiles(id, full_name)
+          `)
+          .order('year', { ascending: false })
+          .order('month', { ascending: false })
+          .order('position', { ascending: true })
+          .limit(36)
 
-  // Transformar monthlyWinnersState se disponível
-  const allWinners = useMemo(() => {
-    if (monthlyWinnersState && monthlyWinnersState.length > 0) {
-      return monthlyWinnersState.flatMap(month => [
-        {
-          id: month.firstPlaceUserId,
-          name: month.firstPlaceName,
-          month: month.month,
-          year: month.year,
-          position: 1,
-          amount: month.firstPlaceAmount || 0,
-          date: month.firstPlacePaymentDate || new Date().toISOString()
-        },
-        {
-          id: month.secondPlaceUserId,
-          name: month.secondPlaceName,
-          month: month.month,
-          year: month.year,
-          position: 2,
-          amount: month.secondPlaceAmount || 0,
-          date: month.secondPlacePaymentDate || new Date().toISOString()
-        },
-        {
-          id: month.thirdPlaceUserId,
-          name: month.thirdPlaceName,
-          month: month.month,
-          year: month.year,
-          position: 3,
-          amount: month.thirdPlaceAmount || 0,
-          date: month.thirdPlacePaymentDate || new Date().toISOString()
+        if (data && data.length > 0) {
+          setAllWinners(data.map((entry: any) => ({
+            id: entry.user_id,
+            name: entry.user?.full_name || 'Usuária',
+            month: entry.month,
+            year: entry.year,
+            position: entry.position,
+            amount: entry.points || 0,
+            date: entry.created_at || new Date().toISOString()
+          })))
+        } else {
+          setAllWinners([])
         }
-      ])
+      } catch (err) {
+        console.error('❌ loadWinners error:', err)
+        setAllWinners([])
+      } finally {
+        setIsLoading(false)
+      }
     }
-    return mockAllWinners
-  }, [monthlyWinnersState])
+    loadWinners()
+  }, [selectedYear])
 
   // Filtrar por ano e mês selecionados
   const filteredWinners = useMemo(() => {
@@ -171,6 +117,14 @@ export function AnalyticsSection({ monthlyWinnersState = [] }: AnalyticsSectionP
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
   ]
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-zayia-violet-gray">Carregando analytics...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

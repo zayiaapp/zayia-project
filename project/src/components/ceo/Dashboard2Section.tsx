@@ -80,10 +80,20 @@ export function Dashboard2Section() {
   }, [])
 
 
-  // Gerar dados do gráfico baseado na data selecionada
+  // Carregar dados do gráfico via Supabase
   useEffect(() => {
-    generateChartData()
-  }, [selectedDate, viewMode])
+    const loadChartData = async () => {
+      const analytics = await supabaseClient.getDailyAnalytics(30)
+      const mapped: ChartData[] = analytics.map(a => ({
+        date: a.date,
+        revenue: a.revenue_brl || 0,
+        activeUsers: a.active_users || 0,
+        challenges: a.challenges_completed || 0
+      }))
+      setChartData(mapped)
+    }
+    loadChartData()
+  }, [])
 
   // Atualizar desafios de hoje a cada minuto
   useEffect(() => {
@@ -101,53 +111,6 @@ export function Dashboard2Section() {
 
     return () => clearInterval(interval)
   }, [])
-
-  const generateChartData = () => {
-    const data: ChartData[] = []
-    const baseDate = new Date(selectedDate)
-    
-    if (viewMode === 'daily') {
-      // Últimos 30 dias a partir da data selecionada
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(baseDate)
-        date.setDate(baseDate.getDate() - i)
-        
-        data.push({
-          date: date.toISOString().split('T')[0],
-          revenue: Math.floor(Math.random() * 8000) + 2000, // R$ 2k-10k por dia
-          activeUsers: Math.floor(Math.random() * 100) + 50, // 50-150 usuárias ativas por dia
-          challenges: Math.floor(Math.random() * 200) + 100 // 100-300 desafios por dia
-        })
-      }
-    } else {
-      // Últimos 12 meses a partir do mês selecionado
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(baseDate)
-        date.setMonth(baseDate.getMonth() - i)
-        
-        data.push({
-          date: date.toISOString().split('T')[0],
-          revenue: Math.floor(Math.random() * 50000) + 80000, // R$ 80k-130k por mês
-          activeUsers: Math.floor(Math.random() * 300) + 1000, // 1000-1300 usuárias ativas por mês
-          challenges: Math.floor(Math.random() * 5000) + 3000 // 3000-8000 desafios por mês
-        })
-      }
-    }
-    
-    setChartData(data)
-  }
-
-  const updateTodayChallenges = () => {
-    // Simular atualização em tempo real dos desafios de hoje
-    const baseValue = 156
-    const variation = Math.floor(Math.random() * 20) - 10 // -10 a +10
-    const newValue = Math.max(0, baseValue + variation)
-    
-    setMetrics(prev => ({
-      ...prev,
-      todayChallenges: newValue
-    }))
-  }
 
   // Gerar calendário
   const generateCalendar = (): CalendarDay[] => {
@@ -203,10 +166,6 @@ export function Dashboard2Section() {
       month: 'long',
       year: 'numeric'
     }).format(date)
-  }
-
-  const getMaxValue = () => {
-    return Math.max(...chartData.map(d => viewMode === 'daily' ? d.revenue : d.revenue))
   }
 
   const exportToCSV = () => {

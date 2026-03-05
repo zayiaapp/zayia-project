@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { supabaseClient } from '../../lib/supabase-client'
+import { supabaseClient, type Profile } from '../../lib/supabase-client'
 import {
   Trophy,
   Calendar,
   DollarSign,
   BarChart3,
-  ChevronDown,
-  ChevronUp,
   Plus,
   Edit,
   Trash2,
@@ -26,17 +24,12 @@ import {
   Flag
 } from 'lucide-react'
 import {
-  RankingUser,
   MonthlyWinner,
   PrizePayment,
   RankingConfig,
-  generateMockMonthlyWinners,
   defaultRankingConfig,
   formatCurrency,
-  getPrizeMedal,
   getDaysLeftInMonth,
-  getMonthStartDate,
-  getMonthEndDate
 } from '../../lib/ranking-data-mock'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { AnalyticsSection } from './AnalyticsSection'
@@ -55,7 +48,7 @@ const tabs: TabType[] = [
 ]
 
 interface PrizeManagementSectionProps {
-  users: RankingUser[]
+  users: Profile[]
   onRefreshRanking: () => Promise<void>
   onFinalizeMonth: () => Promise<void>
 }
@@ -353,14 +346,14 @@ export function PrizeManagementSection({
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
               <Users className="w-6 h-6 text-zayia-deep-violet mx-auto mb-2" />
-              <div className="text-xl font-bold text-zayia-deep-violet">{users.length}</div>
+              <div className="text-xl font-bold text-zayia-deep-violet">{users.length.toLocaleString()}</div>
               <div className="text-xs text-zayia-violet-gray">Usuárias Ativas</div>
             </div>
 
             <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
               <Trophy className="w-6 h-6 text-zayia-soft-purple mx-auto mb-2" />
               <div className="text-xl font-bold text-zayia-deep-violet">
-                {users.reduce((sum, u) => sum + u.points, 0).toLocaleString()}
+                {users.reduce((sum, u) => sum + (u.points || 0), 0).toLocaleString()}
               </div>
               <div className="text-xs text-zayia-violet-gray">Pontos Distribuídos</div>
             </div>
@@ -515,33 +508,23 @@ export function PrizeManagementSection({
                 </tr>
               </thead>
               <tbody>
-                {users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((user, idx) => (
-                  <tr key={user.id} className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10 transition">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-zayia-soft-purple">#{user.position}</span>
-                        {user.positionChange === 'up' && (
-                          <ChevronUp className="w-4 h-4 text-green-600" />
-                        )}
-                        {user.positionChange === 'down' && (
-                          <ChevronDown className="w-4 h-4 text-red-600" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm font-medium text-zayia-deep-violet">{user.name}</td>
-                    <td className="py-3 px-4 text-sm text-zayia-violet-gray">{user.email}</td>
-                    <td className="py-3 px-4 text-right text-sm font-bold text-zayia-soft-purple">
-                      {user.points.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-right text-sm text-zayia-violet-gray">{user.completed_today}/4</td>
-                    <td className="py-3 px-4 text-center text-xs text-zayia-violet-gray">
-                      {new Date(user.firstChallengeTime).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </td>
-                  </tr>
-                ))}
+                {users.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((user, idx) => {
+                  const position = (currentPage - 1) * itemsPerPage + idx + 1
+                  return (
+                    <tr key={user.id} className="border-b border-zayia-lilac/20 hover:bg-zayia-lilac/10 transition">
+                      <td className="py-3 px-4">
+                        <span className="text-sm font-bold text-zayia-soft-purple">#{position}</span>
+                      </td>
+                      <td className="py-3 px-4 text-sm font-medium text-zayia-deep-violet">{user.full_name || '—'}</td>
+                      <td className="py-3 px-4 text-sm text-zayia-violet-gray">{user.email}</td>
+                      <td className="py-3 px-4 text-right text-sm font-bold text-zayia-soft-purple">
+                        {(user.points || 0).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-zayia-violet-gray">—</td>
+                      <td className="py-3 px-4 text-center text-xs text-zayia-violet-gray">—</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -578,7 +561,7 @@ export function PrizeManagementSection({
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-zayia-deep-violet mb-2">Usuária</label>
                 <p className="text-sm text-zayia-violet-gray p-2 bg-zayia-lilac/20 rounded">
-                  {users.find(u => u.id === selectedPrizeUserId)?.name}
+                  {users.find(u => u.id === selectedPrizeUserId)?.full_name || '—'}
                 </p>
               </div>
 

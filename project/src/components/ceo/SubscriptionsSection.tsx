@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Plus,
   Edit2,
@@ -6,83 +6,37 @@ import {
   X,
   Eye,
   CheckCircle,
-  AlertCircle,
-  Pause,
-  Play
+  AlertCircle
 } from 'lucide-react'
 import { usePlans, type Plan } from '../../contexts/PlansContext'
-// TODO: Descomentar quando Supabase estiver configurado
-// import { createPlan, updatePlan, deletePlan } from '../../lib/plans-service'
-
-interface Subscriber {
-  id: string
-  name: string
-  email: string
-  plan_name: string
-  status: 'active' | 'inactive' | 'paused'
-  subscription_date: string
-  next_billing_date: string
-  amount: number
-  payment_method: string
-}
+import { supabase } from '../../lib/supabase'
+import { type Profile } from '../../lib/supabase-client'
 
 export function SubscriptionsSection() {
   const { plans, addPlan, updatePlan, deletePlan } = usePlans()
   const [activeTab, setActiveTab] = useState<'plans' | 'subscribers'>('plans')
+  const [subscribers, setSubscribers] = useState<Profile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([
-    {
-      id: 'sub-1',
-      name: 'Maria Silva',
-      email: 'maria@email.com',
-      plan_name: 'Premium',
-      status: 'active',
-      subscription_date: '2026-01-15',
-      next_billing_date: '2026-03-15',
-      amount: 29.97,
-      payment_method: 'Cartão Crédito'
-    },
-    {
-      id: 'sub-2',
-      name: 'Ana Costa',
-      email: 'ana@email.com',
-      plan_name: 'Básico',
-      status: 'active',
-      subscription_date: '2026-02-01',
-      next_billing_date: '2026-03-01',
-      amount: 14.97,
-      payment_method: 'Cartão Crédito'
-    },
-    {
-      id: 'sub-3',
-      name: 'Paula Santos',
-      email: 'paula@email.com',
-      plan_name: 'Premium',
-      status: 'paused',
-      subscription_date: '2025-12-10',
-      next_billing_date: 'Pausada',
-      amount: 29.97,
-      payment_method: 'Cartão Débito'
-    },
-    {
-      id: 'sub-4',
-      name: 'Juliana Oliveira',
-      email: 'juliana@email.com',
-      plan_name: 'Básico',
-      status: 'inactive',
-      subscription_date: '2025-11-20',
-      next_billing_date: 'Cancelada',
-      amount: 14.97,
-      payment_method: 'PayPal'
+  useEffect(() => {
+    const loadSubscribers = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, subscription_plan, subscription_status, created_at')
+        .eq('role', 'user')
+        .order('created_at', { ascending: false })
+      setSubscribers((data as Profile[]) || [])
+      setIsLoading(false)
     }
-  ])
+    loadSubscribers()
+  }, [])
 
   // Modal states
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [showSubscriberModal, setShowSubscriberModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
-  const [selectedSubscriber, setSelectedSubscriber] = useState<Subscriber | null>(null)
-  const [subscriberFilter, setSubscriberFilter] = useState<'all' | 'active' | 'inactive' | 'paused'>('all')
+  const [selectedSubscriber, setSelectedSubscriber] = useState<Profile | null>(null)
+  const [subscriberFilter, setSubscriberFilter] = useState<'all' | 'active' | 'cancelled' | 'expired'>('all')
 
   // Form state for plan
   const [planForm, setPlanForm] = useState({
@@ -200,46 +154,24 @@ export function SubscriptionsSection() {
   }
 
   // Subscriber handlers
-  const handleViewSubscriber = (subscriber: Subscriber) => {
+  const handleViewSubscriber = (subscriber: Profile) => {
     setSelectedSubscriber(subscriber)
     setShowSubscriberModal(true)
-  }
-
-  const handleCancelSubscriber = (subscriberId: string) => {
-    if (confirm('Tem certeza que deseja cancelar esta assinatura?')) {
-      setSubscribers(subscribers.map(s =>
-        s.id === subscriberId ? { ...s, status: 'inactive' } : s
-      ))
-    }
-  }
-
-  const handleReactivateSubscriber = (subscriberId: string) => {
-    if (confirm('Tem certeza que deseja reativar esta assinatura?')) {
-      setSubscribers(subscribers.map(s =>
-        s.id === subscriberId ? { ...s, status: 'active' } : s
-      ))
-    }
-  }
-
-  const handlePauseSubscriber = (subscriberId: string) => {
-    setSubscribers(subscribers.map(s =>
-      s.id === subscriberId ? { ...s, status: s.status === 'paused' ? 'active' : 'paused' } : s
-    ))
   }
 
   // Helper functions
   const getFilteredSubscribers = () => {
     if (subscriberFilter === 'all') return subscribers
-    return subscribers.filter(s => s.status === subscriberFilter)
+    return subscribers.filter(s => s.subscription_status === subscriberFilter)
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-700 border-green-300'
-      case 'paused':
+      case 'expired':
         return 'bg-yellow-100 text-yellow-700 border-yellow-300'
-      case 'inactive':
+      case 'cancelled':
         return 'bg-red-100 text-red-700 border-red-300'
       default:
         return 'bg-gray-100 text-gray-700 border-gray-300'
@@ -250,9 +182,9 @@ export function SubscriptionsSection() {
     switch (status) {
       case 'active':
         return 'Ativa'
-      case 'paused':
-        return 'Pausada'
-      case 'inactive':
+      case 'expired':
+        return 'Expirada'
+      case 'cancelled':
         return 'Cancelada'
       default:
         return 'Desconhecido'
@@ -263,9 +195,9 @@ export function SubscriptionsSection() {
     switch (status) {
       case 'active':
         return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'paused':
+      case 'expired':
         return <AlertCircle className="w-4 h-4 text-yellow-600" />
-      case 'inactive':
+      case 'cancelled':
         return <X className="w-4 h-4 text-red-600" />
       default:
         return null
@@ -388,7 +320,7 @@ export function SubscriptionsSection() {
         <div className="space-y-4">
           {/* Filter */}
           <div className="flex gap-2">
-            {(['all', 'active', 'inactive', 'paused'] as const).map((status) => (
+            {(['all', 'active', 'cancelled', 'expired'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setSubscriberFilter(status)}
@@ -398,7 +330,7 @@ export function SubscriptionsSection() {
                     : 'bg-zayia-lilac/20 text-zayia-deep-violet hover:bg-zayia-lilac/40'
                 }`}
               >
-                {status === 'all' ? 'Todas' : status === 'active' ? 'Ativas' : status === 'paused' ? 'Pausadas' : 'Canceladas'}
+                {status === 'all' ? 'Todas' : status === 'active' ? 'Ativas' : status === 'cancelled' ? 'Canceladas' : 'Expiradas'}
               </button>
             ))}
           </div>
@@ -411,19 +343,19 @@ export function SubscriptionsSection() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-zayia-lilac/30 rounded-full flex items-center justify-center">
-                        {getStatusIcon(subscriber.status)}
+                        {getStatusIcon(subscriber.subscription_status || '')}
                       </div>
                       <div>
-                        <p className="font-semibold text-zayia-deep-violet">{subscriber.name}</p>
+                        <p className="font-semibold text-zayia-deep-violet">{subscriber.full_name || '—'}</p>
                         <p className="text-sm text-zayia-violet-gray">{subscriber.email}</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="text-right mr-4">
-                    <p className="font-semibold text-zayia-deep-violet">{subscriber.plan_name}</p>
-                    <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 border ${getStatusColor(subscriber.status)}`}>
-                      {getStatusLabel(subscriber.status)}
+                    <p className="font-semibold text-zayia-deep-violet">{subscriber.subscription_plan || '—'}</p>
+                    <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 border ${getStatusColor(subscriber.subscription_status || '')}`}>
+                      {getStatusLabel(subscriber.subscription_status || '')}
                     </div>
                   </div>
 
@@ -572,7 +504,7 @@ export function SubscriptionsSection() {
             <div className="space-y-4">
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                 <p className="text-sm text-zayia-violet-gray">Nome</p>
-                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.name}</p>
+                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.full_name || '—'}</p>
               </div>
 
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
@@ -583,76 +515,38 @@ export function SubscriptionsSection() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                   <p className="text-sm text-zayia-violet-gray">Plano</p>
-                  <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.plan_name}</p>
+                  <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.subscription_plan || '—'}</p>
                 </div>
                 <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                   <p className="text-sm text-zayia-violet-gray">Valor</p>
-                  <p className="font-semibold text-zayia-soft-purple">R$ {selectedSubscriber.amount.toFixed(2)}</p>
+                  <p className="font-semibold text-zayia-soft-purple">—</p>
                 </div>
               </div>
 
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                 <p className="text-sm text-zayia-violet-gray">Data de Inscrição</p>
-                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.subscription_date}</p>
+                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.created_at ? new Date(selectedSubscriber.created_at).toLocaleDateString('pt-BR') : '—'}</p>
               </div>
 
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                 <p className="text-sm text-zayia-violet-gray">Próximo Faturamento</p>
-                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.next_billing_date}</p>
+                <p className="font-semibold text-zayia-deep-violet">—</p>
               </div>
 
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                 <p className="text-sm text-zayia-violet-gray">Método de Pagamento</p>
-                <p className="font-semibold text-zayia-deep-violet">{selectedSubscriber.payment_method}</p>
+                <p className="font-semibold text-zayia-deep-violet">—</p>
               </div>
 
               <div className="p-4 bg-zayia-lilac/20 rounded-lg">
                 <p className="text-sm text-zayia-violet-gray">Status</p>
-                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 border ${getStatusColor(selectedSubscriber.status)}`}>
-                  {getStatusLabel(selectedSubscriber.status)}
+                <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 border ${getStatusColor(selectedSubscriber.subscription_status || '')}`}>
+                  {getStatusLabel(selectedSubscriber.subscription_status || '')}
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-2 mt-6">
-              {selectedSubscriber.status === 'active' && (
-                <>
-                  <button
-                    onClick={() => {
-                      handlePauseSubscriber(selectedSubscriber.id)
-                      setShowSubscriberModal(false)
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-yellow-300 text-yellow-700 rounded-lg hover:bg-yellow-50 transition-all"
-                  >
-                    <Pause className="w-4 h-4" />
-                    Pausar Assinatura
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleCancelSubscriber(selectedSubscriber.id)
-                      setShowSubscriberModal(false)
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-all"
-                  >
-                    <X className="w-4 h-4" />
-                    Cancelar Assinatura
-                  </button>
-                </>
-              )}
-
-              {(selectedSubscriber.status === 'paused' || selectedSubscriber.status === 'inactive') && (
-                <button
-                  onClick={() => {
-                    handleReactivateSubscriber(selectedSubscriber.id)
-                    setShowSubscriberModal(false)
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all"
-                >
-                  <Play className="w-4 h-4" />
-                  Reativar Assinatura
-                </button>
-              )}
-
               <button
                 onClick={() => setShowSubscriberModal(false)}
                 className="w-full px-4 py-2 border border-zayia-lilac/30 text-zayia-deep-violet rounded-lg hover:bg-zayia-lilac/20 transition-all"

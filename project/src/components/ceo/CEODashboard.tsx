@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Logo } from '../ui/Logo'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
@@ -47,13 +47,95 @@ import { Dashboard2Section } from './Dashboard2Section'
 import { GuerreirasSection } from './GuerreirasSection'
 import { QuizzSection } from './QuizzSection'
 import { SubscriptionsSection } from './SubscriptionsSection'
-import { generateMockRankingUsers } from '../../lib/ranking-data-mock'
+import { supabase } from '../../lib/supabase'
+import { supabaseClient, type Profile, type ActivityLogEntry, type DailyAnalytics } from '../../lib/supabase-client'
+
+function getActivityLabel(type: string): string {
+  const labels: Record<string, string> = {
+    'challenge_completed': 'Desafio completado',
+    'badge_earned': 'Medalha conquistada',
+    'level_up': 'Subiu de nível',
+    'community_post': 'Nova mensagem na comunidade',
+    'user_registered': 'Nova usuária cadastrada',
+    'streak_milestone': 'Marco de sequência alcançado',
+  }
+  return labels[type] || 'Atividade'
+}
+
+function formatRelativeTime(isoString: string): string {
+  const seconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000)
+  if (seconds < 60) return 'agora'
+  if (seconds < 3600) return `há ${Math.floor(seconds / 60)} min`
+  if (seconds < 86400) return `há ${Math.floor(seconds / 3600)}h`
+  return `há ${Math.floor(seconds / 86400)}d`
+}
 
 export function CEODashboard() {
   const { profile, signOut } = useAuth()
   const [activeSection, setActiveSection] = useState('dashboard')
-  const [rankingUsers] = useState(() => generateMockRankingUsers())
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    todayChallenges: 0,
+    totalBadgesEarned: 0,
+  })
+  const [activityFeed, setActivityFeed] = useState<ActivityLogEntry[]>([])
+  const [rankingUsers, setRankingUsers] = useState<Profile[]>([])
+  const [weeklyData, setWeeklyData] = useState<DailyAnalytics[]>([])
+
+  useEffect(() => {
+    const loadMetrics = async () => {
+      const today = new Date().toISOString().split('T')[0]
+      const [
+        { count: total },
+        { count: active },
+        { count: todayCh },
+        { count: badges },
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'user').eq('subscription_status', 'active'),
+        supabase.from('challenge_completions').select('*', { count: 'exact', head: true }).gte('completed_at', today),
+        supabase.from('user_earned_badges').select('*', { count: 'exact', head: true }),
+      ])
+      setMetrics({
+        totalUsers: total || 0,
+        activeUsers: active || 0,
+        todayChallenges: todayCh || 0,
+        totalBadgesEarned: badges || 0,
+      })
+    }
+    loadMetrics()
+  }, [])
+
+  useEffect(() => {
+    const loadRanking = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url, points, level, subscription_plan')
+        .eq('role', 'user')
+        .order('points', { ascending: false })
+        .limit(50)
+      setRankingUsers((data as Profile[]) || [])
+    }
+    loadRanking()
+  }, [])
+
+  useEffect(() => {
+    const loadActivity = async () => {
+      const feed = await supabaseClient.getActivityLog(10)
+      setActivityFeed(feed)
+    }
+    loadActivity()
+  }, [])
+
+  useEffect(() => {
+    const loadWeekly = async () => {
+      const data = await supabaseClient.getDailyAnalytics(7)
+      setWeeklyData(data)
+    }
+    loadWeekly()
+  }, [])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -119,7 +201,7 @@ export function CEODashboard() {
             </div>
             <div>
               <p className="text-sm text-zayia-violet-gray">Total de Usuárias</p>
-              <p className="text-2xl font-bold text-zayia-deep-violet">1,247</p>
+              <p className="text-2xl font-bold text-zayia-deep-violet">{metrics.totalUsers.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -131,7 +213,7 @@ export function CEODashboard() {
             </div>
             <div>
               <p className="text-sm text-zayia-violet-gray">Usuárias Ativas</p>
-              <p className="text-2xl font-bold text-zayia-deep-violet">892</p>
+              <p className="text-2xl font-bold text-zayia-deep-violet">{metrics.activeUsers.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -143,7 +225,7 @@ export function CEODashboard() {
             </div>
             <div>
               <p className="text-sm text-zayia-violet-gray">Desafios Hoje</p>
-              <p className="text-2xl font-bold text-zayia-deep-violet">156</p>
+              <p className="text-2xl font-bold text-zayia-deep-violet">{metrics.todayChallenges.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -155,7 +237,7 @@ export function CEODashboard() {
             </div>
             <div>
               <p className="text-sm text-zayia-violet-gray">Medalhas Conquistadas</p>
-              <p className="text-2xl font-bold text-zayia-deep-violet">2,834</p>
+              <p className="text-2xl font-bold text-zayia-deep-violet">{metrics.totalBadgesEarned.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -166,33 +248,25 @@ export function CEODashboard() {
         <div className="zayia-card p-6">
           <h3 className="text-lg font-semibold text-zayia-deep-violet mb-4">Atividade Recente</h3>
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-zayia-lilac/30 rounded-lg">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4 text-green-600" />
+            {activityFeed.length === 0 ? (
+              <p className="text-sm text-zayia-violet-gray text-center py-4">
+                Nenhuma atividade recente.
+              </p>
+            ) : activityFeed.map(entry => (
+              <div key={entry.id} className="flex items-center gap-3 p-3 bg-zayia-lilac/30 rounded-lg">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Activity className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-zayia-deep-violet">
+                    {getActivityLabel(entry.action_type)}
+                  </p>
+                  <p className="text-xs text-zayia-violet-gray">
+                    {entry.user_profile?.full_name || 'Usuária'} — {formatRelativeTime(entry.created_at)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-zayia-deep-violet">Nova usuária cadastrada</p>
-                <p className="text-xs text-zayia-violet-gray">Maria Silva - há 5 minutos</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-zayia-lilac/30 rounded-lg">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <Trophy className="w-4 h-4 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-zayia-deep-violet">Medalha conquistada</p>
-                <p className="text-xs text-zayia-violet-gray">Ana Costa - "Primeira Semana" - há 12 minutos</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-zayia-lilac/30 rounded-lg">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-4 h-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-zayia-deep-violet">Nova pergunta SOS</p>
-                <p className="text-xs text-zayia-violet-gray">Julia Santos - há 18 minutos</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -201,7 +275,7 @@ export function CEODashboard() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-zayia-violet-gray">Desafios Completados</span>
-              <span className="text-lg font-bold text-zayia-deep-violet">156</span>
+              <span className="text-lg font-bold text-zayia-deep-violet">{metrics.todayChallenges}</span>
             </div>
             <div className="w-full bg-zayia-lilac/30 rounded-full h-2">
               <div className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-2 rounded-full" style={{ width: '78%' }}></div>
@@ -230,18 +304,25 @@ export function CEODashboard() {
       <div className="zayia-card p-6">
         <h3 className="text-lg font-semibold text-zayia-deep-violet mb-4">Crescimento dos Últimos 7 Dias</h3>
         <div className="space-y-3">
-          {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((dia, index) => (
-            <div key={dia} className="flex items-center gap-3">
-              <span className="w-8 text-sm text-zayia-violet-gray">{dia}</span>
-              <div className="flex-1 bg-zayia-lilac/30 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-1000"
-                  style={{ width: `${Math.random() * 100}%` }}
-                ></div>
+          {weeklyData.length === 0 ? (
+            <p className="text-sm text-zayia-violet-gray text-center py-4">Nenhum dado disponível.</p>
+          ) : weeklyData.map((day, index) => {
+            const maxChallenges = Math.max(...weeklyData.map(d => d.challenges_completed), 1)
+            const pct = Math.round((day.challenges_completed / maxChallenges) * 100)
+            const label = new Date(day.date).toLocaleDateString('pt-BR', { weekday: 'short' })
+            return (
+              <div key={index} className="flex items-center gap-3">
+                <span className="w-8 text-sm text-zayia-violet-gray">{label}</span>
+                <div className="flex-1 bg-zayia-lilac/30 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-zayia-deep-violet to-zayia-soft-purple h-3 rounded-full transition-all duration-1000"
+                    style={{ width: `${pct}%` }}
+                  ></div>
+                </div>
+                <span className="text-sm font-medium text-zayia-deep-violet">{day.challenges_completed}</span>
               </div>
-              <span className="text-sm font-medium text-zayia-deep-violet">{Math.floor(Math.random() * 100)}</span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
