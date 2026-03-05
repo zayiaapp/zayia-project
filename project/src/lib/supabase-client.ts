@@ -2673,6 +2673,59 @@ export class SupabaseClient {
     }
   }
 
+  /**
+   * Get metrics for a specific date from daily_analytics
+   */
+  async getDailyMetrics(date: Date): Promise<AdminStatistics> {
+    try {
+      const dateStr = date.toISOString().split('T')[0]
+
+      // Get daily analytics for the selected date
+      const { data: dailyData, error: dailyError } = await supabase
+        .from('daily_analytics')
+        .select('revenue_brl, active_users, churn_rate')
+        .eq('date', dateStr)
+        .single()
+
+      if (dailyError && dailyError.code !== 'PGRST116') {
+        console.warn('Daily analytics not found for date:', dateStr)
+      }
+
+      // Get cancellations for the selected date
+      const { data: cancellations, error: cancelError } = await supabase
+        .from('profiles')
+        .select('id, cancelled_at')
+        .eq('subscription_status', 'cancelled')
+
+      if (cancelError) throw cancelError
+
+      const cancelledUsers = cancellations?.filter(p => {
+        if (!p.cancelled_at) return false
+        const cancelDate = new Date(p.cancelled_at).toISOString().split('T')[0]
+        return cancelDate === dateStr
+      }).length || 0
+
+      return {
+        revenue: dailyData?.revenue_brl || 0,
+        activeUsers: dailyData?.active_users || 0,
+        cancelledUsers,
+        churnRate: dailyData?.churn_rate || 0,
+        todayChallengesCount: 0, // Not used in daily metrics
+        lastUpdated: new Date().toISOString()
+      }
+    } catch (error) {
+      console.error('Error fetching daily metrics:', error)
+      return {
+        revenue: 0,
+        activeUsers: 0,
+        cancelledUsers: 0,
+        churnRate: 0,
+        todayChallengesCount: 0,
+        lastUpdated: new Date().toISOString()
+      }
+    }
+  }
+
   // =====================================================================
   // USER DASHBOARD FUNCTIONS (EPIC-003)
   // =====================================================================
