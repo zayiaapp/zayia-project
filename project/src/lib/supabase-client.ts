@@ -2571,6 +2571,56 @@ export class SupabaseClient {
     }
   }
 
+  async getTodayStats(userId: string): Promise<{ challengesToday: number; pointsToday: number }> {
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const { data, error } = await supabase
+        .from('challenge_completions')
+        .select('points_earned')
+        .eq('user_id', userId)
+        .gte('completed_at', today)
+
+      if (error) throw error
+      const challengesToday = data?.length || 0
+      const pointsToday = data?.reduce((sum, c) => sum + (c.points_earned || 0), 0) || 0
+      return { challengesToday, pointsToday }
+    } catch (error) {
+      console.error('❌ getTodayStats error:', error)
+      return { challengesToday: 0, pointsToday: 0 }
+    }
+  }
+
+  async getPointsHistory(userId: string, days = 7): Promise<Array<{ date: string; points: number }>> {
+    try {
+      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+      const { data, error } = await supabase
+        .from('challenge_completions')
+        .select('points_earned, completed_at')
+        .eq('user_id', userId)
+        .gte('completed_at', since)
+        .order('completed_at', { ascending: true })
+
+      if (error) throw error
+
+      const byDay: Record<string, number> = {}
+      data?.forEach(c => {
+        const day = (c.completed_at as string).split('T')[0]
+        byDay[day] = (byDay[day] || 0) + (c.points_earned || 0)
+      })
+
+      const result: Array<{ date: string; points: number }> = []
+      for (let i = days; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+        const dayStr = d.toISOString().split('T')[0]
+        result.push({ date: dayStr, points: byDay[dayStr] || 0 })
+      }
+      return result
+    } catch (error) {
+      console.error('❌ getPointsHistory error:', error)
+      return []
+    }
+  }
+
   /**
    * Get user's current ranking position
    * Returns: position, month, year, total_users

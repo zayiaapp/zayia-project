@@ -99,26 +99,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restoreSession()
   }, [])
 
-  // ✅ Sincronizar pontos de localStorage quando mudam
-  useEffect(() => {
-    const handlePointsUpdated = () => {
-      const newPoints = parseInt(localStorage.getItem('user_points') || '0', 10)
-
-      // Atualizar profile com novos pontos
-      setProfile(prev => {
-        if (!prev) return prev
-        return {
-          ...prev,
-          points: newPoints
-        }
-      })
-
-      console.log('📊 AuthContext atualizado - pontos:', newPoints)
-    }
-
-    window.addEventListener('pointsUpdated', handlePointsUpdated)
-    return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
-  }, [])
+  // ✅ Pontos sincronizados via Supabase realtime (listener abaixo)
+  // localStorage removido como source of truth — Supabase é a fonte canônica
 
   // ✅ Task 2.6: Real-time listener for points + ranking updates
   useEffect(() => {

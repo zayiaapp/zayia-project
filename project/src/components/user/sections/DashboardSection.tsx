@@ -12,7 +12,7 @@ import {
 import { getGreeting } from '../../../lib/utils'
 import { getEarnedBadges } from '../../../lib/badges-storage'
 import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
-import { getDailyCompletedCount, getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
+import { getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
 import { RankTierBadge } from '../RankTierBadge'
 import { LeaderboardSection } from './LeaderboardSection'
 
@@ -76,8 +76,9 @@ export function DashboardSection() {
           setDailyGoal(prefs.daily_goal)
         }
 
-        // Carregar contador de desafios de hoje
-        setDailyChallengesCompleted(getDailyCompletedCount())
+        // Carregar contador de desafios de hoje via Supabase
+        const todayStats = await supabaseClient.getTodayStats(profile.id)
+        setDailyChallengesCompleted(todayStats.challengesToday)
       } catch (error) {
         console.error('Error loading initial dashboard data:', error)
       }
@@ -161,13 +162,15 @@ export function DashboardSection() {
 
   // ✅ Listener para atualizar quando desafios diários mudam
   useEffect(() => {
-    const handleDailyProgressUpdated = () => {
-      setDailyChallengesCompleted(getDailyCompletedCount())
+    if (!profile?.id) return
+    const handleDailyProgressUpdated = async () => {
+      const todayStats = await supabaseClient.getTodayStats(profile.id)
+      setDailyChallengesCompleted(todayStats.challengesToday)
     }
 
     window.addEventListener('dailyProgressUpdated', handleDailyProgressUpdated)
     return () => window.removeEventListener('dailyProgressUpdated', handleDailyProgressUpdated)
-  }, [])
+  }, [profile?.id])
 
   // ✅ Listener para resetar quando muda de dia
   useEffect(() => {
