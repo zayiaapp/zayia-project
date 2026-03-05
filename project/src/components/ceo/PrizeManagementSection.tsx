@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { supabaseClient } from '../../lib/supabase-client'
 import {
   Trophy,
   Calendar,
@@ -123,29 +124,65 @@ export function PrizeManagementSection({
   const loadData = async () => {
     setLoading(true)
     try {
-      // Simular carregamento
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setMonthlyWinners(generateMockMonthlyWinners())
+      const now = new Date()
+      const month = now.getMonth() + 1
+      const year = now.getFullYear()
 
-      // Mock pagamentos
-      const mockPayments: PrizePayment[] = [
-        {
-          id: 'payment-1',
-          winnerId: 'user-1',
-          position: 1,
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear(),
-          prizeAmount: 500,
-          status: 'pending',
-          paymentMethod: 'pix',
-          pixKey: '(11) 98765-4321',
-          badgeEarned: 'winner-gold-2024',
-          badgeEarnedAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          updatedBy: 'admin-ceo'
+      // Load winners from Supabase (monthly_rankings top 3)
+      // getMonthlyWinners returns { ranking, prize }[] objects
+      const rawWinners = await supabaseClient.getMonthlyWinners(month, year)
+      const winners = rawWinners as unknown as Array<{ ranking: { user_id: string; points: number; user_profile?: { full_name?: string; email?: string } }; prize: { status?: string; amount?: number; payment_method?: string; pix_key?: string; payment_date?: string } | null }>
+      if (winners.length > 0) {
+        const w = (i: number) => winners[i]?.ranking
+        const p = (i: number) => winners[i]?.prize
+        const mapped: MonthlyWinner = {
+          id: `${month}-${year}`,
+          month,
+          year,
+          firstPlaceUserId: w(0)?.user_id || '',
+          firstPlaceName: w(0)?.user_profile?.full_name || '',
+          firstPlaceEmail: w(0)?.user_profile?.email || '',
+          firstPlacePoints: w(0)?.points || 0,
+          firstPlaceStatus: (p(0)?.status as 'pending' | 'paid' | 'cancelled') || 'pending',
+          firstPlaceAmount: p(0)?.amount,
+          secondPlaceUserId: w(1)?.user_id || '',
+          secondPlaceName: w(1)?.user_profile?.full_name || '',
+          secondPlaceEmail: w(1)?.user_profile?.email || '',
+          secondPlacePoints: w(1)?.points || 0,
+          secondPlaceStatus: (p(1)?.status as 'pending' | 'paid' | 'cancelled') || 'pending',
+          secondPlaceAmount: p(1)?.amount,
+          thirdPlaceUserId: w(2)?.user_id || '',
+          thirdPlaceName: w(2)?.user_profile?.full_name || '',
+          thirdPlaceEmail: w(2)?.user_profile?.email || '',
+          thirdPlacePoints: w(2)?.points || 0,
+          thirdPlaceStatus: (p(2)?.status as 'pending' | 'paid' | 'cancelled') || 'pending',
+          thirdPlaceAmount: p(2)?.amount,
+          createdAt: now.toISOString(),
+          finalizedAt: now.toISOString()
         }
-      ]
-      setPayments(mockPayments)
+        setMonthlyWinners([mapped])
+        setMonthlyWinnersState([mapped])
+      }
+
+      // Load prize payments from Supabase
+      const dbPayments = await supabaseClient.getPrizePayments(month, year)
+      const mappedPayments: PrizePayment[] = dbPayments.map((p: any) => ({
+        id: p.id,
+        winnerId: p.user_id,
+        position: p.position,
+        month: p.month,
+        year: p.year,
+        prizeAmount: Number(p.amount),
+        status: p.status as 'pending' | 'paid' | 'cancelled',
+        paymentMethod: (p.payment_method === 'bank_transfer' ? 'transfer' : p.payment_method) as 'pix' | 'transfer' | 'other',
+        pixKey: p.pix_key || undefined,
+        paymentDate: p.payment_date || undefined,
+        badgeEarned: '',
+        badgeEarnedAt: p.created_at,
+        updatedAt: p.updated_at,
+        updatedBy: 'admin-ceo'
+      }))
+      setPayments(mappedPayments)
     } catch (error) {
       console.error('Error loading data:', error)
     }
@@ -184,7 +221,7 @@ export function PrizeManagementSection({
     }
   }
 
-  const handleSavePrize = () => {
+  const handleSavePrize = async () => {
     if (!selectedPrizeUserId || !prizeAmount) {
       alert('Por favor, preencha Usuária e Valor do Prêmio')
       return
@@ -194,92 +231,47 @@ export function PrizeManagementSection({
     const currentMonth = now.getMonth() + 1
     const currentYear = now.getFullYear()
 
-    // 🔥 LÓGICA PRINCIPAL: Atualizar histórico com dados completos
-    const updatedWinners: MonthlyWinner[] = monthlyWinnersState.map(month => {
-      // Só atualiza o mês/ano atual
-      if (month.month !== currentMonth || month.year !== currentYear) {
-        return month
-      }
+    // Determinar posição do vencedor
+    const monthData = monthlyWinnersState.find(m => m.month === currentMonth && m.year === currentYear)
+    let position = 0
+    if (monthData?.firstPlaceUserId === selectedPrizeUserId) position = 1
+    else if (monthData?.secondPlaceUserId === selectedPrizeUserId) position = 2
+    else if (monthData?.thirdPlaceUserId === selectedPrizeUserId) position = 3
 
-      // Verificar qual posição está sendo paga
-      if (month.firstPlaceUserId === selectedPrizeUserId) {
-        return {
-          ...month,
-          firstPlaceAmount: Number(prizeAmount),
-          firstPlaceStatus: 'paid' as const,
-          firstPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
-          firstPlacePixKey: pixKey || undefined,
-          firstPlacePaymentDate: paymentDate || undefined,
-          firstPlaceProofUrl: proofFile?.name || undefined
-        }
-      }
-
-      if (month.secondPlaceUserId === selectedPrizeUserId) {
-        return {
-          ...month,
-          secondPlaceAmount: Number(prizeAmount),
-          secondPlaceStatus: 'paid' as const,
-          secondPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
-          secondPlacePixKey: pixKey || undefined,
-          secondPlacePaymentDate: paymentDate || undefined,
-          secondPlaceProofUrl: proofFile?.name || undefined
-        }
-      }
-
-      if (month.thirdPlaceUserId === selectedPrizeUserId) {
-        return {
-          ...month,
-          thirdPlaceAmount: Number(prizeAmount),
-          thirdPlaceStatus: 'paid' as const,
-          thirdPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe',
-          thirdPlacePixKey: pixKey || undefined,
-          thirdPlacePaymentDate: paymentDate || undefined,
-          thirdPlaceProofUrl: proofFile?.name || undefined
-        }
-      }
-
-      return month
+    // Salvar no Supabase
+    const result = await supabaseClient.savePrizePayment({
+      userId: selectedPrizeUserId,
+      position,
+      month: currentMonth,
+      year: currentYear,
+      amount: Number(prizeAmount),
+      paymentMethod,
+      pixKey: pixKey || undefined,
+      paymentDate: paymentDate || undefined,
+      notes: proofFile?.name ? `Comprovante: ${proofFile.name}` : undefined
     })
 
-    // Atualizar ambos os estados (monthlyWinners e monthlyWinnersState)
-    setMonthlyWinners(updatedWinners)
-    setMonthlyWinnersState(updatedWinners)
-
-    // 🔥 SALVAR COMPROVANTE NO LOCALSTORAGE se fornecido
-    if (proofFile) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        const fileData = {
-          name: proofFile.name,
-          type: proofFile.type,
-          size: proofFile.size,
-          base64: event.target?.result
-        }
-        // Chave única: user-id-mês-ano
-        const storageKey = `zayia_proof_${selectedPrizeUserId}_${currentMonth}_${currentYear}`
-        localStorage.setItem(storageKey, JSON.stringify(fileData))
-        console.log('✅ Comprovante salvo em localStorage:', storageKey)
-      }
-      reader.readAsDataURL(proofFile)
+    if (!result.success) {
+      alert('❌ Erro ao salvar prêmio. Tente novamente.')
+      return
     }
 
-    // Log para debug
-    console.log('✅ Prêmio salvo no histórico:', {
-      userId: selectedPrizeUserId,
-      amount: prizeAmount,
-      method: paymentMethod,
-      pixKey: pixKey,
-      date: paymentDate,
-      proof: proofFile?.name,
-      status: 'paid'
+    // Atualizar estado local do histórico
+    const updatedWinners: MonthlyWinner[] = monthlyWinnersState.map(m => {
+      if (m.month !== currentMonth || m.year !== currentYear) return m
+      if (m.firstPlaceUserId === selectedPrizeUserId) {
+        return { ...m, firstPlaceAmount: Number(prizeAmount), firstPlaceStatus: 'paid' as const, firstPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe', firstPlacePixKey: pixKey || undefined, firstPlacePaymentDate: paymentDate || undefined }
+      }
+      if (m.secondPlaceUserId === selectedPrizeUserId) {
+        return { ...m, secondPlaceAmount: Number(prizeAmount), secondPlaceStatus: 'paid' as const, secondPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe', secondPlacePixKey: pixKey || undefined, secondPlacePaymentDate: paymentDate || undefined }
+      }
+      if (m.thirdPlaceUserId === selectedPrizeUserId) {
+        return { ...m, thirdPlaceAmount: Number(prizeAmount), thirdPlaceStatus: 'paid' as const, thirdPlaceMethod: paymentMethod as 'pix' | 'transfer' | 'stripe', thirdPlacePixKey: pixKey || undefined, thirdPlacePaymentDate: paymentDate || undefined }
+      }
+      return m
     })
-
-    // 🔥 FORÇAR RE-RENDER dos cards adicionando um pequeno delay
-    setTimeout(() => {
-      // Dispara evento customizado para re-renderização
-      window.dispatchEvent(new Event('prizeUpdated'))
-      console.log('✅ Cards re-renderizados')
-    }, 100)
+    setMonthlyWinners(updatedWinners)
+    setMonthlyWinnersState(updatedWinners)
 
     // Limpar formulário
     setPrizeAmount('')
@@ -289,8 +281,7 @@ export function PrizeManagementSection({
     setProofFile(null)
     setPrizeModalOpen(false)
 
-    // Feedback ao usuário
-    alert('✅ Prêmio marcado como PAGO! Status mudou para VERDE e comprovante foi salvo!')
+    alert('✅ Prêmio marcado como PAGO e salvo no banco de dados!')
   }
 
   const handleStatusChange = (userId: string, newStatus: string) => {

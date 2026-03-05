@@ -35,315 +35,87 @@ export function RankingSection() {
   // Encontrar índice da usuária atual no ranking
   const currentUserIndex = users.findIndex(u => u.id === profile?.id || u.isCurrentUser)
 
-  useEffect(() => {
-    loadRanking()
-
-    // Atualizar ranking a cada 30 segundos
-    const interval = setInterval(() => {
-      updateRanking()
-    }, 30000)
-
-    // ✅ Listener para atualizar ranking quando pontos mudam (em tempo real)
-    const handlePointsUpdated = () => {
-      console.log('📈 Ranking atualizado - pontos mudaram')
-      updateRanking()
+  const calculateLevelFromPoints = (points: number): number => {
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+      if (points >= LEVELS[i].pointsRequired) return i
     }
+    return 0
+  }
 
-    window.addEventListener('pointsUpdated', handlePointsUpdated)
-
-    // ✅ Sincronizar ranking com Supabase
-    let rankingSubscription: any = null
-
-    if (profile?.id) {
-      const syncUserRanking = async () => {
-        try {
-          const ranking = await supabaseClient.getUserRanking(profile.id)
-          if (ranking) {
-            console.log('✅ Ranking synced from Supabase:', ranking)
-          }
-        } catch (error) {
-          console.error('Error syncing ranking:', error)
-        }
-
-        // Setup real-time listener for ranking changes
-        rankingSubscription = supabase
-          .channel(`ranking-changes-${profile.id}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'monthly_rankings',
-              filter: `user_id=eq.${profile.id}`
-            },
-            () => {
-              console.log('🔄 Ranking real-time update triggered')
-              updateRanking()
-            }
-          )
-          .subscribe()
-      }
-
-      syncUserRanking()
-    }
-
-    // ✅ Cleanup function - consolidado em um único return
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener('pointsUpdated', handlePointsUpdated)
-      if (rankingSubscription) rankingSubscription.unsubscribe()
-    }
-  }, [profile?.id])
-
-  const loadRanking = async () => {
+  const loadRealRanking = async () => {
     setLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 500))
-    updateRanking()
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, points, streak, avatar_url, completed_challenges, created_at')
+        .eq('role', 'user')
+        .order('points', { ascending: false })
+        .limit(50)
+
+      if (error) throw error
+
+      const now = new Date()
+      const rankingUsers: RankingUser[] = (data || []).map((p, index) => ({
+        id: p.id,
+        name: p.full_name || 'Guerreira',
+        email: p.email || '',
+        points: p.points || 0,
+        avatar_url: p.avatar_url || '',
+        level: calculateLevelFromPoints(p.points || 0),
+        streak: p.streak || 0,
+        completed_today: 0,
+        badges_count: 0,
+        completed_challenges: p.completed_challenges || 0,
+        firstChallengeTime: now.toISOString(),
+        last_activity: now.toISOString(),
+        weekly_growth: 0,
+        monthly_growth: 0,
+        favorite_category: '',
+        total_sessions: 0,
+        join_date: p.created_at || now.toISOString(),
+        position: index + 1,
+        previousPosition: index + 1,
+        positionChange: 'same' as const,
+        recent_badges: [],
+        zone: index < 3 ? ('prize' as const) : ('neutral' as const),
+        isPrizeWinner: index < 3,
+        prizePosition: index < 3 ? (index + 1) as 1 | 2 | 3 : undefined,
+        prizeAmount: index === 0 ? 500 : index === 1 ? 300 : index === 2 ? 100 : undefined,
+        prizeStatus: index < 3 ? ('pending' as const) : undefined,
+        isCurrentUser: p.id === profile?.id
+      }))
+
+      setUsers(rankingUsers)
+      setLastUpdate(new Date())
+
+      const currentIdx = rankingUsers.findIndex(u => u.isCurrentUser)
+      if (currentIdx !== -1 && rankingUsers[currentIdx].position <= 3) {
+        setShowPrizeNotif(true)
+        setTimeout(() => setShowPrizeNotif(false), 5000)
+      }
+    } catch (error) {
+      console.error('Error loading ranking:', error)
+    }
     setLoading(false)
   }
 
-  const updateRanking = () => {
-    const now = new Date()
+  useEffect(() => {
+    if (!profile?.id) return
 
-    // 🔧 SINCRONIZAR: Função para calcular nível baseado em pontos
-    const calculateLevelFromPoints = (points: number): number => {
-      for (let i = LEVELS.length - 1; i >= 0; i--) {
-        if (points >= LEVELS[i].pointsRequired) {
-          return i
-        }
-      }
-      return 0
+    loadRealRanking()
+
+    const interval = setInterval(loadRealRanking, 30000)
+
+    const rankingSubscription = supabase
+      .channel('ranking-profiles')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, loadRealRanking)
+      .subscribe()
+
+    return () => {
+      clearInterval(interval)
+      rankingSubscription.unsubscribe()
     }
-
-    // 1. Dados dos outros usuários (mock - níveis calculados dinamicamente)
-    const otherUsers: RankingUser[] = [
-      {
-        id: '1',
-        name: 'Ana Silva',
-        email: 'ana@exemplo.com',
-        points: 5000,
-        avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(5000),
-        streak: 67,
-        completed_today: 4,
-        badges_count: 15,
-        completed_challenges: 45,
-        firstChallengeTime: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 12,
-        monthly_growth: 45,
-        favorite_category: 'autoestima',
-        total_sessions: 30,
-        join_date: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 1,
-        previousPosition: 1,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'prize',
-        isPrizeWinner: true,
-        prizePosition: 1,
-        prizeAmount: 500,
-        prizeStatus: 'pending'
-      },
-      {
-        id: '2',
-        name: 'Maria Santos',
-        email: 'maria@exemplo.com',
-        points: 4200,
-        avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(4200),
-        streak: 50,
-        completed_today: 3,
-        badges_count: 12,
-        completed_challenges: 40,
-        firstChallengeTime: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 8,
-        monthly_growth: 35,
-        favorite_category: 'mindfulness',
-        total_sessions: 28,
-        join_date: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 2,
-        previousPosition: 2,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'prize',
-        isPrizeWinner: true,
-        prizePosition: 2,
-        prizeAmount: 300,
-        prizeStatus: 'pending'
-      },
-      {
-        id: '3',
-        name: 'Julia Costa',
-        email: 'julia@exemplo.com',
-        points: 3800,
-        avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(3800),
-        streak: 45,
-        completed_today: 2,
-        badges_count: 10,
-        completed_challenges: 35,
-        firstChallengeTime: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 5,
-        monthly_growth: 28,
-        favorite_category: 'corpo_saude',
-        total_sessions: 25,
-        join_date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 3,
-        previousPosition: 3,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'prize',
-        isPrizeWinner: true,
-        prizePosition: 3,
-        prizeAmount: 100,
-        prizeStatus: 'pending'
-      },
-      {
-        id: '4',
-        name: 'Carolina Dias',
-        email: 'carolina@exemplo.com',
-        points: 3200,
-        avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(3200),
-        streak: 30,
-        completed_today: 2,
-        badges_count: 8,
-        completed_challenges: 30,
-        firstChallengeTime: new Date(now.getTime() - 7 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 3,
-        monthly_growth: 20,
-        favorite_category: 'relacionamentos',
-        total_sessions: 20,
-        join_date: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 4,
-        previousPosition: 4,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'attention'
-      },
-      {
-        id: '6',
-        name: 'Beatriz Lima',
-        email: 'beatriz@exemplo.com',
-        points: 2100,
-        avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(2100),
-        streak: 20,
-        completed_today: 1,
-        badges_count: 5,
-        completed_challenges: 20,
-        firstChallengeTime: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 1,
-        monthly_growth: 15,
-        favorite_category: 'carreira',
-        total_sessions: 15,
-        join_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 5,
-        previousPosition: 5,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'neutral'
-      },
-      {
-        id: '7',
-        name: 'Fernanda Oliveira',
-        email: 'fernanda@exemplo.com',
-        points: 1800,
-        avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        level: calculateLevelFromPoints(1800),
-        streak: 15,
-        completed_today: 1,
-        badges_count: 4,
-        completed_challenges: 15,
-        firstChallengeTime: new Date(now.getTime() - 9 * 60 * 60 * 1000).toISOString(),
-        last_activity: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
-        weekly_growth: 0,
-        monthly_growth: 10,
-        favorite_category: 'digital_detox',
-        total_sessions: 12,
-        join_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        position: 6,
-        previousPosition: 6,
-        positionChange: 'same',
-        recent_badges: [],
-        zone: 'neutral'
-      }
-    ]
-
-    // 2. ✅ NOVO: Pegar dados REAIS do usuário logado com nível calculado corretamente
-    const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
-    const userLevel = calculateLevelFromPoints(userPoints)
-
-    const currentUserData: RankingUser = {
-      id: profile?.id || 'current-user',
-      name: profile?.full_name || 'Você',
-      email: profile?.email || 'user@zayia.com',
-      points: userPoints,
-      avatar_url: profile?.avatar_url || 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      level: userLevel,
-      streak: profile?.streak || 0,
-      completed_today: 0,
-      badges_count: 0,
-      completed_challenges: profile?.completed_challenges || 0,
-      firstChallengeTime: now.toISOString(),
-      last_activity: now.toISOString(),
-      weekly_growth: 0,
-      monthly_growth: 0,
-      favorite_category: 'autoestima',
-      total_sessions: 0,
-      join_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      position: 0,
-      previousPosition: 0,
-      positionChange: 'same',
-      recent_badges: [],
-      isCurrentUser: true
-    }
-
-    // 3. Combinar: outros usuários + usuário atual
-    const allUsers = [...otherUsers, currentUserData]
-
-    // 4. Ordenar por pontos (descendente) e calcular posições
-    const sortedUsers: RankingUser[] = allUsers
-      .sort((a, b) => b.points - a.points)
-      .map((user, index) => {
-        const previousPos = user.position || index + 1
-        const newPos = index + 1
-        const change: 'up' | 'down' | 'same' = previousPos > newPos ? 'up' : previousPos < newPos ? 'down' : 'same'
-        return {
-          ...user,
-          previousPosition: previousPos,
-          position: newPos,
-          positionChange: change
-        }
-      })
-
-    // 5. Encontrar índice do usuário atual
-    const userIndex = sortedUsers.findIndex(u => u.id === currentUserData.id)
-
-    // 6. Atualizar state
-    setUsers(sortedUsers)
-    setLastUpdate(new Date())
-
-    // 7. Log para debug
-    console.log('📈 Ranking atualizado:', {
-      userName: currentUserData.name,
-      userPoints: currentUserData.points,
-      position: userIndex !== -1 ? userIndex + 1 : 'N/A',
-      totalUsers: sortedUsers.length,
-      allRanking: sortedUsers.map(u => `${u.position}. ${u.name} (${u.points} pts)`).join(' | ')
-    })
-
-    // 8. Mostrar notificação se em top 3
-    if (userIndex !== -1 && sortedUsers[userIndex].position <= 3) {
-      setShowPrizeNotif(true)
-      setTimeout(() => setShowPrizeNotif(false), 5000)
-    }
-  }
+  }, [profile?.id])
 
   const getPositionChange = (user: RankingUser) => {
     const change = user.previousPosition - user.position
@@ -533,7 +305,7 @@ export function RankingSection() {
             Ranking Completo
           </h3>
           <button
-            onClick={updateRanking}
+            onClick={loadRealRanking}
             className="text-zayia-soft-purple hover:text-zayia-deep-violet transition-colors"
           >
             <RefreshCw className="w-4 h-4" />

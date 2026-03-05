@@ -147,25 +147,12 @@ export function DashboardSection() {
     }
   }, [profile?.id])
 
-  // ✅ Listener para atualizar quando pontos mudam (em tempo real)
-  // O componente atualiza automaticamente via profile.points do AuthContext
-  useEffect(() => {
-    const handlePointsUpdated = () => {
-      // Força re-render quando pontos mudam
-      console.log('📊 Dashboard: Pontos foram atualizados')
-    }
-
-    window.addEventListener('pointsUpdated', handlePointsUpdated)
-    return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
-  }, [])
-
   // ✅ Listener para atualizar quando medalhas mudam
   useEffect(() => {
     const handleMedalsUpdated = () => {
-      const userPoints = profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10)
+      const userPoints = profile?.points || 0
       const syncedMedals = getSyncedMedals(userPoints)
       setRecentMedalsEarned(syncedMedals)
-      console.log('🏆 Dashboard - medalhas atualizadas:', syncedMedals)
     }
 
     window.addEventListener('medalsUpdated', handleMedalsUpdated)
@@ -198,17 +185,6 @@ export function DashboardSection() {
     return () => clearInterval(interval)
   }, [])
 
-  // ✅ Listener para atualizar quando há level-up
-  useEffect(() => {
-    const handleLevelUp = () => {
-      // Force re-render para atualizar display de nível
-      console.log('🎉 Dashboard: Nível foi atualizado')
-    }
-
-    window.addEventListener('levelUp', handleLevelUp)
-    return () => window.removeEventListener('levelUp', handleLevelUp)
-  }, [])
-
   // ✅ Listener para atualizar streak
   useEffect(() => {
     const handleStreakUpdated = (event: any) => {
@@ -219,16 +195,6 @@ export function DashboardSection() {
 
     window.addEventListener('streakUpdated', handleStreakUpdated)
     return () => window.removeEventListener('streakUpdated', handleStreakUpdated)
-  }, [])
-
-  // ✅ Listener para atualizar ranking
-  useEffect(() => {
-    const handleRankingUpdated = () => {
-      console.log('🏆 Dashboard: Ranking atualizado')
-    }
-
-    window.addEventListener('rankingUpdated', handleRankingUpdated)
-    return () => window.removeEventListener('rankingUpdated', handleRankingUpdated)
   }, [])
 
   return (

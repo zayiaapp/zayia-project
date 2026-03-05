@@ -3454,6 +3454,66 @@ export class SupabaseClient {
       }
     }
   }
+
+  // =========================================================================
+  // PRIZE PAYMENTS
+  // =========================================================================
+
+  async getPrizePayments(month: number, year: number) {
+    try {
+      const { data, error } = await supabase
+        .from('prize_payments')
+        .select('*, user_profile:profiles(id, full_name, email)')
+        .eq('month', month)
+        .eq('year', year)
+        .order('position', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('❌ Error fetching prize payments:', error)
+      return []
+    }
+  }
+
+  async savePrizePayment(paymentData: {
+    userId: string
+    position: number
+    month: number
+    year: number
+    amount: number
+    paymentMethod: string
+    pixKey?: string
+    paymentDate?: string
+    notes?: string
+  }) {
+    try {
+      const { data, error } = await supabase
+        .from('prize_payments')
+        .upsert({
+          user_id: paymentData.userId,
+          position: paymentData.position,
+          month: paymentData.month,
+          year: paymentData.year,
+          amount: paymentData.amount,
+          status: 'paid',
+          payment_method: paymentData.paymentMethod === 'transfer' ? 'bank_transfer' : paymentData.paymentMethod === 'pix' ? 'pix' : 'manual',
+          pix_key: paymentData.pixKey || null,
+          payment_date: paymentData.paymentDate ? new Date(paymentData.paymentDate).toISOString() : new Date().toISOString(),
+          notes: paymentData.notes || null,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,month,year' })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { success: true, data }
+    } catch (error) {
+      console.error('❌ Error saving prize payment:', error)
+      return { success: false, data: null }
+    }
+  }
+
 }
 
 export const supabaseClient = new SupabaseClient()
