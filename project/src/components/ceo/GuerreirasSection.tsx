@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { supabaseClient, type Profile } from '../../lib/supabase-client'
 import { supabase } from '../../lib/supabase'
 import { integrationsManager } from '../../lib/integrations-manager'
-import { 
-  Plus, 
-  Search, 
-  Eye, 
-  Power, 
+import {
+  Plus,
+  Search,
+  Eye,
+  Power,
   PowerOff,
   X,
   Save,
@@ -39,7 +39,8 @@ import {
   Flame,
   Gem,
   Medal,
-  Sparkles
+  Sparkles,
+  Trash
 } from 'lucide-react'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 
@@ -122,6 +123,7 @@ export function GuerreirasSection() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState<string | null>(null)
   const [showToggleModal, setShowToggleModal] = useState<{ guerreira: Guerreira, action: 'activate' | 'deactivate' } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
 
   // Dados do formulário de nova guerreira
@@ -422,13 +424,13 @@ export function GuerreirasSection() {
           updated_at: new Date().toISOString()
         })
         if (updated) {
-          setGuerreiras(prev => prev.map(g => 
+          setGuerreiras(prev => prev.map(g =>
             g.id === guerreira.id ? { ...g, subscription_status: newStatus } : g
           ))
         }
       } else {
         // Fallback para mock data
-        setGuerreiras(prev => prev.map(g => 
+        setGuerreiras(prev => prev.map(g =>
           g.id === guerreira.id ? { ...g, subscription_status: newStatus } : g
         ))
       }
@@ -436,6 +438,35 @@ export function GuerreirasSection() {
       console.error('Error toggling status:', error)
     }
     setShowToggleModal(null)
+  }
+
+  const handleDelete = async (userId: string, userName: string) => {
+    // Confirm dialog
+    const confirmed = window.confirm(
+      `Tem certeza que quer DELETAR ${userName}?\n\nEssa ação NÃO pode ser desfeita!`
+    )
+
+    if (!confirmed) return
+
+    setIsDeleting(true)
+
+    try {
+      const result = await supabaseClient.deleteProfile(userId)
+
+      if (result.success) {
+        // Remove da lista
+        setGuerreiras(guerreiras.filter(g => g.id !== userId))
+        // Alert de sucesso
+        alert(`${userName} foi deletada do sistema`)
+      } else {
+        alert('Erro ao deletar usuária')
+      }
+    } catch (error) {
+      console.error('Error deleting profile:', error)
+      alert('Erro ao deletar usuária')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   // Obter informações do nível
@@ -620,6 +651,15 @@ export function GuerreirasSection() {
                         ) : (
                           <Power className="w-5 h-5" />
                         )}
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(guerreira.id, guerreira.full_name || 'Guerreira')}
+                        disabled={isDeleting}
+                        className="p-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Excluir Guerreira"
+                      >
+                        <Trash className="w-5 h-5" />
                       </button>
                     </div>
                   </div>

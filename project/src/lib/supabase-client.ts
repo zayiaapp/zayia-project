@@ -30,10 +30,14 @@ export interface Profile {
   level?: number
   completed_challenges?: number
   subscription_plan?: 'basic' | 'premium' | 'vip'
-  subscription_status?: 'active' | 'cancelled' | 'expired'
+  subscription_status?: 'active' | 'cancelled' | 'expired' | 'trial'
   notifications_enabled?: boolean
   community_access?: boolean
   mentor_status?: 'none' | 'mentee' | 'mentor'
+  // Trial fields
+  trial_started_at?: string
+  trial_days?: number
+  trial_active?: boolean
   created_at: string
   updated_at: string
 }
@@ -575,19 +579,70 @@ export class SupabaseClient {
     }
   }
 
-  async deleteProfile(id: string): Promise<boolean> {
+  async deleteProfile(userId: string) {
     try {
       const { error } = await supabase
         .from('profiles')
         .delete()
-        .eq('id', id)
+        .eq('id', userId)
+
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      console.error('Error deleting profile:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  }
+
+  async getProfileByEmail(email: string): Promise<Profile[] | null> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+
+      if (error) throw error
+      return data || null
+    } catch (error) {
+      console.error('Error fetching profile by email:', error)
+      return null
+    }
+  }
+
+  // TRIAL MANAGEMENT
+  async setTrialDays(userId: string, days: number): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          trial_days: days,
+          trial_started_at: new Date().toISOString(),
+          trial_active: true,
+          subscription_status: 'trial'
+        })
+        .eq('id', userId)
 
       if (error) throw error
       return true
     } catch (error) {
-      console.error('Error deleting profile:', error)
+      console.error('Error setting trial days:', error)
       return false
     }
+  }
+
+  checkTrialExpiry(profile: Profile): { isExpired: boolean; daysLeft: number | null; expiresAt: Date | null } {
+    if (!profile.trial_days || !profile.trial_started_at) {
+      return { isExpired: false, daysLeft: null, expiresAt: null }
+    }
+
+    const trialEnd = new Date(profile.trial_started_at)
+    trialEnd.setDate(trialEnd.getDate() + profile.trial_days)
+
+    const today = new Date()
+    const isExpired = today > trialEnd
+    const daysLeft = Math.ceil((trialEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+    return { isExpired, daysLeft: Math.max(0, daysLeft), expiresAt: trialEnd }
   }
 
   // QUESTIONS & SOS
