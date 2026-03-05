@@ -125,6 +125,7 @@ export function GuerreirasSection() {
   const [showToggleModal, setShowToggleModal] = useState<{ guerreira: Guerreira, action: 'activate' | 'deactivate' } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
+  const [selectedTrialDays, setSelectedTrialDays] = useState<number | null>(null)
 
   // Dados do formulário de nova guerreira
   const [newGuerreira, setNewGuerreira] = useState({
@@ -156,11 +157,11 @@ export function GuerreirasSection() {
         if (integrationsManager.isSupabaseConfigured()) {
           const profiles = await supabaseClient.getProfiles()
 
-          // Filtrar apenas usuárias COM subscription ativa
+          // Filtrar usuárias COM subscription ativa OU em trial
           const filtered = profiles
             .filter(p =>
               p.role === 'user' &&
-              p.subscription_status === 'active'
+              (p.subscription_status === 'active' || p.subscription_status === 'trial')
             )
 
           const guerreirasData = await Promise.all(
@@ -333,6 +334,11 @@ export function GuerreirasSection() {
       return
     }
 
+    if (selectedTrialDays === null) {
+      alert('Selecione um tipo de acesso para continuar')
+      return
+    }
+
     setLoading(true)
     try {
       const guerreiraData: Partial<Profile> = {
@@ -351,10 +357,13 @@ export function GuerreirasSection() {
         level: 1,
         completed_challenges: 0,
         subscription_plan: 'basic',
-        subscription_status: 'active',
+        subscription_status: selectedTrialDays > 0 ? 'trial' : 'active',
         notifications_enabled: true,
         community_access: true,
-        mentor_status: 'none'
+        mentor_status: 'none',
+        trial_days: selectedTrialDays > 0 ? selectedTrialDays : undefined,
+        trial_started_at: selectedTrialDays > 0 ? new Date().toISOString() : undefined,
+        trial_active: selectedTrialDays > 0
       }
 
       let createdGuerreira: Guerreira | null = null
@@ -413,6 +422,7 @@ export function GuerreirasSection() {
         zipcode: ''
       }
     })
+    setSelectedTrialDays(null)
   }
 
   // Toggle status da guerreira
@@ -459,11 +469,14 @@ export function GuerreirasSection() {
         // Alert de sucesso
         alert(`${userName} foi deletada do sistema`)
       } else {
-        alert('Erro ao deletar usuária')
+        const errorMsg = result.error || 'Erro desconhecido'
+        console.error('Delete error:', errorMsg)
+        alert(`Erro ao deletar usuária:\n${errorMsg}`)
       }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
       console.error('Error deleting profile:', error)
-      alert('Erro ao deletar usuária')
+      alert(`Erro ao deletar usuária:\n${errorMsg}`)
     } finally {
       setIsDeleting(false)
     }
@@ -721,6 +734,34 @@ export function GuerreirasSection() {
                         required
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de Acesso *
+                    </label>
+                    <select
+                      value={selectedTrialDays ?? ''}
+                      onChange={(e) => setSelectedTrialDays(e.target.value === '' ? null : parseInt(e.target.value))}
+                      className="w-full zayia-input px-4 py-3 rounded-xl border-0 focus:outline-none cursor-pointer"
+                      required
+                    >
+                      <option value="">-- Selecione um tipo de acesso --</option>
+                      <option value={7}>⏱️ Trial 7 dias (Grátis)</option>
+                      <option value={15}>⏱️ Trial 15 dias (Grátis)</option>
+                      <option value={30}>⏱️ Trial 30 dias (Grátis)</option>
+                      <option value={0}>💜 Já é Assinante (Stripe)</option>
+                    </select>
+                    {selectedTrialDays && selectedTrialDays > 0 && (
+                      <p className="text-xs text-zayia-soft-purple mt-2">
+                        ✓ Acesso completo por {selectedTrialDays} dias. Depois precisará assinar.
+                      </p>
+                    )}
+                    {selectedTrialDays === 0 && (
+                      <p className="text-xs text-zayia-soft-purple mt-2">
+                        ✓ Guerreira já é assinante
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

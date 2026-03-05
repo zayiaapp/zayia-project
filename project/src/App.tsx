@@ -6,9 +6,10 @@ import { CEODashboard } from './components/ceo/CEODashboard'
 import { MobileUserDashboard } from './components/user/MobileUserDashboard'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 import { ResetPasswordForm } from './components/auth/ResetPasswordForm'
+import { TrialExpiredModal } from './components/modals/TrialExpiredModal'
 
 function AppContent() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, trialExpired, signOut } = useAuth()
   const [showResetPassword, setShowResetPassword] = useState(false)
 
   useEffect(() => {
@@ -29,6 +30,20 @@ function AppContent() {
           <p className="text-zayia-violet-gray">Carregando ZAYIA...</p>
         </div>
       </div>
+    )
+  }
+
+  // Show trial expired modal if trial has expired
+  if (trialExpired?.isExpired && trialExpired.expiresAt) {
+    return (
+      <TrialExpiredModal
+        trialDays={trialExpired.trialDays || 7}
+        expiresAt={trialExpired.expiresAt}
+        onContactClick={() => {
+          window.location.href = 'mailto:contato@zayia.com.br'
+        }}
+        onLogoutClick={signOut}
+      />
     )
   }
 

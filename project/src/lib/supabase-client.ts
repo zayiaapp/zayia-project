@@ -563,7 +563,7 @@ export class SupabaseClient {
     }
   }
 
-  async createProfile(profile: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Promise<Profile | null> {
+  async createProfile(profile: Omit<Profile, 'created_at' | 'updated_at'>): Promise<Profile | null> {
     try {
       const { data, error } = await supabase
         .from('profiles')

@@ -20,7 +20,7 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  
+
   const { signUp } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,18 +56,20 @@ export function SignUpForm({ onToggleForm }: SignUpFormProps) {
     }
 
     const { error } = await signUp(formData.email, formData.password, formData.fullName)
-    
+
     if (error) {
       if (error.message.includes('already registered')) {
         setError('Este email já está cadastrado')
       } else {
         setError('Erro ao criar conta. Tente novamente.')
       }
-    } else {
-      setSuccess(true)
+      setLoading(false)
+      return
     }
-    
+
+    setSuccess(true)
     setLoading(false)
+
   }
 
   if (success) {
