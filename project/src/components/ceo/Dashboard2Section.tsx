@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   DollarSign,
   Users,
@@ -50,6 +51,8 @@ export function Dashboard2Section() {
   const [showCalendar, setShowCalendar] = useState(false)
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
+  const [calendarPosition, setCalendarPosition] = useState({ top: 0, right: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   // Fetch metrics for selected date with comparison
   useEffect(() => {
@@ -161,6 +164,17 @@ export function Dashboard2Section() {
     setCurrentCalendarMonth(newDate)
   }
 
+  // Calculate calendar position based on button position
+  useEffect(() => {
+    if (showCalendar && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setCalendarPosition({
+        top: rect.bottom + 8, // 8px gap below button
+        right: window.innerWidth - rect.right
+      })
+    }
+  }, [showCalendar])
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -221,8 +235,9 @@ export function Dashboard2Section() {
               {formatDate(selectedDate)}
             </p>
           </div>
-          <div className="relative">
+          <div>
             <button
+              ref={buttonRef}
               onClick={() => setShowCalendar(!showCalendar)}
               className="zayia-button px-4 py-2 rounded-xl text-white font-medium flex items-center gap-2"
             >
@@ -230,9 +245,23 @@ export function Dashboard2Section() {
               Selecionar Data
             </button>
 
-            {/* Calendário Dropdown */}
-            {showCalendar && (
-              <div className="absolute top-12 right-0 bg-white border-2 border-zayia-lilac rounded-xl shadow-xl z-50 p-4 w-80">
+            {/* Calendário via Portal */}
+            {showCalendar && createPortal(
+              <>
+                {/* Overlay - clica fora fecha o calendário */}
+                <div
+                  className="fixed top-0 left-0 right-0 bottom-0 z-40"
+                  onClick={() => setShowCalendar(false)}
+                />
+
+                {/* Calendário */}
+                <div
+                  className="fixed bg-white border-2 border-zayia-lilac rounded-xl shadow-2xl z-50 p-4 w-80"
+                  style={{
+                    top: `${calendarPosition.top}px`,
+                    right: `${calendarPosition.right}px`
+                  }}
+                >
                 {/* Header do Calendário */}
                 <div className="flex items-center justify-between mb-4">
                   <button
@@ -296,7 +325,9 @@ export function Dashboard2Section() {
                     </button>
                   </div>
                 </div>
-              </div>
+                </div>
+              </>,
+              document.body
             )}
           </div>
         </div>
