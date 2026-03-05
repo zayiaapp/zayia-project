@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { type ChallengeCategory } from '../../../lib/challenges-data-mock'
+import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-data-mock'
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
@@ -39,13 +39,15 @@ export function ChallengesSection() {
     const initializeData = async () => {
       try {
         setIsLoading(true)
+        ChallengesDataMock.initialize()
 
         // Load all categories from Supabase
         const supabaseCategories = await supabaseClient.getChallengeCategories()
+        // Map Supabase structure to match component expectations
         const mappedCategories = supabaseCategories.map((cat: any) => ({
           ...cat,
-          label: cat.name,
-          challenges: [],
+          label: cat.name, // Map 'name' to 'label' for backward compatibility
+          challenges: [], // Placeholder - will be populated by DailyChallengesView
         }))
         setAllCategories(mappedCategories)
 
@@ -53,21 +55,21 @@ export function ChallengesSection() {
         const earnedBadges = getEarnedBadges()
         setPreviousEarnedBadges(new Set(earnedBadges))
 
-        // Load user's active category from Supabase
-        const activeCategoryId = await supabaseClient.getUserActiveCategory(user.id)
+        // Load user's active category
+        const activeCategoryId = ChallengesDataMock.getActiveCategory(user.id)
 
         if (activeCategoryId) {
+          // Find category from loaded Supabase data
           const category = mappedCategories.find((cat: any) => cat.id === activeCategoryId)
           if (category) {
             setActiveCategory(category)
 
-            // Load completed challenges from Supabase
-            const completedIds = await supabaseClient.getUserCompletedChallengeIds(user.id, activeCategoryId)
-            setCompletedChallengeIds(new Set(completedIds))
-          } else {
-            setShowCategoryModal(true)
+            // Load completed challenges
+            const completed = ChallengesDataMock.getUserCompletedChallenges(activeCategoryId, user.id)
+            setCompletedChallengeIds(new Set(completed))
           }
         } else {
+          // First time - show modal
           setShowCategoryModal(true)
         }
       } catch (error) {
@@ -98,14 +100,27 @@ export function ChallengesSection() {
     }, 300)
   }
 
-  const handleChallengeCompleted = (challengeId: string, difficulty: 'facil' | 'dificil') => {
+  const handleChallengeCompleted = (challengeId: string) => {
     if (!activeCategory || !user?.id) return
 
+    // 1. PEGAR VALORES INICIAIS
+    const challenge = ChallengesDataMock.getChallengeById(challengeId)
+    if (!challenge) {
+      return
+    }
+
+    // ⚠️ CRÍTICO: Ler pontos do Supabase (não localStorage)
+    // Use profile.points que já está sincronizado do AuthContext
     const previousPoints = profile?.points || 0
-    const pointsFromChallenge = difficulty === 'facil' ? 10 : 25
+
+    // 2. CALCULAR PONTOS DO DESAFIO
+    const pointsFromChallenge = challenge.points
     const totalAfterChallenge = previousPoints + pointsFromChallenge
 
-    // Update local state immediately (optimistic)
+    // 3. IMPORTANTE: Marcar desafio como completo ANTES de verificar medalhas globais
+    const completeSuccess = ChallengesDataMock.completeChallenge(challengeId, user.id)
+
+    // 4. Update local state
     const newCompleted = new Set(completedChallengeIds)
     newCompleted.add(challengeId)
     setCompletedChallengeIds(newCompleted)
@@ -132,17 +147,19 @@ export function ChallengesSection() {
     // 7. CALCULAR TOTAL FINAL
     let finalTotalPoints = totalAfterChallenge + medalPointsAdded
 
+    // 8. Async function to save points and handle level-up/medals
     const savePointsAndCheck = async () => {
       try {
-        // Record completion in Supabase
-        await supabaseClient.recordChallengeCompletion(
-          user.id, challengeId, activeCategory.id, difficulty, pointsFromChallenge
+        // 8.1 VERIFICAR LEVEL-UP
+        const levelUpResult = await supabaseClient.checkAndAwardLevelUp(
+          user.id,
+          finalTotalPoints,
+          0
         )
 
-        // Check level-up
-        const levelUpResult = await supabaseClient.checkAndAwardLevelUp(user.id, finalTotalPoints, 0)
         if (levelUpResult.leveledUp) {
           finalTotalPoints += levelUpResult.totalBonus
+
           setLevelUpData({
             newLevel: levelUpResult.newLevel,
             bonusPoints: levelUpResult.totalBonus,
@@ -151,41 +168,72 @@ export function ChallengesSection() {
           })
         }
 
-        // Check global medals
-        const globalMedalResult = await supabaseClient.checkAndAwardGlobalMedals(user.id, currentEarnedBadges, finalTotalPoints)
+        // 8.5 VERIFICAR MEDALHAS GLOBAIS
+        const globalMedalResult = await supabaseClient.checkAndAwardGlobalMedals(
+          user.id,
+          currentEarnedBadges,
+          finalTotalPoints
+        )
         if (globalMedalResult.newGlobalMedals.length > 0) {
           console.log(`🌟 Global medals unlocked:`, globalMedalResult.newGlobalMedals)
         }
 
-        // Update streak
+        // 8.7 ATUALIZAR STREAK (now uses Supabase)
         const streakResult = await supabaseClient.updateStreak(user.id)
-        const streakBonus = Math.floor(pointsFromChallenge * Math.min(streakResult.currentStreak * 0.01, 0.5))
+        const streakMultiplier = Math.min(streakResult.currentStreak * 0.01, 0.5)
+        const streakBonus = Math.floor(pointsFromChallenge * streakMultiplier)
         finalTotalPoints += streakBonus
 
         if (streakResult.currentStreak > 0) {
           await supabaseClient.checkStreakMilestone(user.id, streakResult.currentStreak)
         }
+
+        console.log(`🔥 Streak: ${streakResult.currentStreak} days (+${streakBonus} bonus)`)
+
         if (streakResult.streakBroken) {
-          window.dispatchEvent(new CustomEvent('showStreakWarning', { detail: { previousStreak: streakResult.currentStreak } }))
+          window.dispatchEvent(
+            new CustomEvent('showStreakWarning', {
+              detail: { previousStreak: streakResult.currentStreak }
+            })
+          )
         }
 
-        // Save final points to Supabase
-        await supabaseClient.addUserPoints(user.id, finalTotalPoints - previousPoints, 'challenge_complete', challengeId)
+        // 9. SALVAR PONTOS FINAIS NA SUPABASE (primary source, not localStorage)
+        const totalPointsToAdd = finalTotalPoints - previousPoints
+        await supabaseClient.addUserPoints(
+          user.id,
+          totalPointsToAdd,
+          'challenge_complete',
+          challengeId
+        )
 
-        // Show medal popup
+        // Also save to localStorage as secondary cache
+        localStorage.setItem('user_points', finalTotalPoints.toString())
+
+        // 10. MOSTRAR POP-UP DE MEDALHA (se houver)
         if (allNewMedals.length > 0) {
-          const medalObj = BADGES.find(b => b.id === allNewMedals[0])
-          if (medalObj) setUnlockedMedalPopup(medalObj)
+          const newMedalId = allNewMedals[0]
+          const medalObj = BADGES.find(b => b.id === newMedalId)
+          if (medalObj) {
+            setUnlockedMedalPopup(medalObj)
+          }
         }
 
-        // Increment daily count (local counter for today's progress bar)
+        // 11. INCREMENTAR DESAFIOS HOJE
         incrementDailyCount()
 
-        // Dispatch events for listeners
+        // 12. DISPARAR EVENTOS
+        window.dispatchEvent(new Event('pointsUpdated'))
+        window.dispatchEvent(new Event('rankingUpdated'))
         window.dispatchEvent(new Event('dailyProgressUpdated'))
-        if (allNewMedals.length > 0) window.dispatchEvent(new Event('medalsUpdated'))
+        if (allNewMedals.length > 0) {
+          window.dispatchEvent(new Event('medalsUpdated'))
+        }
       } catch (error) {
-        console.error('❌ Error saving challenge completion to Supabase:', error)
+        console.error('❌ Error saving points to Supabase:', error)
+        // Fallback: still save to localStorage if Supabase fails
+        localStorage.setItem('user_points', finalTotalPoints.toString())
+        window.dispatchEvent(new Event('pointsUpdated'))
       }
     }
 
@@ -281,7 +329,7 @@ export function ChallengesSection() {
           userId={user?.id || ''}
           category={activeCategory}
           completedChallengeIds={completedChallengeIds}
-          onChallengeCompleted={(id, diff) => handleChallengeCompleted(id, diff)}
+          onChallengeCompleted={handleChallengeCompleted}
         />
       )}
 
