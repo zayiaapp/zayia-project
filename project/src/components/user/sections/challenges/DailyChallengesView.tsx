@@ -1,15 +1,23 @@
 import React, { useState } from 'react'
-import { Challenge, ChallengeCategory } from '../../../../lib/challenges-data-mock'
-import ChallengesDataMock from '../../../../lib/challenges-data-mock'
+import { ChallengeCategory } from '../../../../lib/challenges-data-mock'
 import { ChallengeCardDaily } from './ChallengeCardDaily'
 import { compressImage, validateImageFile } from '../../../../lib/photo-compression'
 import { supabaseClient } from '../../../../lib/supabase-client'
+
+interface DailyChallenge {
+  id: string
+  title: string
+  description: string
+  difficulty: 'facil' | 'dificil'
+  points: number
+  duration: number
+}
 
 interface DailyChallengesViewProps {
   userId: string
   category: ChallengeCategory
   completedChallengeIds: Set<string>
-  onChallengeCompleted: (challengeId: string, proofFile?: File) => void
+  onChallengeCompleted: (challengeId: string, points: number, difficulty: 'facil' | 'dificil', proofFile?: File) => void
 }
 
 export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
@@ -18,7 +26,7 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   completedChallengeIds,
   onChallengeCompleted,
 }) => {
-  const [dailyChallenges, setDailyChallenges] = useState<Challenge[]>([])
+  const [dailyChallenges, setDailyChallenges] = useState<DailyChallenge[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [isChallengesLoading, setIsChallengesLoading] = useState(true)
 
@@ -28,11 +36,18 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
       try {
         setIsChallengesLoading(true)
         const challenges = await supabaseClient.getChallengesByCategory(category.id)
-        // Map Supabase structure to match Challenge interface
-        const mappedChallenges = challenges.map((ch: any) => ({
-          ...ch,
-          difficulty: ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : 'medio',
-        }))
+        // Map Supabase structure to local interface
+        const mappedChallenges: DailyChallenge[] = challenges.map((ch: any) => {
+          const difficulty = ch.difficulty === 'easy' ? 'facil' : 'dificil'
+          return {
+            id: ch.id,
+            title: ch.title,
+            description: ch.description || '',
+            difficulty,
+            points: difficulty === 'dificil' ? (ch.points_hard || 25) : (ch.points_easy || 10),
+            duration: ch.duration_minutes || 5,
+          }
+        })
         setDailyChallenges(mappedChallenges)
       } catch (error) {
         console.error('❌ Error loading challenges:', error)
@@ -60,25 +75,25 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   const handleProofSubmitted = async (challengeId: string, proofFile: File) => {
     setIsUploading(true)
     try {
-      // 1. Validate file
+      // 1. Find challenge metadata
+      const challenge = dailyChallenges.find(c => c.id === challengeId)
+      const points = challenge?.points ?? 10
+      const difficulty = challenge?.difficulty ?? 'facil'
+
+      // 2. Validate file
       validateImageFile(proofFile)
 
-      // 2. Compress image
+      // 3. Compress image
       console.log(`📸 Compressing image: ${proofFile.name}...`)
       const compressedBlob = await compressImage(proofFile)
 
-      // 3. Upload proof to Supabase Storage
+      // 4. Upload proof to Supabase Storage
       console.log(`📤 Uploading proof to Supabase...`)
       const proofUrl = await supabaseClient.uploadProof(userId, challengeId, compressedBlob)
       console.log(`✅ Proof uploaded: ${proofUrl}`)
 
-      // 4. Mark challenge complete (using mock data for now)
-      // TODO: When EPIC-001 is done, migrate to use supabaseClient.completeChallenge() directly
-      ChallengesDataMock.completeChallenge(challengeId, userId)
-
-      // 5. Notify parent component to handle points/medals calculation
-      // Parent (ChallengesSection) will dispatch events for real-time sync
-      onChallengeCompleted(challengeId, proofFile)
+      // 5. Notify parent with points and difficulty for calculation
+      onChallengeCompleted(challengeId, points, difficulty, proofFile)
 
       console.log(`✅ Challenge submitted with proof URL: ${proofUrl}`)
     } catch (error) {
@@ -128,10 +143,17 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
               try {
                 setIsChallengesLoading(true)
                 const challenges = await supabaseClient.getChallengesByCategory(category.id)
-                const mappedChallenges = challenges.map((ch: any) => ({
-                  ...ch,
-                  difficulty: ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : 'medio',
-                }))
+                const mappedChallenges: DailyChallenge[] = challenges.map((ch: any) => {
+                  const difficulty = ch.difficulty === 'easy' ? 'facil' : 'dificil'
+                  return {
+                    id: ch.id,
+                    title: ch.title,
+                    description: ch.description || '',
+                    difficulty,
+                    points: difficulty === 'dificil' ? (ch.points_hard || 25) : (ch.points_easy || 10),
+                    duration: ch.duration_minutes || 5,
+                  }
+                })
                 setDailyChallenges(mappedChallenges)
                 console.log(`🧪 TESTE: Desafios recarregados`)
                 console.log(`🧪 Total de desafios:`, mappedChallenges.length)

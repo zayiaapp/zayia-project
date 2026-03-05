@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Challenge } from '../../../../lib/challenges-data-mock'
+
+interface DailyChallenge {
+  id: string
+  title: string
+  description: string
+  difficulty: 'facil' | 'dificil'
+  points: number
+  duration: number
+}
 
 type ChallengeState = 'blocked' | 'in_progress' | 'timer_expired' | 'completed'
 
 interface ChallengeCardDailyProps {
-  challenge: Challenge
+  challenge: DailyChallenge
   isCompleted: boolean
   onComplete: (challengeId: string, proofFile: File) => void
   isUploading?: boolean
