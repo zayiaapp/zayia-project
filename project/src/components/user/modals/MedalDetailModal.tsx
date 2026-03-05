@@ -1,14 +1,14 @@
-import React from 'react'
+import React, { FC } from 'react'
 import { X } from 'lucide-react'
 
 interface Medal {
   id: string
   name: string
-  icon: string
+  icon: FC | string
   description?: string
   requirement?: number
   points?: number
-  rarity?: 'comum' | 'incomum' | 'raro' | 'épico' | 'lendária'
+  rarity?: string
   unlockDate?: string
   isEarned: boolean
 }
@@ -68,7 +68,11 @@ export const MedalDetailModal: React.FC<MedalDetailModalProps> = ({
         <div className="p-6">
           {/* Medal icon - large */}
           <div className="flex justify-center mb-6">
-            <div className="text-8xl opacity-90">{medal.icon}</div>
+            <div className="text-8xl opacity-90">
+              {typeof medal.icon === 'function'
+                ? React.createElement(medal.icon as FC)
+                : medal.icon}
+            </div>
           </div>
 
           {/* Medal name */}

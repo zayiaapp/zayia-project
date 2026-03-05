@@ -2559,41 +2559,51 @@ export class SupabaseClient {
   }
 
   /**
-   * Get all badges earned by user
-   * Returns: array of earned badge objects with earned_at date
+   * Get all badge IDs earned by user (text keys like 'org_iniciante')
+   * After migration badge_id is TEXT — no FK join needed
    */
-  async getUserEarnedMedals(userId: string) {
+  async getUserEarnedMedals(userId: string): Promise<string[]> {
     try {
-      const { data: earnedMedals, error } = await supabase
+      const { data, error } = await supabase
         .from('user_earned_badges')
-        .select(`
-          id,
-          badge_id,
-          earned_at,
-          badges:badge_id (
-            id,
-            name,
-            description,
-            icon,
-            rarity,
-            points_value
-          )
-        `)
+        .select('badge_id')
         .eq('user_id', userId)
-        .order('earned_at', { ascending: false })
 
       if (error) throw error
 
-      // Flatten the response
-      return earnedMedals?.map((item: any) => ({
-        id: item.id,
-        badgeId: item.badge_id,
-        earnedAt: item.earned_at,
-        ...item.badges
-      })) || []
+      const ids = data?.map((r: any) => r.badge_id as string) || []
+      // Also sync to localStorage for offline fallback
+      localStorage.setItem('zayia_earned_badges', JSON.stringify(ids))
+      return ids
     } catch (error) {
       console.error('❌ Error getting user earned medals:', error)
-      return []
+      // Fallback to localStorage
+      try {
+        return JSON.parse(localStorage.getItem('zayia_earned_badges') || '[]')
+      } catch {
+        return []
+      }
+    }
+  }
+
+  /**
+   * Award a badge to user by text badge_id (e.g. 'org_iniciante')
+   * Returns true if newly awarded, false if already earned or error
+   */
+  async awardBadgeByKey(userId: string, badgeTextId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('user_earned_badges')
+        .insert({ user_id: userId, badge_id: badgeTextId, earned_at: new Date().toISOString() })
+
+      if (error) {
+        if (error.code === '23505') return false // already earned
+        throw error
+      }
+      return true
+    } catch (error) {
+      console.error(`❌ Error awarding badge ${badgeTextId}:`, error)
+      return false
     }
   }
 

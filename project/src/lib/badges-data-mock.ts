@@ -124,3 +124,54 @@ export const getBadgesByCategory = (category: string): Badge[] => {
 export const getAllCategories = (): string[] => {
   return [...new Set(BADGES.filter(b => b.category !== 'Global').map(b => b.category))]
 }
+
+// Maps badge_id text key → 3D React icon component (for enriching Supabase data)
+export const BADGE_ICON_MAP: Record<string, FC> = {
+  org_iniciante:   OrganizationInitiate3D,
+  org_praticante:  OrganizationPractitioner3D,
+  org_mestre:      OrganizationMaster3D,
+  org_suprema:     OrganizationSuprema3D,
+  com_iniciante:   CommunicationInitiate3D,
+  com_praticante:  CommunicationPractitioner3D,
+  com_mestre:      CommunicationMaster3D,
+  com_suprema:     CommunicationSuprema3D,
+  ie_iniciante:    EmotionalInitiate3D,
+  ie_praticante:   EmotionalPractitioner3D,
+  ie_mestre:       EmotionalMaster3D,
+  ie_suprema:      EmotionalSuprema3D,
+  lead_iniciante:  LeadershipInitiate3D,
+  lead_praticante: LeadershipPractitioner3D,
+  lead_mestre:     LeadershipMaster3D,
+  lead_suprema:    LeadershipSuprema3D,
+  inov_iniciante:  InnovationInitiate3D,
+  inov_praticante: InnovationPractitioner3D,
+  inov_mestre:     InnovationMaster3D,
+  inov_suprema:    InnovationSuprema3D,
+  rot_iniciante:   RoutineInitiate3D,
+  rot_praticante:  RoutinePractitioner3D,
+  rot_mestre:      RoutineMaster3D,
+  rot_suprema:     RoutineSuprema3D,
+  saude_iniciante:  HealthInitiate3D,
+  saude_praticante: HealthPractitioner3D,
+  saude_mestre:     HealthMaster3D,
+  saude_suprema:    HealthSuprema3D,
+  global_ovo:                 GlobalEgg3D,
+  global_lagarta:             GlobalCaterpillar3D,
+  global_crisalida:           GlobalChrysalis3D,
+  global_borboleta_emergente: GlobalButterflyEmerging3D,
+  global_borboleta_radiante:  GlobalButterflyRadiant3D,
+}
+
+// Maps level number → 3D React icon component (for enriching Supabase data)
+export const LEVEL_ICON_MAP: Record<number, FC> = {
+  0: Level0Icon3D,
+  1: Level1Icon3D,
+  2: Level2Icon3D,
+  3: Level3Icon3D,
+  4: Level4Icon3D,
+  5: Level5Icon3D,
+  6: Level6Icon3D,
+  7: Level7Icon3D,
+  8: Level8Icon3D,
+  9: Level9Icon3D,
+}

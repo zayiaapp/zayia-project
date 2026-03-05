@@ -132,7 +132,7 @@ export function ChallengesSection() {
     const currentEarnedBadges = getEarnedBadges()
     setPreviousEarnedBadges(new Set(currentEarnedBadges))
 
-    // 6. CALCULAR PONTOS DAS MEDALHAS
+    // 6. CALCULAR PONTOS DAS MEDALHAS + PERSISTIR NO SUPABASE
     let medalPointsAdded = 0
 
     if (allNewMedals.length > 0) {
@@ -140,6 +140,10 @@ export function ChallengesSection() {
         const medalObj = BADGES.find(b => b.id === medalId)
         if (medalObj?.points) {
           medalPointsAdded += medalObj.points
+        }
+        // Persist category medal to Supabase (global medals go via checkAndAwardGlobalMedals)
+        if (!medalId.startsWith('global_')) {
+          supabaseClient.awardBadgeByKey(user.id, medalId)
         }
       })
     }

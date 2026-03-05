@@ -1,51 +1,43 @@
 import { useState, useEffect } from 'react'
+import { FC } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { supabaseClient } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
-import { Gift, Sparkles, Lock } from 'lucide-react'
-import { getEarnedBadges } from '../../../lib/badges-storage'
-import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
+import { Gift, Sparkles } from 'lucide-react'
+import { BADGE_ICON_MAP, LEVEL_ICON_MAP } from '../../../lib/badges-data-mock'
 import { MedalCarousel } from './badges/MedalCarousel'
 import { MedalDetailModal } from '../modals/MedalDetailModal'
 
 interface Medal {
   id: string
   name: string
-  icon: string
+  icon: FC
   description?: string
   requirement?: number
   points?: number
-  rarity?: 'comum' | 'incomum' | 'raro' | 'épico' | 'lendária'
+  rarity?: string
   unlockDate?: string
   isEarned: boolean
+  levelNumber?: number
 }
 
-// Same grouping as AwardsSection admin — uses badge id prefix
-const medalsByCategory = {
-  org:   BADGES.filter(b => b.id.startsWith('org_')),
-  saude: BADGES.filter(b => b.id.startsWith('saude_')),
-  ie:    BADGES.filter(b => b.id.startsWith('ie_')),
-  com:   BADGES.filter(b => b.id.startsWith('com_')),
-  rot:   BADGES.filter(b => b.id.startsWith('rot_')),
-  lead:  BADGES.filter(b => b.id.startsWith('lead_')),
-  inov:  BADGES.filter(b => b.id.startsWith('inov_')),
-}
-
-const globalMedals = BADGES.filter(b => b.category === 'Global')
-
-const categories = [
-  { key: 'org',   name: 'Rotina & Organização',                    icon: '📚', badges: medalsByCategory.org   },
-  { key: 'saude', name: 'Corpo & Saúde',                           icon: '💪', badges: medalsByCategory.saude },
-  { key: 'ie',    name: 'Mindfulness & Emoções',                   icon: '🧘', badges: medalsByCategory.ie    },
-  { key: 'com',   name: 'Relacionamentos & Comunicação',           icon: '💬', badges: medalsByCategory.com   },
-  { key: 'rot',   name: 'Autoestima & Autocuidado',                icon: '💎', badges: medalsByCategory.rot   },
-  { key: 'lead',  name: 'Carreira e Desenvolvimento Profissional', icon: '💼', badges: medalsByCategory.lead  },
-  { key: 'inov',  name: 'Digital Detox',                           icon: '📱', badges: medalsByCategory.inov  },
+// Category grouping by badge_id prefix
+const CATEGORY_PREFIXES: { key: string; prefix: string; name: string; icon: string }[] = [
+  { key: 'org',   prefix: 'org_',   name: 'Rotina & Organização',                    icon: '📚' },
+  { key: 'saude', prefix: 'saude_', name: 'Corpo & Saúde',                           icon: '💪' },
+  { key: 'ie',    prefix: 'ie_',    name: 'Mindfulness & Emoções',                   icon: '🧘' },
+  { key: 'com',   prefix: 'com_',   name: 'Relacionamentos & Comunicação',           icon: '💬' },
+  { key: 'rot',   prefix: 'rot_',   name: 'Autoestima & Autocuidado',                icon: '💎' },
+  { key: 'lead',  prefix: 'lead_',  name: 'Carreira e Desenvolvimento Profissional', icon: '💼' },
+  { key: 'inov',  prefix: 'inov_',  name: 'Digital Detox',                           icon: '📱' },
 ]
 
 export function BadgesSection() {
   const { profile } = useAuth()
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
+  const [allBadges, setAllBadges] = useState<any[]>([])
+  const [allLevels, setAllLevels] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
 
@@ -55,54 +47,6 @@ export function BadgesSection() {
   const [sortBy, setSortBy] = useState<'name' | 'date'>('name')
 
   const currentPoints = profile?.points || 0
-
-  // Load earned badge IDs from localStorage (synced from Supabase via medals-unlock)
-  useEffect(() => {
-    setEarnedBadgeIds(getEarnedBadges())
-  }, [profile?.points])
-
-  // Listener: update when medals change locally
-  useEffect(() => {
-    const handler = () => setEarnedBadgeIds(getEarnedBadges())
-    window.addEventListener('medalsUpdated', handler)
-    return () => window.removeEventListener('medalsUpdated', handler)
-  }, [])
-
-  // Sync earned medals from Supabase + real-time listener
-  useEffect(() => {
-    if (!profile?.id) return
-    let subscription: any = null
-
-    const initSync = async () => {
-      try {
-        await supabaseClient.getUserEarnedMedals(profile.id)
-      } catch (error) {
-        console.error('Error syncing badges from Supabase:', error)
-      }
-
-      subscription = supabase
-        .channel(`badges-changes-${profile.id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'user_earned_badges',
-          filter: `user_id=eq.${profile.id}`,
-        }, () => {
-          setEarnedBadgeIds(getEarnedBadges())
-        })
-        .subscribe()
-    }
-
-    initSync()
-    return () => { if (subscription) subscription.unsubscribe() }
-  }, [profile?.id])
-
-  // Listener: update points display
-  useEffect(() => {
-    const handler = () => setEarnedBadgeIds(getEarnedBadges())
-    window.addEventListener('pointsUpdated', handler)
-    return () => window.removeEventListener('pointsUpdated', handler)
-  }, [])
 
   // Load filters from localStorage on mount
   useEffect(() => {
@@ -118,20 +62,107 @@ export function BadgesSection() {
     localStorage.setItem('medals-sort-by', sortBy)
   }, [rarityFilter, statusFilter, sortBy])
 
-  const handleMedalClick = (badge: any, earned: boolean) => {
+  // Load badges + levels from Supabase
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true)
+        const [badges, levels] = await Promise.all([
+          supabaseClient.getAllBadges(),
+          supabaseClient.getAllLevels(),
+        ])
+        setAllBadges(badges)
+        setAllLevels(levels)
+      } catch (error) {
+        console.error('Error loading badges/levels:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadData()
+  }, [])
+
+  // Load earned badge IDs from Supabase
+  useEffect(() => {
+    if (!profile?.id) return
+    supabaseClient.getUserEarnedMedals(profile.id).then(setEarnedBadgeIds)
+  }, [profile?.id])
+
+  // Real-time listener for earned badges changes
+  useEffect(() => {
+    if (!profile?.id) return
+    const subscription = supabase
+      .channel(`badges-changes-${profile.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_earned_badges',
+        filter: `user_id=eq.${profile.id}`,
+      }, () => {
+        supabaseClient.getUserEarnedMedals(profile.id).then(setEarnedBadgeIds)
+      })
+      .subscribe()
+    return () => { subscription.unsubscribe() }
+  }, [profile?.id])
+
+  // Listener: refresh earned badges when medals/points update
+  useEffect(() => {
+    if (!profile?.id) return
+    const handler = () => {
+      supabaseClient.getUserEarnedMedals(profile.id).then(setEarnedBadgeIds)
+    }
+    window.addEventListener('medalsUpdated', handler)
+    window.addEventListener('pointsUpdated', handler)
+    return () => {
+      window.removeEventListener('medalsUpdated', handler)
+      window.removeEventListener('pointsUpdated', handler)
+    }
+  }, [profile?.id])
+
+  // Enrich a Supabase badge row with 3D icon
+  const enrichBadge = (b: any): Medal => ({
+    id: b.badge_id,
+    name: b.name,
+    icon: BADGE_ICON_MAP[b.badge_id] || (() => null),
+    description: b.description,
+    requirement: b.requirement,
+    points: b.points,
+    rarity: b.rarity,
+    isEarned: earnedBadgeIds.includes(b.badge_id),
+  })
+
+  // Enrich a Supabase level row with 3D icon
+  const enrichLevel = (l: any): Medal => ({
+    id: `level-${l.level_number}`,
+    name: l.name,
+    icon: LEVEL_ICON_MAP[l.level_number] || (() => null),
+    requirement: l.level_number,
+    points: l.points_required,
+    levelNumber: l.level_number,
+    isEarned: currentPoints >= l.points_required,
+  })
+
+  const handleMedalClick = (medal: Medal) => {
     setSelectedMedal({
-      id: badge.id,
-      name: badge.name,
-      icon: badge.icon,
-      description: badge.description,
-      requirement: badge.requirement,
-      points: badge.points,
-      rarity: badge.rarity,
-      isEarned: earned,
-      unlockDate: earned ? new Date().toLocaleDateString('pt-BR') : undefined,
+      ...medal,
+      unlockDate: medal.isEarned ? new Date().toLocaleDateString('pt-BR') : undefined,
     })
     setShowDetailModal(true)
   }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-zayia-purple" />
+          <p className="text-zayia-violet-gray mt-4">Carregando medalhas...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const levelMedals = allLevels.map(enrichLevel)
+  const globalMedals = allBadges.filter(b => b.badge_id?.startsWith('global_')).map(enrichBadge)
 
   return (
     <div className="space-y-6">
@@ -215,18 +246,10 @@ export function BadgesSection() {
 
       {/* ===== CARROSSEL: NÍVEIS (10) ===== */}
       <MedalCarousel
-        medals={LEVELS.map(level => ({
-          id: `level-${level.level}`,
-          name: level.name,
-          icon: level.icon,
-          requirement: level.level,
-          points: level.pointsRequired,
-          levelNumber: level.level,
-          isEarned: currentPoints >= level.pointsRequired,
-        }))}
+        medals={levelMedals}
         categoryName="Todos os Níveis"
         categoryIcon="👑"
-        onMedalClick={(medal) => handleMedalClick(medal, medal.isEarned)}
+        onMedalClick={handleMedalClick}
       />
 
       {/* ===== MEDALHAS POR CATEGORIA (7 × 4 = 28) ===== */}
@@ -234,43 +257,28 @@ export function BadgesSection() {
         <h2 className="text-xl font-bold text-zayia-deep-violet mb-6">
           🎨 Medalhas por Categoria
         </h2>
-        {categories.map(({ key, name, icon, badges }) => (
-          <MedalCarousel
-            key={key}
-            medals={badges.map(medal => ({
-              id: medal.id,
-              name: medal.name,
-              icon: medal.icon,
-              requirement: medal.requirement,
-              points: medal.points,
-              isEarned: earnedBadgeIds.includes(medal.id),
-            }))}
-            categoryName={name}
-            categoryIcon={icon}
-            onMedalClick={(medal) => {
-              const badge = badges.find(b => b.id === medal.id)
-              if (badge) handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
-            }}
-          />
-        ))}
+        {CATEGORY_PREFIXES.map(({ key, prefix, name, icon }) => {
+          const badges = allBadges
+            .filter(b => b.badge_id?.startsWith(prefix))
+            .map(enrichBadge)
+          return (
+            <MedalCarousel
+              key={key}
+              medals={badges}
+              categoryName={name}
+              categoryIcon={icon}
+              onMedalClick={handleMedalClick}
+            />
+          )
+        })}
       </div>
 
       {/* ===== MEDALHAS GLOBAIS (5) ===== */}
       <MedalCarousel
-        medals={globalMedals.map(medal => ({
-          id: medal.id,
-          name: medal.name,
-          icon: medal.icon,
-          requirement: medal.requirement,
-          points: medal.points,
-          isEarned: earnedBadgeIds.includes(medal.id),
-        }))}
+        medals={globalMedals}
         categoryName="Medalhas Especiais"
         categoryIcon="🦋"
-        onMedalClick={(medal) => {
-          const badge = globalMedals.find(b => b.id === medal.id)
-          if (badge) handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
-        }}
+        onMedalClick={handleMedalClick}
       />
 
       {/* Motivação */}
