@@ -3456,6 +3456,98 @@ export class SupabaseClient {
   }
 
   // =========================================================================
+  // CHALLENGE COMPLETIONS (replaces localStorage ChallengesDataMock)
+  // =========================================================================
+
+  async getUserActiveCategory(userId: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .select('active_category_id')
+        .eq('user_id', userId)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+      return data?.active_category_id || null
+    } catch (error) {
+      console.error('❌ Error getting active category:', error)
+      return null
+    }
+  }
+
+  async setUserActiveCategory(userId: string, categoryId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('user_preferences')
+        .upsert({ user_id: userId, active_category_id: categoryId, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('❌ Error setting active category:', error)
+      return false
+    }
+  }
+
+  async getUserCompletedChallengeIds(userId: string, categoryId: string): Promise<string[]> {
+    try {
+      const { data, error } = await supabase
+        .from('challenge_completions')
+        .select('challenge_id')
+        .eq('user_id', userId)
+        .eq('category_id', categoryId)
+
+      if (error) throw error
+      return (data || []).map((r: any) => r.challenge_id)
+    } catch (error) {
+      console.error('❌ Error fetching completed challenges:', error)
+      return []
+    }
+  }
+
+  async getUserTotalCompletedCount(userId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('challenge_completions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+
+      if (error) throw error
+      return count || 0
+    } catch (error) {
+      console.error('❌ Error fetching total completed count:', error)
+      return 0
+    }
+  }
+
+  async recordChallengeCompletion(
+    userId: string,
+    challengeId: string,
+    categoryId: string,
+    difficulty: 'facil' | 'dificil',
+    pointsEarned: number
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('challenge_completions')
+        .upsert({
+          user_id: userId,
+          challenge_id: challengeId,
+          category_id: categoryId,
+          difficulty,
+          points_earned: pointsEarned,
+          completed_at: new Date().toISOString()
+        }, { onConflict: 'user_id,challenge_id' })
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('❌ Error recording challenge completion:', error)
+      return false
+    }
+  }
+
+  // =========================================================================
   // PRIZE PAYMENTS
   // =========================================================================
 

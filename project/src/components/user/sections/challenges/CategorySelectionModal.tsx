@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabaseClient } from '../../../../lib/supabase-client'
-import ChallengesDataMock from '../../../../lib/challenges-data-mock'
 
 interface CategorySelectionModalProps {
   userId: string
@@ -45,15 +44,11 @@ export const CategorySelectionModal: React.FC<CategorySelectionModalProps> = ({
     if (!selectedCategoryId) return
 
     setIsConfirming(true)
-    // Keep using ChallengesDataMock.setActiveCategory for backward compatibility
-    const success = ChallengesDataMock.setActiveCategory(userId, selectedCategoryId)
+    const success = await supabaseClient.setUserActiveCategory(userId, selectedCategoryId)
 
     if (success) {
-      // Get category from loaded state
       const category = categories.find((cat: any) => cat.id === selectedCategoryId)
-      if (category) {
-        onCategorySelected(category)
-      }
+      if (category) onCategorySelected(category)
     }
     setIsConfirming(false)
   }

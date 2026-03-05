@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Challenge, ChallengeCategory } from '../../../../lib/challenges-data-mock'
-import ChallengesDataMock from '../../../../lib/challenges-data-mock'
 import { ChallengeCardDaily } from './ChallengeCardDaily'
 import { compressImage, validateImageFile } from '../../../../lib/photo-compression'
 import { supabaseClient } from '../../../../lib/supabase-client'
@@ -9,7 +8,7 @@ interface DailyChallengesViewProps {
   userId: string
   category: ChallengeCategory
   completedChallengeIds: Set<string>
-  onChallengeCompleted: (challengeId: string, proofFile?: File) => void
+  onChallengeCompleted: (challengeId: string, difficulty: 'facil' | 'dificil', proofFile?: File) => void
 }
 
 export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
@@ -60,38 +59,20 @@ export const DailyChallengesView: React.FC<DailyChallengesViewProps> = ({
   const handleProofSubmitted = async (challengeId: string, proofFile: File) => {
     setIsUploading(true)
     try {
-      // 1. Validate file
       validateImageFile(proofFile)
 
-      // 2. Compress image
-      console.log(`📸 Compressing image: ${proofFile.name}...`)
       const compressedBlob = await compressImage(proofFile)
+      await supabaseClient.uploadProof(userId, challengeId, compressedBlob)
 
-      // 3. Upload proof to Supabase Storage
-      console.log(`📤 Uploading proof to Supabase...`)
-      const proofUrl = await supabaseClient.uploadProof(userId, challengeId, compressedBlob)
-      console.log(`✅ Proof uploaded: ${proofUrl}`)
+      // Find challenge difficulty from loaded list
+      const challenge = dailyChallenges.find(c => c.id === challengeId)
+      const difficulty = challenge?.difficulty === 'dificil' ? 'dificil' : 'facil'
 
-      // 4. Mark challenge complete (using mock data for now)
-      // TODO: When EPIC-001 is done, migrate to use supabaseClient.completeChallenge() directly
-      ChallengesDataMock.completeChallenge(challengeId, userId)
-
-      // 5. Notify parent component to handle points/medals calculation
-      // Parent (ChallengesSection) will dispatch events for real-time sync
-      onChallengeCompleted(challengeId, proofFile)
-
-      console.log(`✅ Challenge submitted with proof URL: ${proofUrl}`)
+      onChallengeCompleted(challengeId, difficulty, proofFile)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error'
       console.error(`❌ Error submitting proof: ${errorMsg}`)
-      window.dispatchEvent(
-        new CustomEvent('notificationUpdate', {
-          detail: {
-            type: 'error',
-            message: errorMsg
-          }
-        })
-      )
+      window.dispatchEvent(new CustomEvent('notificationUpdate', { detail: { type: 'error', message: errorMsg } }))
     } finally {
       setIsUploading(false)
     }
