@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
-import ChallengesDataMock, { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { supabaseClient } from '../../../lib/supabase-client'
 import { CategoryCard } from './CategoryCard'
 import { CategoryForm } from './CategoryForm'
 import { DeleteCategoryModal } from './DeleteCategoryModal'
@@ -10,27 +11,69 @@ interface CategoriesListProps {
   onCategoryUpdated?: () => void
 }
 
+// Map Supabase category to mock's ChallengeCategory format (for UI components)
+function toUiCategory(cat: any, easyCounts: Record<string, number>, hardCounts: Record<string, number>): ChallengeCategory {
+  return {
+    id: cat.id,
+    label: cat.name || cat.label || '',
+    icon: cat.icon || '📌',
+    color: cat.color || 'from-gray-400 to-gray-600',
+    description: cat.description,
+    area: cat.area,
+    easyCount: easyCounts[cat.id] ?? 0,
+    hardCount: hardCounts[cat.id] ?? 0,
+    completionRate: 0,
+  }
+}
+
 export const CategoriesList: React.FC<CategoriesListProps> = ({
   onViewChallenges,
   onCategoryUpdated,
 }) => {
-  const [categories, setCategories] = useState<ChallengeCategory[]>(() => {
-    ChallengesDataMock.initialize()
-    return ChallengesDataMock.getCategories()
-  })
+  const [categories, setCategories] = useState<ChallengeCategory[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [easyCounts, setEasyCounts] = useState<Record<string, number>>({})
+  const [hardCounts, setHardCounts] = useState<Record<string, number>>({})
 
   const [formOpen, setFormOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<ChallengeCategory | null>(null)
 
-  const reloadCategories = () => {
-    setCategories(ChallengesDataMock.getCategories())
-    onCategoryUpdated?.()
+  const reloadCategories = async () => {
+    try {
+      const data = await supabaseClient.getChallengeCategories()
+      // Load challenge counts for all categories concurrently
+      const countResults = await Promise.all(
+        data.map(cat => supabaseClient.getChallengesByCategory(cat.id))
+      )
+      const easy: Record<string, number> = {}
+      const hard: Record<string, number> = {}
+      data.forEach((cat, i) => {
+        const challenges = countResults[i]
+        easy[cat.id] = challenges.filter((c: any) => c.difficulty === 'facil' || c.difficulty === 'easy').length
+        hard[cat.id] = challenges.filter((c: any) => c.difficulty === 'dificil' || c.difficulty === 'hard').length
+      })
+      setEasyCounts(easy)
+      setHardCounts(hard)
+      setCategories(data.map(cat => toUiCategory(cat, easy, hard)))
+      onCategoryUpdated?.()
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    }
   }
 
-  const handleCreateCategory = (data: Partial<ChallengeCategory>) => {
-    ChallengesDataMock.createCategory(data)
-    reloadCategories()
+  useEffect(() => {
+    setIsLoading(true)
+    reloadCategories().finally(() => setIsLoading(false))
+  }, [])
+
+  const handleCreateCategory = async (data: Partial<ChallengeCategory>) => {
+    await supabaseClient.createChallengeCategory({
+      name: data.label || '',
+      icon: data.icon || '📌',
+      color: data.color || 'from-gray-400 to-gray-600',
+    })
+    await reloadCategories()
   }
 
   const handleEditCategory = (category: ChallengeCategory) => {
@@ -38,10 +81,14 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({
     setFormOpen(true)
   }
 
-  const handleUpdateCategory = (data: Partial<ChallengeCategory>) => {
+  const handleUpdateCategory = async (data: Partial<ChallengeCategory>) => {
     if (!selectedCategory) return
-    ChallengesDataMock.updateCategory(selectedCategory.id, data)
-    reloadCategories()
+    await supabaseClient.updateChallengeCategory(selectedCategory.id, {
+      name: data.label,
+      icon: data.icon,
+      color: data.color,
+    })
+    await reloadCategories()
   }
 
   const handleDeleteClick = (category: ChallengeCategory) => {
@@ -49,16 +96,24 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({
     setDeleteModalOpen(true)
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedCategory) return
-    ChallengesDataMock.deleteCategory(selectedCategory.id)
+    await supabaseClient.deleteChallengeCategory(selectedCategory.id)
     setDeleteModalOpen(false)
-    reloadCategories()
+    setSelectedCategory(null)
+    await reloadCategories()
   }
 
   const getChallengeCounts = (categoryId: string) => {
-    const count = ChallengesDataMock.getChallengeCount(categoryId)
-    return count.easy + count.hard
+    return (easyCounts[categoryId] ?? 0) + (hardCounts[categoryId] ?? 0)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
+    )
   }
 
   return (
@@ -102,7 +157,6 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({
         onSuccess={() => {
           setFormOpen(false)
           setSelectedCategory(null)
-          reloadCategories()
         }}
         initialData={selectedCategory || undefined}
       />

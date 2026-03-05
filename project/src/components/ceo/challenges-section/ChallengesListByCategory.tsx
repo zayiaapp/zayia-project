@@ -1,9 +1,7 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, Plus, ChevronDown, ChevronUp } from 'lucide-react'
-import ChallengesDataMock, {
-  Challenge,
-  ChallengeCategory,
-} from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { supabaseClient } from '../../../lib/supabase-client'
 import { ChallengeCard } from './ChallengeCard'
 import { SearchFilterBar } from './SearchFilterBar'
 import { SortDropdown } from './SortDropdown'
@@ -30,6 +28,65 @@ type SortOption =
 
 const ITEMS_PER_PAGE = 12
 
+// Map Supabase Challenge to mock's Challenge format (for UI components)
+function dbToUi(ch: any): Challenge {
+  return {
+    id: ch.id,
+    categoryId: ch.category_id,
+    title: ch.title,
+    description: ch.description || '',
+    points: ch.difficulty === 'dificil' ? (ch.points_hard ?? 25) : (ch.points_easy ?? 10),
+    duration: ch.duration_minutes ?? 5,
+    difficulty: (ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : ch.difficulty) as 'facil' | 'dificil',
+    category: ch.category_id,
+  }
+}
+
+// Map mock's Challenge format to Supabase update payload
+function uiToDb(data: Partial<Challenge>): any {
+  const out: any = {}
+  if (data.title !== undefined) out.title = data.title
+  if (data.description !== undefined) out.description = data.description
+  if (data.difficulty !== undefined) out.difficulty = data.difficulty
+  if (data.categoryId !== undefined) out.category_id = data.categoryId
+  if (data.duration !== undefined) out.duration_minutes = data.duration
+  if (data.points !== undefined) {
+    out.points_easy = data.points
+    out.points_hard = data.points
+  }
+  return out
+}
+
+// Pure client-side filter
+function searchChallenges(challenges: Challenge[], difficulty: 'facil' | 'dificil' | 'both', query: string): Challenge[] {
+  let filtered = [...challenges]
+  if (difficulty !== 'both') {
+    filtered = filtered.filter(c => c.difficulty === difficulty)
+  }
+  if (query.trim()) {
+    const q = query.toLowerCase()
+    filtered = filtered.filter(c =>
+      c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
+    )
+  }
+  return filtered
+}
+
+// Pure client-side sort
+function sortChallenges(challenges: Challenge[], sortBy: SortOption): Challenge[] {
+  const sorted = [...challenges]
+  switch (sortBy) {
+    case 'title-asc': sorted.sort((a, b) => a.title.localeCompare(b.title)); break
+    case 'title-desc': sorted.sort((a, b) => b.title.localeCompare(a.title)); break
+    case 'points-asc': sorted.sort((a, b) => a.points - b.points); break
+    case 'points-desc': sorted.sort((a, b) => b.points - a.points); break
+    case 'duration-asc': sorted.sort((a, b) => a.duration - b.duration); break
+    case 'duration-desc': sorted.sort((a, b) => b.duration - a.duration); break
+    default: break
+  }
+  return sorted
+}
+
 export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> = ({
   category,
   onBack,
@@ -48,29 +105,32 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
   const [hardExpanded, setHardExpanded] = useState(true)
   const [easyPage, setEasyPage] = useState(1)
   const [hardPage, setHardPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Get all challenges for this category
-  const [allChallenges, setAllChallenges] = useState<Challenge[]>(() =>
-    ChallengesDataMock.getChallengesByCategory(category.id)
-  )
+  const [allChallenges, setAllChallenges] = useState<Challenge[]>([])
 
-  const reloadChallenges = () => {
-    const updated = ChallengesDataMock.getChallengesByCategory(category.id)
-    setAllChallenges(updated)
+  const reloadChallenges = async () => {
+    try {
+      const data = await supabaseClient.getChallengesByCategory(category.id)
+      setAllChallenges(data.map(dbToUi))
+    } catch (error) {
+      console.error('Error loading challenges:', error)
+    }
   }
+
+  useEffect(() => {
+    setIsLoading(true)
+    reloadChallenges().finally(() => setIsLoading(false))
+  }, [category.id])
 
   // Filter challenges
   const filteredChallenges = useMemo(() => {
-    return ChallengesDataMock.searchChallenges(
-      category.id,
-      difficulty,
-      searchQuery
-    )
-  }, [allChallenges, category.id, difficulty, searchQuery])
+    return searchChallenges(allChallenges, difficulty, searchQuery)
+  }, [allChallenges, difficulty, searchQuery])
 
   // Sort challenges
   const sortedChallenges = useMemo(() => {
-    return ChallengesDataMock.sortChallenges(filteredChallenges, sortBy)
+    return sortChallenges(filteredChallenges, sortBy)
   }, [filteredChallenges, sortBy])
 
   // Split by difficulty
@@ -78,18 +138,20 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
   const hardChallenges = sortedChallenges.filter(c => c.difficulty === 'dificil')
 
   // Paginate
-  const easyVisible = easyChallenges.slice(
-    0,
-    easyPage * ITEMS_PER_PAGE
-  )
-  const hardVisible = hardChallenges.slice(
-    0,
-    hardPage * ITEMS_PER_PAGE
-  )
+  const easyVisible = easyChallenges.slice(0, easyPage * ITEMS_PER_PAGE)
+  const hardVisible = hardChallenges.slice(0, hardPage * ITEMS_PER_PAGE)
 
-  const handleCreateChallenge = (data: Partial<Challenge>) => {
-    ChallengesDataMock.createChallenge(data)
-    reloadChallenges()
+  const handleCreateChallenge = async (data: Partial<Challenge>) => {
+    await supabaseClient.createChallenge({
+      title: data.title || '',
+      description: data.description || '',
+      category_id: data.categoryId || category.id,
+      difficulty: data.difficulty || 'facil',
+      points_easy: data.points || 10,
+      points_hard: data.points || 25,
+      duration_minutes: data.duration,
+    })
+    await reloadChallenges()
   }
 
   const handleEditChallenge = (challenge: Challenge) => {
@@ -97,10 +159,10 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
     setFormOpen(true)
   }
 
-  const handleUpdateChallenge = (data: Partial<Challenge>) => {
+  const handleUpdateChallenge = async (data: Partial<Challenge>) => {
     if (!selectedChallenge) return
-    ChallengesDataMock.updateChallenge(selectedChallenge.id, data)
-    reloadChallenges()
+    await supabaseClient.updateChallenge(selectedChallenge.id, uiToDb(data))
+    await reloadChallenges()
   }
 
   const handleDeleteClick = (challenge: Challenge) => {
@@ -108,16 +170,25 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
     setDeleteModalOpen(true)
   }
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!selectedChallenge) return
-    ChallengesDataMock.deleteChallenge(selectedChallenge.id)
+    await supabaseClient.deleteChallenge(selectedChallenge.id)
     setDeleteModalOpen(false)
-    reloadChallenges()
+    setSelectedChallenge(null)
+    await reloadChallenges()
   }
 
-  const handleDuplicateChallenge = (challenge: Challenge) => {
-    ChallengesDataMock.duplicateChallenge(challenge.id)
-    reloadChallenges()
+  const handleDuplicateChallenge = async (challenge: Challenge) => {
+    await supabaseClient.createChallenge({
+      title: `${challenge.title} (cópia)`,
+      description: challenge.description,
+      category_id: challenge.categoryId || category.id,
+      difficulty: challenge.difficulty,
+      points_easy: challenge.difficulty === 'facil' ? challenge.points : 10,
+      points_hard: challenge.difficulty === 'dificil' ? challenge.points : 25,
+      duration_minutes: challenge.duration,
+    })
+    await reloadChallenges()
   }
 
   const handleSelectChallenge = (challengeId: string) => {
@@ -130,18 +201,26 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
     setSelectedChallenges(newSelected)
   }
 
-  const handleBulkEdit = (updates: Partial<Challenge>) => {
-    ChallengesDataMock.bulkUpdateChallenges(Array.from(selectedChallenges), updates)
+  const handleBulkEdit = async (updates: Partial<Challenge>) => {
+    await supabaseClient.bulkUpdateChallenges(Array.from(selectedChallenges), uiToDb(updates))
     setSelectedChallenges(new Set())
     setBulkEditOpen(false)
-    reloadChallenges()
+    await reloadChallenges()
   }
 
-  const handleBulkDelete = () => {
-    ChallengesDataMock.bulkDeleteChallenges(Array.from(selectedChallenges))
+  const handleBulkDelete = async () => {
+    await supabaseClient.bulkDeleteChallenges(Array.from(selectedChallenges))
     setSelectedChallenges(new Set())
     setBulkDeleteOpen(false)
-    reloadChallenges()
+    await reloadChallenges()
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
+    )
   }
 
   return (
@@ -300,13 +379,10 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
           setFormOpen(false)
           setSelectedChallenge(null)
         }}
-        onSubmit={
-          selectedChallenge ? handleUpdateChallenge : handleCreateChallenge
-        }
+        onSubmit={selectedChallenge ? handleUpdateChallenge : handleCreateChallenge}
         onSuccess={() => {
           setFormOpen(false)
           setSelectedChallenge(null)
-          reloadChallenges()
         }}
         initialData={selectedChallenge || undefined}
         defaultCategoryId={category.id}

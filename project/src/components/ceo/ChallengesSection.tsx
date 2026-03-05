@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Target,
   Trophy,
@@ -14,95 +14,8 @@ import {
   Briefcase
 } from 'lucide-react'
 import { CategoriesList, ChallengesListByCategory } from './challenges-section'
-import ChallengesDataMock, { ChallengeCategory } from '../../lib/challenges-data-mock'
-
-// Import dos dados de desafios
-import autoestimaData from '../../data/autoestima.json'
-import rotinaData from '../../data/rotina.json'
-import digitalDetoxData from '../../data/digital_detox.json'
-import mindfulnessData from '../../data/mindfulness.json'
-import relacionamentosData from '../../data/relacionamentos.json'
-import corpoSaudeData from '../../data/corpo_saude.json'
-import carreiraData from '../../data/carreira.json'
-
-interface LegacyCategory {
-  id: string
-  label: string
-  icon: string
-  color: string
-  data: any
-  iconComponent: React.ComponentType<any>
-}
-
-// Mock de dados de métricas para cada categoria
-const mockMetrics = {
-  autoestima: {
-    totalCompletions: 1247,
-    weeklyGrowth: 12.5,
-    avgDifficulty: 'Médio',
-    topUsers: 89,
-    completionRate: 78.3,
-    avgTimeSpent: 15
-  },
-  rotina: {
-    totalCompletions: 2156,
-    weeklyGrowth: 8.7,
-    avgDifficulty: 'Fácil',
-    topUsers: 156,
-    completionRate: 85.2,
-    avgTimeSpent: 12
-  },
-  digital_detox: {
-    totalCompletions: 892,
-    weeklyGrowth: 23.1,
-    avgDifficulty: 'Difícil',
-    topUsers: 67,
-    completionRate: 65.4,
-    avgTimeSpent: 45
-  },
-  mindfulness: {
-    totalCompletions: 1834,
-    weeklyGrowth: 15.3,
-    avgDifficulty: 'Médio',
-    topUsers: 134,
-    completionRate: 72.8,
-    avgTimeSpent: 18
-  },
-  relacionamentos: {
-    totalCompletions: 1456,
-    weeklyGrowth: 9.8,
-    avgDifficulty: 'Médio',
-    topUsers: 98,
-    completionRate: 81.7,
-    avgTimeSpent: 20
-  },
-  corpo_saude: {
-    totalCompletions: 1923,
-    weeklyGrowth: 18.4,
-    avgDifficulty: 'Médio',
-    topUsers: 145,
-    completionRate: 76.9,
-    avgTimeSpent: 25
-  },
-  carreira: {
-    totalCompletions: 1089,
-    weeklyGrowth: 14.2,
-    avgDifficulty: 'Difícil',
-    topUsers: 78,
-    completionRate: 69.5,
-    avgTimeSpent: 35
-  }
-}
-
-// Default metrics fallback
-const defaultMetrics = {
-  totalCompletions: 0,
-  weeklyGrowth: 0,
-  avgDifficulty: 'Médio',
-  topUsers: 0,
-  completionRate: 0,
-  avgTimeSpent: 0,
-}
+import { type ChallengeCategory } from '../../lib/challenges-data-mock'
+import { supabaseClient } from '../../lib/supabase-client'
 
 // Helper function to map icon components
 const getIconComponentForCategory = (categoryId: string): React.ComponentType<any> => {
@@ -118,267 +31,62 @@ const getIconComponentForCategory = (categoryId: string): React.ComponentType<an
   return iconMap[categoryId] || Heart
 }
 
-// Helper to safely get metrics with fallback
-const getMetrics = (categoryId: string) => {
-  return mockMetrics[categoryId as keyof typeof mockMetrics] || defaultMetrics
+// Map Supabase category to mock's ChallengeCategory format
+function toUiCategory(cat: any): ChallengeCategory {
+  return {
+    id: cat.id,
+    label: cat.name || cat.label || '',
+    icon: cat.icon || '📌',
+    color: cat.color || 'from-gray-400 to-gray-600',
+    description: cat.description,
+    area: cat.area,
+    easyCount: 0,
+    hardCount: 0,
+    completionRate: 0,
+  }
 }
 
 export function ChallengesSection() {
-  // Helper: Build categories with data from JSON files
-  // ✅ MUST be defined BEFORE useState that uses it
-  const buildCategoriesWithData = (): LegacyCategory[] => {
-    const mockCategories = ChallengesDataMock.getCategories()
-
-    // Map to old format with data
-    const dataMap: Record<string, unknown> = {
-      autoestima: autoestimaData,
-      rotina: rotinaData,
-      digital_detox: digitalDetoxData,
-      mindfulness: mindfulnessData,
-      relacionamentos: relacionamentosData,
-      corpo_saude: corpoSaudeData,
-      carreira: carreiraData,
-    }
-
-    return mockCategories.map(cat => {
-      // Use existing data or create default structure for custom categories
-      const categoryData = dataMap[cat.id] || {
-        label: cat.label,
-        icon: cat.icon,
-        color: cat.color,
-        facil: [],
-        dificil: [],
-      }
-
-      return {
-        id: cat.id,
-        label: cat.label,
-        icon: cat.icon,
-        color: cat.color,
-        data: categoryData,
-        iconComponent: getIconComponentForCategory(cat.id),
-      }
-    })
-  }
-
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'metrics' | 'gerenciar' | 'challenges'>('metrics')
   const [selectedCategoryForChallenges, setSelectedCategoryForChallenges] = useState<ChallengeCategory | null>(null)
+  const [categories, setCategories] = useState<ChallengeCategory[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Initialize data on component mount
-  React.useEffect(() => {
-    ChallengesDataMock.initialize()
+  // Detail view: challenges for the selected category card
+  const [detailChallenges, setDetailChallenges] = useState<any[]>([])
+  const [isDetailLoading, setIsDetailLoading] = useState(false)
+
+  const loadCategories = async () => {
+    try {
+      const data = await supabaseClient.getChallengeCategories()
+      setCategories(data.map(toUiCategory))
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    }
+  }
+
+  useEffect(() => {
+    setIsLoading(true)
+    loadCategories().finally(() => setIsLoading(false))
   }, [])
 
-  // Reload categories from mock - DYNAMIC STATE
-  const [categories, setCategories] = useState<LegacyCategory[]>(() => {
-    ChallengesDataMock.initialize()
-    return buildCategoriesWithData()
-  })
+  // Load challenges when a category is selected for detail view
+  useEffect(() => {
+    if (!selectedCategory) {
+      setDetailChallenges([])
+      return
+    }
+    setIsDetailLoading(true)
+    supabaseClient.getChallengesByCategory(selectedCategory)
+      .then(setDetailChallenges)
+      .catch(() => setDetailChallenges([]))
+      .finally(() => setIsDetailLoading(false))
+  }, [selectedCategory])
 
-  // Reload categories from mock
-  const reloadCategoriesFromMock = () => {
-    setCategories(buildCategoriesWithData())
-  }
-
-  // When category is created/edited/deleted
-  const handleCategoryUpdated = () => {
-    reloadCategoriesFromMock()
-  }
-
-  // When switching tabs
   const handleTabChange = (tab: 'metrics' | 'gerenciar' | 'challenges') => {
     setActiveTab(tab)
-    // If returning to metrics, reload categories
-    if (tab === 'metrics') {
-      reloadCategoriesFromMock()
-    }
-  }
-
-
-  const getTotalMetrics = () => {
-    const total = Object.values(mockMetrics).reduce((acc, metric) => ({
-      completions: acc.completions + metric.totalCompletions,
-      users: acc.users + metric.topUsers,
-      avgCompletion: acc.avgCompletion + metric.completionRate
-    }), { completions: 0, users: 0, avgCompletion: 0 })
-
-    return {
-      ...total,
-      avgCompletion: total.avgCompletion / categories.length
-    }
-  }
-
-  const totalMetrics = getTotalMetrics()
-
-  const renderDetailedView = () => {
-    const category = categories.find(c => c.id === selectedCategory)
-    if (!category) return null
-
-    const metrics = getMetrics(selectedCategory || '')
-    const IconComponent = category.iconComponent
-
-    return (
-      <div className="space-y-6">
-        {/* Header Detalhado */}
-        <div className="zayia-card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${category.color} flex items-center justify-center`}>
-                <IconComponent className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-zayia-deep-violet">{category.label}</h2>
-                <p className="text-zayia-violet-gray">
-                  {category.data.facil.length} desafios fáceis • {category.data.dificil.length} desafios difíceis
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="zayia-button px-4 py-2 rounded-xl text-white font-medium"
-            >
-              ← Voltar
-            </button>
-          </div>
-
-          {/* Métricas Detalhadas */}
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-deep-violet">
-                {metrics.totalCompletions.toLocaleString()}
-              </div>
-              <div className="text-sm text-zayia-violet-gray">Total Completados</div>
-            </div>
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-soft-purple">{metrics.completionRate}%</div>
-              <div className="text-sm text-zayia-violet-gray">Taxa de Conclusão</div>
-            </div>
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-lavender">{metrics.topUsers}</div>
-              <div className="text-sm text-zayia-violet-gray">Usuárias Ativas</div>
-            </div>
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-orchid">+{metrics.weeklyGrowth}%</div>
-              <div className="text-sm text-zayia-violet-gray">Crescimento</div>
-            </div>
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-periwinkle">{metrics.avgTimeSpent}min</div>
-              <div className="text-sm text-zayia-violet-gray">Tempo Médio</div>
-            </div>
-            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
-              <div className="text-2xl font-bold text-zayia-amethyst">{metrics.avgDifficulty}</div>
-              <div className="text-sm text-zayia-violet-gray">Dificuldade Média</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Desafios Fáceis */}
-        <div className="zayia-card p-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-            Desafios Fáceis ({category.data.facil.length})
-          </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-            {category.data.facil.slice(0, 20).map((challenge: any, index: number) => (
-              <div key={challenge.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-green-50/50">
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-semibold text-zayia-deep-violet text-sm">
-                    {index + 1}. {challenge.title}
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                      {challenge.points} pts
-                    </span>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                      {challenge.duration}min
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs text-zayia-violet-gray">
-                  {challenge.description}
-                </p>
-              </div>
-            ))}
-          </div>
-          {category.data.facil.length > 20 && (
-            <div className="mt-4 text-center">
-              <span className="text-sm text-zayia-violet-gray">
-                +{category.data.facil.length - 20} desafios adicionais...
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Desafios Difíceis */}
-        <div className="zayia-card p-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-            Desafios Difíceis ({category.data.dificil.length})
-          </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-            {category.data.dificil.slice(0, 20).map((challenge: any, index: number) => (
-              <div key={challenge.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-orange-50/50">
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-semibold text-zayia-deep-violet text-sm">
-                    {index + 1}. {challenge.title}
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
-                      {challenge.points} pts
-                    </span>
-                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                      {challenge.duration}min
-                    </span>
-                  </div>
-                </div>
-                <p className="text-xs text-zayia-violet-gray">
-                  {challenge.description}
-                </p>
-              </div>
-            ))}
-          </div>
-          {category.data.dificil.length > 20 && (
-            <div className="mt-4 text-center">
-              <span className="text-sm text-zayia-violet-gray">
-                +{category.data.dificil.length - 20} desafios adicionais...
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Análise de Popularidade */}
-        <div className="zayia-card p-6">
-          <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-            Análise de Popularidade
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>Desafios Fáceis</span>
-                <span>{Math.round((metrics.completionRate + 15))}% de conclusão</span>
-              </div>
-              <div className="w-full bg-zayia-lilac/30 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full"
-                  style={{ width: `${metrics.completionRate + 15}%` }}
-                ></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span>Desafios Difíceis</span>
-                <span>{Math.round((metrics.completionRate - 10))}% de conclusão</span>
-              </div>
-              <div className="w-full bg-zayia-lilac/30 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-orange-400 to-red-500 h-3 rounded-full"
-                  style={{ width: `${metrics.completionRate - 10}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    if (tab === 'metrics') loadCategories()
   }
 
   const handleViewChallenges = (category: ChallengeCategory) => {
@@ -391,13 +99,139 @@ export function ChallengesSection() {
     handleTabChange('metrics')
   }
 
+  const easyChallenges = detailChallenges.filter(c => c.difficulty === 'facil' || c.difficulty === 'easy')
+  const hardChallenges = detailChallenges.filter(c => c.difficulty === 'dificil' || c.difficulty === 'hard')
+
+  const renderDetailedView = () => {
+    const category = categories.find(c => c.id === selectedCategory)
+    if (!category) return null
+    const IconComponent = getIconComponentForCategory(selectedCategory || '')
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="zayia-card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className={`w-16 h-16 rounded-xl bg-gradient-to-r ${category.color} flex items-center justify-center`}>
+                <IconComponent className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-zayia-deep-violet">{category.label}</h2>
+                {isDetailLoading ? (
+                  <p className="text-zayia-violet-gray">Carregando...</p>
+                ) : (
+                  <p className="text-zayia-violet-gray">
+                    {easyChallenges.length} desafios fáceis • {hardChallenges.length} desafios difíceis
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="zayia-button px-4 py-2 rounded-xl text-white font-medium"
+            >
+              ← Voltar
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+              <div className="text-2xl font-bold text-zayia-deep-violet">{easyChallenges.length + hardChallenges.length}</div>
+              <div className="text-sm text-zayia-violet-gray">Total de Desafios</div>
+            </div>
+            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+              <div className="text-2xl font-bold text-green-600">{easyChallenges.length}</div>
+              <div className="text-sm text-zayia-violet-gray">Fáceis</div>
+            </div>
+            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+              <div className="text-2xl font-bold text-orange-600">{hardChallenges.length}</div>
+              <div className="text-sm text-zayia-violet-gray">Difíceis</div>
+            </div>
+            <div className="text-center p-4 bg-zayia-lilac/20 rounded-xl">
+              <div className="text-2xl font-bold text-zayia-orchid">{category.icon}</div>
+              <div className="text-sm text-zayia-violet-gray">Ícone</div>
+            </div>
+          </div>
+        </div>
+
+        {isDetailLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-zayia-purple" />
+          </div>
+        ) : (
+          <>
+            {/* Easy Challenges */}
+            {easyChallenges.length > 0 && (
+              <div className="zayia-card p-6">
+                <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
+                  Desafios Fáceis ({easyChallenges.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                  {easyChallenges.slice(0, 20).map((ch: any, index: number) => (
+                    <div key={ch.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-green-50/50">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold text-zayia-deep-violet text-sm">
+                          {index + 1}. {ch.title}
+                        </h4>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          {ch.points_easy ?? 10}pts
+                        </span>
+                      </div>
+                      <p className="text-xs text-zayia-violet-gray">{ch.description}</p>
+                    </div>
+                  ))}
+                </div>
+                {easyChallenges.length > 20 && (
+                  <p className="mt-4 text-center text-sm text-zayia-violet-gray">
+                    +{easyChallenges.length - 20} desafios adicionais...
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Hard Challenges */}
+            {hardChallenges.length > 0 && (
+              <div className="zayia-card p-6">
+                <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
+                  Desafios Difíceis ({hardChallenges.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                  {hardChallenges.slice(0, 20).map((ch: any, index: number) => (
+                    <div key={ch.id} className="p-4 border border-zayia-lilac/30 rounded-xl bg-orange-50/50">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold text-zayia-deep-violet text-sm">
+                          {index + 1}. {ch.title}
+                        </h4>
+                        <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                          {ch.points_hard ?? 25}pts
+                        </span>
+                      </div>
+                      <p className="text-xs text-zayia-violet-gray">{ch.description}</p>
+                    </div>
+                  ))}
+                </div>
+                {hardChallenges.length > 20 && (
+                  <p className="mt-4 text-center text-sm text-zayia-violet-gray">
+                    +{hardChallenges.length - 20} desafios adicionais...
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
+
   // Show challenges list if selected
   if (selectedCategoryForChallenges && activeTab === 'challenges') {
     return (
       <ChallengesListByCategory
         category={selectedCategoryForChallenges}
         onBack={handleBack}
-        categories={ChallengesDataMock.getCategories()}
+        categories={categories}
       />
     )
   }
@@ -406,7 +240,6 @@ export function ChallengesSection() {
   if (activeTab === 'gerenciar') {
     return (
       <div className="space-y-6">
-        {/* Tabs */}
         <div className="flex gap-4 border-b border-gray-200">
           <button
             onClick={() => handleTabChange('metrics')}
@@ -421,13 +254,21 @@ export function ChallengesSection() {
             ⚙️ Gerenciar Categorias
           </button>
         </div>
-        <CategoriesList onViewChallenges={handleViewChallenges} onCategoryUpdated={handleCategoryUpdated} />
+        <CategoriesList onViewChallenges={handleViewChallenges} onCategoryUpdated={loadCategories} />
       </div>
     )
   }
 
   if (selectedCategory) {
     return renderDetailedView()
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
+    )
   }
 
   return (
@@ -447,88 +288,70 @@ export function ChallengesSection() {
           ⚙️ Gerenciar Categorias
         </button>
       </div>
+
       {/* Header Principal */}
       <div className="zayia-card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold zayia-gradient-text mb-2">
-              📊 Sistema de Desafios ZAYIA
-            </h2>
-            <p className="text-zayia-violet-gray">
-              Análise completa das {categories.length} categorias de transformação pessoal
-            </p>
-          </div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold zayia-gradient-text mb-2">
+            📊 Sistema de Desafios ZAYIA
+          </h2>
+          <p className="text-zayia-violet-gray">
+            Análise completa das {categories.length} categorias de transformação pessoal
+          </p>
         </div>
 
         {/* Métricas Gerais */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
             <Target className="w-8 h-8 text-zayia-deep-violet mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">
-              {totalMetrics.completions.toLocaleString()}
-            </div>
-            <div className="text-sm text-zayia-violet-gray">Total de Completados</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
-            <Users className="w-8 h-8 text-zayia-soft-purple mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">{totalMetrics.users}</div>
-            <div className="text-sm text-zayia-violet-gray">Usuárias Engajadas</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
-            <Trophy className="w-8 h-8 text-zayia-lavender mx-auto mb-2" />
-            <div className="text-2xl font-bold text-zayia-deep-violet">
-              {Math.round(totalMetrics.avgCompletion)}%
-            </div>
-            <div className="text-sm text-zayia-violet-gray">Taxa Média de Conclusão</div>
-          </div>
-          <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
-            <BarChart3 className="w-8 h-8 text-zayia-orchid mx-auto mb-2" />
             <div className="text-2xl font-bold text-zayia-deep-violet">{categories.length}</div>
             <div className="text-sm text-zayia-violet-gray">Categorias Ativas</div>
           </div>
+          <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
+            <Users className="w-8 h-8 text-zayia-soft-purple mx-auto mb-2" />
+            <div className="text-2xl font-bold text-zayia-deep-violet">—</div>
+            <div className="text-sm text-zayia-violet-gray">Ver Analytics para Métricas</div>
+          </div>
+          <div className="text-center p-4 bg-gradient-to-br from-zayia-lilac/30 to-zayia-lavender/30 rounded-xl">
+            <BarChart3 className="w-8 h-8 text-zayia-orchid mx-auto mb-2" />
+            <div className="text-2xl font-bold text-zayia-deep-violet">120</div>
+            <div className="text-sm text-zayia-violet-gray">Desafios por Categoria</div>
+          </div>
         </div>
       </div>
 
-      {/* Ranking de Categorias */}
+      {/* Categories List */}
       <div className="zayia-card p-6">
         <h3 className="text-xl font-bold text-zayia-deep-violet mb-4">
-          🏆 Ranking de Popularidade
+          🏆 Categorias Disponíveis
         </h3>
         <div className="space-y-3">
-          {categories
-            .sort((a, b) => getMetrics(b.id).totalCompletions - getMetrics(a.id).totalCompletions)
-            .map((category, index) => {
-              const metrics = getMetrics(category.id)
-              const IconComponent = category.iconComponent
-              
-              return (
-                <div key={category.id} className="flex items-center gap-4 p-3 bg-zayia-lilac/10 rounded-xl">
-                  <div className="text-2xl font-bold text-zayia-soft-purple w-8">
-                    #{index + 1}
-                  </div>
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center`}>
-                    <IconComponent className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-zayia-deep-violet">{category.label}</div>
-                    <div className="text-sm text-zayia-violet-gray">
-                      {metrics.totalCompletions.toLocaleString()} completados • {metrics.topUsers} usuárias ativas
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-zayia-soft-purple">{metrics.completionRate}%</div>
-                    <div className="text-xs text-zayia-violet-gray">Taxa de Conclusão</div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <TrendingUp className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-bold text-green-600">+{metrics.weeklyGrowth}%</span>
-                  </div>
+          {categories.map((category) => {
+            const IconComponent = getIconComponentForCategory(category.id)
+            return (
+              <div
+                key={category.id}
+                className="flex items-center gap-4 p-3 bg-zayia-lilac/10 rounded-xl cursor-pointer hover:bg-zayia-lilac/20 transition"
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center`}>
+                  <IconComponent className="w-5 h-5 text-white" />
                 </div>
-              )
-            })}
+                <div className="flex-1">
+                  <div className="font-semibold text-zayia-deep-violet">{category.label}</div>
+                  {category.description && (
+                    <div className="text-sm text-zayia-violet-gray">{category.description}</div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-zayia-soft-purple" />
+                  <span className="text-sm text-zayia-violet-gray">Ver detalhes →</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
-
     </div>
   )
 }

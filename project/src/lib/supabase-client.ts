@@ -1159,6 +1159,36 @@ export class SupabaseClient {
     }
   }
 
+  async bulkDeleteChallenges(challengeIds: string[]): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('challenges')
+        .delete()
+        .in('id', challengeIds)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error bulk deleting challenges:', error)
+      return false
+    }
+  }
+
+  async bulkUpdateChallenges(challengeIds: string[], updates: { difficulty?: string; duration_minutes?: number; points_easy?: number; points_hard?: number }): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('challenges')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .in('id', challengeIds)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error bulk updating challenges:', error)
+      return false
+    }
+  }
+
   // PERMISSION CHECKS
   async validateUserPermission(
     userId: string,
