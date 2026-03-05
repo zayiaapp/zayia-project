@@ -229,6 +229,17 @@ export interface AdminStatistics {
   lastUpdated: string
 }
 
+export interface ComparisonTrending {
+  revenuePercentage: number
+  activeUsersPercentage: number
+  cancelledUsersPercentage: number
+  churnRatePercentage: number
+}
+
+export interface AdminStatisticsWithComparison extends AdminStatistics {
+  trending: ComparisonTrending
+}
+
 export interface CommunityMessage {
   id: string
   user_id: string
@@ -2722,6 +2733,105 @@ export class SupabaseClient {
         churnRate: 0,
         todayChallengesCount: 0,
         lastUpdated: new Date().toISOString()
+      }
+    }
+  }
+
+  /**
+   * Calculate percentage change: ((current - previous) / previous) * 100
+   * Returns 0 if previous is 0 to avoid division by zero
+   */
+  private calculatePercentageChange(current: number, previous: number): number {
+    if (previous === 0) return 0
+    return Math.round(((current - previous) / previous) * 100)
+  }
+
+  /**
+   * Get daily metrics with 30-day comparison data
+   * Compares selected date metrics with metrics from 30 days prior
+   */
+  async getDailyMetricsWithComparison(date: Date): Promise<AdminStatisticsWithComparison> {
+    try {
+      // Get current date metrics
+      const currentMetrics = await this.getDailyMetrics(date)
+
+      // Calculate date 30 days ago
+      const thirtyDaysAgo = new Date(date)
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0]
+
+      // Get daily analytics for 30 days ago
+      const { data: dailyDataPrior } = await supabase
+        .from('daily_analytics')
+        .select('revenue_brl, active_users, churn_rate')
+        .eq('date', thirtyDaysAgoStr)
+        .single()
+
+      // Get cancellations for 30 days ago
+      const { data: cancellationsPrior } = await supabase
+        .from('profiles')
+        .select('id, cancelled_at')
+        .eq('subscription_status', 'cancelled')
+
+      const cancelledUsersPrior = cancellationsPrior?.filter(p => {
+        if (!p.cancelled_at) return false
+        const cancelDate = new Date(p.cancelled_at).toISOString().split('T')[0]
+        return cancelDate === thirtyDaysAgoStr
+      }).length || 0
+
+      // Get total active users count for churn calculation
+      const { count: totalUsersNow } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .eq('subscription_status', 'active')
+
+      const { count: totalUsersThen } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact' })
+        .not('subscription_status', 'eq', 'cancelled')
+
+      // Calculate comparison percentages
+      const revenuePercentage = this.calculatePercentageChange(
+        currentMetrics.revenue,
+        dailyDataPrior?.revenue_brl || 1
+      )
+
+      const activeUsersPercentage = this.calculatePercentageChange(
+        currentMetrics.activeUsers,
+        dailyDataPrior?.active_users || 1
+      )
+
+      const cancelledUsersPercentage = this.calculatePercentageChange(
+        currentMetrics.cancelledUsers,
+        cancelledUsersPrior || 1
+      )
+
+      const churnRatePercentage = this.calculatePercentageChange(
+        currentMetrics.churnRate,
+        dailyDataPrior?.churn_rate || 1
+      )
+
+      return {
+        ...currentMetrics,
+        trending: {
+          revenuePercentage,
+          activeUsersPercentage,
+          cancelledUsersPercentage,
+          churnRatePercentage
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching metrics with comparison:', error)
+      // Return current metrics with zero trending
+      const baseMetrics = await this.getDailyMetrics(date)
+      return {
+        ...baseMetrics,
+        trending: {
+          revenuePercentage: 0,
+          activeUsersPercentage: 0,
+          cancelledUsersPercentage: 0,
+          churnRatePercentage: 0
+        }
       }
     }
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   DollarSign,
   Users,
@@ -11,6 +11,7 @@ import {
   TrendingUp
 } from 'lucide-react'
 import { supabaseClient } from '../../lib/supabase-client'
+import { supabase } from '../../lib/supabase'
 
 interface MetricsData {
   monthlyRevenue: number
@@ -18,6 +19,10 @@ interface MetricsData {
   cancelledUsers: number
   churnRate: number
   todayChallenges: number
+  revenueTrend: number
+  usersTrend: number
+  cancellationsTrend: number
+  churnTrend: number
 }
 
 interface CalendarDay {
@@ -34,7 +39,11 @@ export function Dashboard2Section() {
     activeUsers: 0,
     cancelledUsers: 0,
     churnRate: 0,
-    todayChallenges: 0
+    todayChallenges: 0,
+    revenueTrend: 0,
+    usersTrend: 0,
+    cancellationsTrend: 0,
+    churnTrend: 0
   })
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
@@ -42,18 +51,22 @@ export function Dashboard2Section() {
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date())
   const [isLoading, setIsLoading] = useState(true)
 
-  // Fetch metrics for selected date
+  // Fetch metrics for selected date with comparison
   useEffect(() => {
     const fetchDailyMetrics = async () => {
       try {
         setIsLoading(true)
-        const stats = await supabaseClient.getDailyMetrics(selectedDate)
+        const stats = await supabaseClient.getDailyMetricsWithComparison(selectedDate)
         setMetrics({
           monthlyRevenue: stats.revenue,
           activeUsers: stats.activeUsers,
           cancelledUsers: stats.cancelledUsers,
           churnRate: stats.churnRate,
-          todayChallenges: 0 // Not shown in daily view
+          todayChallenges: 0, // Not shown in daily view
+          revenueTrend: stats.trending.revenuePercentage,
+          usersTrend: stats.trending.activeUsersPercentage,
+          cancellationsTrend: stats.trending.cancelledUsersPercentage,
+          churnTrend: stats.trending.churnRatePercentage
         })
       } catch (error) {
         console.error('Error fetching daily metrics:', error)
@@ -63,6 +76,49 @@ export function Dashboard2Section() {
     }
 
     fetchDailyMetrics()
+  }, [selectedDate])
+
+  // Setup real-time subscription for daily analytics updates
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('dashboard-daily-analytics')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_analytics'
+        },
+        () => {
+          // When daily_analytics changes, refetch metrics for selected date
+          supabaseClient.getDailyMetricsWithComparison(selectedDate)
+            .then(stats => {
+              setMetrics({
+                monthlyRevenue: stats.revenue,
+                activeUsers: stats.activeUsers,
+                cancelledUsers: stats.cancelledUsers,
+                churnRate: stats.churnRate,
+                todayChallenges: 0,
+                revenueTrend: stats.trending.revenuePercentage,
+                usersTrend: stats.trending.activeUsersPercentage,
+                cancellationsTrend: stats.trending.cancelledUsersPercentage,
+                churnTrend: stats.trending.churnRatePercentage
+              })
+            })
+            .catch(error => console.error('Error updating metrics on realtime:', error))
+        }
+      )
+      .subscribe()
+
+    channelRef.current = channel
+
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.unsubscribe()
+      }
+    }
   }, [selectedDate])
 
   // Gerar calendário
@@ -119,6 +175,23 @@ export function Dashboard2Section() {
       month: 'long',
       year: 'numeric'
     }).format(date)
+  }
+
+  const getTrendingColor = (percentage: number): string => {
+    if (percentage > 0) return 'text-green-500'
+    if (percentage < 0) return 'text-red-500'
+    return 'text-gray-500'
+  }
+
+  const getTrendingIcon = (percentage: number) => {
+    if (percentage > 0) return <TrendingUp className="w-4 h-4" />
+    if (percentage < 0) return <TrendingDown className="w-4 h-4" />
+    return <TrendingUp className="w-4 h-4 text-gray-500" />
+  }
+
+  const formatTrendingText = (percentage: number, label: string = '30 dias atrás'): string => {
+    const sign = percentage > 0 ? '+' : ''
+    return `${sign}${percentage}% vs ${label}`
   }
 
   const calendarDays = generateCalendar()
@@ -243,8 +316,12 @@ export function Dashboard2Section() {
             <DollarSign className="w-8 h-8 text-green-500" />
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm text-green-500">+18% este mês</span>
+            <span className={`w-4 h-4 ${getTrendingColor(metrics.revenueTrend)}`}>
+              {getTrendingIcon(metrics.revenueTrend)}
+            </span>
+            <span className={`text-sm ${getTrendingColor(metrics.revenueTrend)}`}>
+              {formatTrendingText(metrics.revenueTrend)}
+            </span>
           </div>
         </div>
 
@@ -260,8 +337,12 @@ export function Dashboard2Section() {
             <Users className="w-8 h-8 text-zayia-soft-purple" />
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm text-green-500">+12% este mês</span>
+            <span className={`w-4 h-4 ${getTrendingColor(metrics.usersTrend)}`}>
+              {getTrendingIcon(metrics.usersTrend)}
+            </span>
+            <span className={`text-sm ${getTrendingColor(metrics.usersTrend)}`}>
+              {formatTrendingText(metrics.usersTrend)}
+            </span>
           </div>
         </div>
 
@@ -277,8 +358,12 @@ export function Dashboard2Section() {
             <UserX className="w-8 h-8 text-red-500" />
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingDown className="w-4 h-4 text-red-500" />
-            <span className="text-sm text-red-500">+5% este mês</span>
+            <span className={`w-4 h-4 ${getTrendingColor(metrics.cancellationsTrend)}`}>
+              {getTrendingIcon(metrics.cancellationsTrend)}
+            </span>
+            <span className={`text-sm ${getTrendingColor(metrics.cancellationsTrend)}`}>
+              {formatTrendingText(metrics.cancellationsTrend)}
+            </span>
           </div>
         </div>
 
@@ -294,8 +379,12 @@ export function Dashboard2Section() {
             <TrendingDown className="w-8 h-8 text-orange-500" />
           </div>
           <div className="mt-2 flex items-center gap-1">
-            <TrendingDown className="w-4 h-4 text-orange-500" />
-            <span className="text-sm text-orange-500">+0.3% este mês</span>
+            <span className={`w-4 h-4 ${getTrendingColor(metrics.churnTrend)}`}>
+              {getTrendingIcon(metrics.churnTrend)}
+            </span>
+            <span className={`text-sm ${getTrendingColor(metrics.churnTrend)}`}>
+              {formatTrendingText(metrics.churnTrend)}
+            </span>
           </div>
         </div>
       </div>
