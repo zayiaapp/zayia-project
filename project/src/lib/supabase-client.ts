@@ -852,11 +852,11 @@ export class SupabaseClient {
       // Check if user already completed this challenge today
       const today = new Date().toISOString().split('T')[0]
       const { data: existingCompletion, error: checkError } = await supabase
-        .from('user_progress')
+        .from('challenge_completions')
         .select('id')
         .eq('user_id', userId)
         .eq('challenge_id', challengeId)
-        .gte('created_at', `${today}T00:00:00`)
+        .gte('completed_at', `${today}T00:00:00`)
         .limit(1)
 
       if (checkError) throw checkError
@@ -873,15 +873,13 @@ export class SupabaseClient {
       const points = challenge.difficulty === 'facil' ? challenge.points_easy : challenge.points_hard
 
       // Record challenge completion
-      const { error: insertError } = await supabase.from('user_progress').insert({
+      const { error: insertError } = await supabase.from('challenge_completions').insert({
         user_id: userId,
         challenge_id: challengeId,
-        challenge_category: challenge.category_id,
-        challenge_difficulty: challenge.difficulty,
+        category_id: challenge.category_id,
+        difficulty: challenge.difficulty,
         points_earned: points,
-        proof_url: proofUrl,
-        duration_minutes: challenge.duration_minutes || 15,
-        created_at: new Date().toISOString()
+        completed_at: new Date().toISOString()
       })
 
       if (insertError) throw insertError
@@ -2494,7 +2492,7 @@ export class SupabaseClient {
 
       // Fetch challenges completed today
       const { data: todayChallenges, error: challengesError } = await supabase
-        .from('user_progress')
+        .from('challenge_completions')
         .select('id, completed_at')
         .gte('completed_at', `${todayDate}T00:00:00`)
         .lte('completed_at', `${todayDate}T23:59:59`)
@@ -2735,8 +2733,8 @@ export class SupabaseClient {
       // Add earned status to each badge
       return allBadges?.map(badge => ({
         ...badge,
-        isEarned: earnedMap.has(badge.id),
-        earnedAt: earnedMap.get(badge.id) || null
+        isEarned: earnedMap.has(badge.badge_id),
+        earnedAt: earnedMap.get(badge.badge_id) || null
       })) || []
     } catch (error) {
       console.error('❌ Error getting badges with user status:', error)
@@ -2900,11 +2898,15 @@ export class SupabaseClient {
       }
 
       if (newLevel > currentLevel) {
-        // Update level locally (for now, using localStorage)
-        localStorage.setItem('user_level', newLevel.toString())
+        // Update level in Supabase
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ level: newLevel, updated_at: new Date().toISOString() })
+          .eq('id', userId)
 
-        // TODO: When EPIC-001 is done, update level in profile via Supabase
-        // await supabase.from('profiles').update({ level: newLevel }).eq('id', userId)
+        if (updateError) {
+          console.error('❌ Error updating level in Supabase:', updateError)
+        }
 
         // Award bonus points
         const newTotalPoints = currentPoints + totalBonus
@@ -3008,6 +3010,14 @@ export class SupabaseClient {
       const globalMedals = BADGES.filter(b => b.category === 'Global')
       const newUnlocks: string[] = []
 
+      // Get total challenge completions for medal unlock criteria
+      const { count: totalChallengesCompleted } = await supabase
+        .from('challenge_completions')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId)
+
+      const completionCount = totalChallengesCompleted || 0
+
       // Check each global medal requirement
       for (const medal of globalMedals) {
         // Skip if already earned
@@ -3020,20 +3030,20 @@ export class SupabaseClient {
 
         // Check requirement type based on medal ID
         if (medal.id === 'global_ovo') {
-          // Unlock first medal in any category
-          shouldUnlock = earnedMedalIds.length >= 1
+          // Unlock first medal after 1 challenge completed
+          shouldUnlock = completionCount >= 1
         } else if (medal.id === 'global_lagarta') {
           // 20 total challenges completed
-          shouldUnlock = earnedMedalIds.length >= 20
+          shouldUnlock = completionCount >= 20
         } else if (medal.id === 'global_crisalida') {
           // 50 total challenges completed
-          shouldUnlock = earnedMedalIds.length >= 50
+          shouldUnlock = completionCount >= 50
         } else if (medal.id === 'global_borboleta_emergente') {
           // 100 total challenges completed
-          shouldUnlock = earnedMedalIds.length >= 100
+          shouldUnlock = completionCount >= 100
         } else if (medal.id === 'global_borboleta_radiante') {
           // 840 total challenges completed (legendary)
-          shouldUnlock = earnedMedalIds.length >= 840
+          shouldUnlock = completionCount >= 840
         }
 
         if (shouldUnlock) {
@@ -3080,20 +3090,20 @@ export class SupabaseClient {
       // Get user's current points from Supabase (primary source, not localStorage)
       const { data: userData, error: userError } = await supabase
         .from('profiles')
-        .select('total_points')
+        .select('points')
         .eq('id', userId)
         .single()
 
       if (userError) throw userError
 
-      const userPoints = userData?.total_points || 0
+      const userPoints = userData?.points || 0
 
-      // Get all profiles for ranking (ordered by total_points descending)
+      // Get all profiles for ranking (ordered by points descending)
       const { data: allProfiles, error } = await supabase
         .from('profiles')
-        .select('id, total_points')
-        .not('total_points', 'is', null)
-        .order('total_points', { ascending: false })
+        .select('id, points')
+        .not('points', 'is', null)
+        .order('points', { ascending: false })
 
       if (error) throw error
 
@@ -3327,20 +3337,20 @@ export class SupabaseClient {
       // Get current total from profile
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('total_points')
+        .select('points')
         .eq('id', userId)
         .single()
 
       if (profileError) throw profileError
 
-      const currentTotal = profileData?.total_points || 0
+      const currentTotal = profileData?.points || 0
       const newTotal = Math.max(0, currentTotal + amount)
 
       // Update profile with new total
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          total_points: newTotal,
+          points: newTotal,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
@@ -3475,12 +3485,12 @@ export class SupabaseClient {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('total_points')
+        .select('points')
         .eq('id', userId)
         .single()
 
       if (error) throw error
-      return data?.total_points || 0
+      return data?.points || 0
     } catch (error) {
       console.error(`❌ Error fetching total points for user ${userId}:`, error)
       return 0
