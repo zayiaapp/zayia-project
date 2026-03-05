@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Eye, Ban, Trash2, Archive } from 'lucide-react'
-import { MessageReport } from '../../../../lib/community-data-mock'
+import { type MessageReport } from '../../../../lib/supabase-client'
 
 interface ReportsListModalProps {
   isOpen: boolean
@@ -12,7 +12,7 @@ interface ReportsListModalProps {
   onArchive: (reportId: string) => void
 }
 
-const REASON_LABELS = {
+const REASON_LABELS: Record<string, string> = {
   disrespectful: 'Desrespeitosa/Agressiva',
   inappropriate: 'Conteúdo inadequado',
   spam: 'Spam',
@@ -76,7 +76,7 @@ export function ReportsListModal({
                       <div className="mb-2">
                         <p className="text-xs text-gray-500 font-medium mb-1">Mensagem:</p>
                         <p className="text-sm text-gray-700 line-clamp-2 bg-gray-50 p-2 rounded border border-gray-200">
-                          "{report.messageContent}"
+                          "{report.message?.content || '—'}"
                         </p>
                       </div>
 
@@ -84,26 +84,26 @@ export function ReportsListModal({
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                         <div>
                           <p className="text-gray-500 font-medium">Enviado por</p>
-                          <p className="text-gray-800">{report.messageSenderName}</p>
+                          <p className="text-gray-800">{report.message?.user_profile?.full_name || 'Desconhecido'}</p>
                         </div>
 
                         <div>
                           <p className="text-gray-500 font-medium">Reportado por</p>
                           <p className="text-gray-800">
-                            {report.reportedByName ? report.reportedByName : 'Anônimo'}
+                            {report.reporter?.full_name || 'Anônimo'}
                           </p>
                         </div>
 
                         <div>
                           <p className="text-gray-500 font-medium">Motivo</p>
                           <p className="text-gray-800">
-                            {REASON_LABELS[report.reason]}
+                            {REASON_LABELS[report.reason] || report.reason}
                           </p>
                         </div>
 
                         <div>
                           <p className="text-gray-500 font-medium">Data</p>
-                          <p className="text-gray-800">{formatDate(report.createdAt)}</p>
+                          <p className="text-gray-800">{formatDate(report.created_at)}</p>
                         </div>
                       </div>
 
@@ -120,7 +120,7 @@ export function ReportsListModal({
                   {/* Actions */}
                   <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
                     <button
-                      onClick={() => onViewContext(report.messageId)}
+                      onClick={() => onViewContext(report.message_id)}
                       className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition flex items-center gap-1"
                     >
                       <Eye size={14} />
@@ -128,7 +128,7 @@ export function ReportsListModal({
                     </button>
 
                     <button
-                      onClick={() => onBan(report.messageId)}
+                      onClick={() => onBan(report.message_id)}
                       className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition flex items-center gap-1"
                     >
                       <Ban size={14} />
@@ -136,7 +136,7 @@ export function ReportsListModal({
                     </button>
 
                     <button
-                      onClick={() => onDelete(report.messageId)}
+                      onClick={() => onDelete(report.message_id)}
                       className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition flex items-center gap-1"
                     >
                       <Trash2 size={14} />

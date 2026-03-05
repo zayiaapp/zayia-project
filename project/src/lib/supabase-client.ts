@@ -234,7 +234,7 @@ export interface CommunityBan {
   id: string
   user_id: string
   ban_number: number
-  ban_duration: 'active' | '1_day' | '7_days' | 'permanent'
+  ban_duration: '1_day' | '7_days' | 'permanent'
   reason?: string
   banned_at: string
   expires_at?: string
@@ -251,6 +251,9 @@ export interface MessageReport {
   status: 'pending' | 'resolved' | 'archived'
   created_at: string
   updated_at: string
+  // Joined fields from getReports()
+  message?: { id: string; content: string; user_id: string; user_profile?: { id: string; full_name: string } }
+  reporter?: { full_name: string }
 }
 
 export interface CommunityRules {
@@ -2004,7 +2007,7 @@ export class SupabaseClient {
     try {
       let query = supabase
         .from('message_reports')
-        .select('*, message:community_messages(id, content, user_id, user_profile:profiles(id, full_name))')
+        .select('*, message:community_messages(id, content, user_id, user_profile:profiles(id, full_name)), reporter:profiles!reported_by(full_name)')
 
       if (status) {
         query = query.eq('status', status)
@@ -2013,9 +2016,40 @@ export class SupabaseClient {
       const { data, error } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
-      return data || []
+      return (data || []) as MessageReport[]
     } catch (error) {
       console.error('Error fetching reports:', error)
+      return []
+    }
+  }
+
+  async updateReportStatus(reportId: string, status: 'pending' | 'resolved' | 'archived'): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('message_reports')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', reportId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error updating report status:', error)
+      return false
+    }
+  }
+
+  async getUserBanHistory(userId: string): Promise<CommunityBan[]> {
+    try {
+      const { data, error } = await supabase
+        .from('community_bans')
+        .select('*')
+        .eq('user_id', userId)
+        .order('banned_at', { ascending: false })
+
+      if (error) throw error
+      return (data || []) as CommunityBan[]
+    } catch (error) {
+      console.error('Error fetching ban history:', error)
       return []
     }
   }

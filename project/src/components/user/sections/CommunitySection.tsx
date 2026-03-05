@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { supabaseClient, type CommunityMessage } from '../../../lib/supabase-client'
-import { CommunityDataMock, type MessageReport } from '../../../lib/community-data-mock'
+import { supabaseClient, type CommunityMessage, type MessageReport, type CommunityBan } from '../../../lib/supabase-client'
 import { MessageCircle } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
 import { Toast } from '../../ui/Toast'
@@ -64,8 +63,18 @@ export function CommunitySection() {
   const [messageForReport, setMessageForReport] = useState<{ id: string; content: string; senderName: string } | null>(null)
   const [reportsListOpen, setReportsListOpen] = useState(false)
   const [allReports, setAllReports] = useState<MessageReport[]>([])
+  const [banHistory, setBanHistory] = useState<CommunityBan[]>([])
   const [reportToastMessage, setReportToastMessage] = useState<string | null>(null)
   const [reportCount, setReportCount] = useState(0)
+
+  // Load ban history when a user is selected for moderation
+  useEffect(() => {
+    if (!selectedUserForBan?.id) {
+      setBanHistory([])
+      return
+    }
+    supabaseClient.getUserBanHistory(selectedUserForBan.id).then(setBanHistory)
+  }, [selectedUserForBan?.id])
 
   const handleSendMessage = async (content: string) => {
     if (!user || !profile) return
@@ -192,15 +201,13 @@ export function CommunitySection() {
 
   const handleReportAction = async (action: 'ban' | 'delete' | 'archive', reportId: string, messageId?: string) => {
     if (action === 'archive') {
-      const success = CommunityDataMock.updateReportStatus(reportId, 'resolved')
-      if (success) {
-        console.log('✅ Report archived')
-      }
+      await supabaseClient.updateReportStatus(reportId, 'resolved')
+      setAllReports(prev => prev.filter(r => r.id !== reportId))
     } else if (action === 'delete' && messageId) {
       const success = await deleteMessageAction(messageId, 'Deletada por report')
       if (success) {
-        CommunityDataMock.updateReportStatus(reportId, 'resolved')
-        console.log('✅ Message deleted and report archived')
+        await supabaseClient.updateReportStatus(reportId, 'resolved')
+        setAllReports(prev => prev.filter(r => r.id !== reportId))
       }
     } else if (action === 'ban' && messageId) {
       const message = messages.find(m => m.id === messageId)
@@ -212,13 +219,16 @@ export function CommunitySection() {
           content: message.content
         })
         setQuickBanModalOpen(true)
-        // Marcar report como resolvido após banir
-        const success = CommunityDataMock.updateReportStatus(reportId, 'resolved')
-        if (success) {
-          console.log('✅ Report marked as resolved')
-        }
+        await supabaseClient.updateReportStatus(reportId, 'resolved')
+        setAllReports(prev => prev.filter(r => r.id !== reportId))
       }
     }
+  }
+
+  const handleOpenReportsList = async () => {
+    const reports = await supabaseClient.getReports('pending')
+    setAllReports(reports)
+    setReportsListOpen(true)
   }
 
   const isAdmin = profile?.role === 'ceo'
@@ -288,7 +298,7 @@ export function CommunitySection() {
         <div className="flex items-center gap-2">
           {isAdmin && reportCount > 0 && (
             <button
-              onClick={() => setReportsListOpen(true)}
+              onClick={handleOpenReportsList}
               className="relative px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2"
             >
               <span>📊 Reports</span>
@@ -371,7 +381,7 @@ export function CommunitySection() {
             userName={selectedUserForBan.name}
             userEmail={selectedUserForBan.email}
             userAvatar={selectedUserForBan.avatar}
-            banHistory={CommunityDataMock.getUserBanHistory(selectedUserForBan.id)}
+            banHistory={banHistory}
             onClose={() => setSelectedUserForBan(null)}
             onBan={handleBanUser}
           />
@@ -426,8 +436,8 @@ export function CommunitySection() {
           reports={allReports}
           onClose={() => setReportsListOpen(false)}
           onViewContext={() => {}} // TODO: implementar scroll para mensagem
-          onBan={(messageId) => handleReportAction('ban', allReports.find(r => r.messageId === messageId)?.id || '', messageId)}
-          onDelete={(messageId) => handleReportAction('delete', allReports.find(r => r.messageId === messageId)?.id || '', messageId)}
+          onBan={(messageId) => handleReportAction('ban', allReports.find(r => r.message_id === messageId)?.id || '', messageId)}
+          onDelete={(messageId) => handleReportAction('delete', allReports.find(r => r.message_id === messageId)?.id || '', messageId)}
           onArchive={(reportId) => handleReportAction('archive', reportId)}
         />
       )}

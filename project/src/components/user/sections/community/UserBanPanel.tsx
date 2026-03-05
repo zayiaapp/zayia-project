@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, AlertTriangle } from 'lucide-react'
-import { CommunityBan } from '../../../../lib/community-data-mock'
+import { type CommunityBan } from '../../../../lib/supabase-client'
 
 interface UserBanPanelProps {
   userId: string
@@ -25,7 +25,7 @@ export function UserBanPanel({
   const [banReason, setBanReason] = useState('')
   const [isConfirming, setIsConfirming] = useState(false)
 
-  const nextBanNumber = banHistory.length + 1
+  const nextBanNumber = (banHistory.length) + 1
 
   const getBanMessage = () => {
     switch (nextBanNumber) {
@@ -89,14 +89,14 @@ export function UserBanPanel({
         <div className="p-4 border-b border-gray-200">
           <h4 className="font-semibold text-gray-900 mb-2">📋 Histórico de Bans</h4>
           <div className="space-y-2">
-            {banHistory.map((ban, idx) => (
+            {banHistory.map((ban) => (
               <div key={ban.id} className="text-sm bg-gray-50 p-2 rounded">
                 <p className="font-medium text-gray-900">
-                  Ban #{ban.banNumber} - {ban.banDuration === 'permanent' ? '🔒 Permanente' : `${ban.banDuration.replace('_', ' ')}`}
+                  Ban #{ban.ban_number} - {ban.ban_duration === 'permanent' ? '🔒 Permanente' : `${ban.ban_duration.replace('_', ' ')}`}
                 </p>
                 <p className="text-gray-600 text-xs mt-1">{ban.reason}</p>
                 <p className="text-gray-500 text-xs mt-1">
-                  {new Date(ban.bannedAt).toLocaleDateString('pt-BR')}
+                  {new Date(ban.banned_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
             ))}
