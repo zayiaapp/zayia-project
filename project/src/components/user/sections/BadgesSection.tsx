@@ -8,11 +8,6 @@ import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { MedalCarousel } from './badges/MedalCarousel'
 import { MedalDetailModal } from '../modals/MedalDetailModal'
 
-// Map badge_id → 3D React component (from admin AwardsSection visual)
-const BADGE_ICON_MAP = Object.fromEntries(BADGES.map(b => [b.id, b.icon]))
-// Map level_number → 3D React component
-const LEVEL_ICON_MAP = Object.fromEntries(LEVELS.map(l => [l.level, l.icon]))
-
 interface Medal {
   id: string
   name: string
@@ -25,129 +20,106 @@ interface Medal {
   isEarned: boolean
 }
 
+// Same grouping as AwardsSection admin — uses badge id prefix
+const medalsByCategory = {
+  org:   BADGES.filter(b => b.id.startsWith('org_')),
+  saude: BADGES.filter(b => b.id.startsWith('saude_')),
+  ie:    BADGES.filter(b => b.id.startsWith('ie_')),
+  com:   BADGES.filter(b => b.id.startsWith('com_')),
+  rot:   BADGES.filter(b => b.id.startsWith('rot_')),
+  lead:  BADGES.filter(b => b.id.startsWith('lead_')),
+  inov:  BADGES.filter(b => b.id.startsWith('inov_')),
+}
+
+const globalMedals = BADGES.filter(b => b.category === 'Global')
+
+const categories = [
+  { key: 'org',   name: 'Rotina & Organização',                    icon: '📚', badges: medalsByCategory.org   },
+  { key: 'saude', name: 'Corpo & Saúde',                           icon: '💪', badges: medalsByCategory.saude },
+  { key: 'ie',    name: 'Mindfulness & Emoções',                   icon: '🧘', badges: medalsByCategory.ie    },
+  { key: 'com',   name: 'Relacionamentos & Comunicação',           icon: '💬', badges: medalsByCategory.com   },
+  { key: 'rot',   name: 'Autoestima & Autocuidado',                icon: '💎', badges: medalsByCategory.rot   },
+  { key: 'lead',  name: 'Carreira e Desenvolvimento Profissional', icon: '💼', badges: medalsByCategory.lead  },
+  { key: 'inov',  name: 'Digital Detox',                           icon: '📱', badges: medalsByCategory.inov  },
+]
+
 export function BadgesSection() {
   const { profile } = useAuth()
-  const [badges, setBadges] = useState<any[]>([])
-  const [levels, setLevels] = useState<any[]>([])
   const [earnedBadgeIds, setEarnedBadgeIds] = useState<string[]>([])
-  const [currentPoints, setCurrentPoints] = useState(0)
   const [selectedMedal, setSelectedMedal] = useState<Medal | null>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
-  const [isLoadingBadges, setIsLoadingBadges] = useState(true)
 
   // Filters
   const [rarityFilter, setRarityFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'earned' | 'locked'>('all')
   const [sortBy, setSortBy] = useState<'name' | 'date'>('name')
 
-  // Load badges and levels from Supabase on mount
-  useEffect(() => {
-    const loadBadgesAndLevels = async () => {
-      try {
-        setIsLoadingBadges(true)
-        const [badgesData, levelsData] = await Promise.all([
-          supabaseClient.getAllBadges(),
-          supabaseClient.getAllLevels()
-        ])
-        // Enrich with 3D icon components (same visuals as admin AwardsSection)
-        const enrichedBadges = badgesData.map((b: any) => ({
-          ...b,
-          icon: BADGE_ICON_MAP[b.badge_id] ?? b.icon,
-        }))
-        const enrichedLevels = levelsData.map((l: any) => ({
-          ...l,
-          icon: LEVEL_ICON_MAP[l.level_number] ?? l.icon,
-        }))
-        setBadges(enrichedBadges)
-        setLevels(enrichedLevels)
-      } catch (error) {
-        console.error('❌ Error loading badges and levels:', error)
-        // Fallback: show empty state
-        setBadges([])
-        setLevels([])
-      } finally {
-        setIsLoadingBadges(false)
-      }
-    }
+  const currentPoints = profile?.points || 0
 
-    loadBadgesAndLevels()
-  }, [])
-
-  // Carregar dados ao montar
+  // Load earned badge IDs from localStorage (synced from Supabase via medals-unlock)
   useEffect(() => {
-    const earned = getEarnedBadges()
-    setEarnedBadgeIds(earned)
-    setCurrentPoints(profile?.points || parseInt(localStorage.getItem('user_points') || '0', 10))
+    setEarnedBadgeIds(getEarnedBadges())
   }, [profile?.points])
 
-  // ✅ Listener para atualizar quando medalhas mudam (local)
+  // Listener: update when medals change locally
   useEffect(() => {
-    const handleMedalsUpdated = () => {
-      const earned = getEarnedBadges()
-      setEarnedBadgeIds(earned)
-    }
-    window.addEventListener('medalsUpdated', handleMedalsUpdated)
-    return () => window.removeEventListener('medalsUpdated', handleMedalsUpdated)
+    const handler = () => setEarnedBadgeIds(getEarnedBadges())
+    window.addEventListener('medalsUpdated', handler)
+    return () => window.removeEventListener('medalsUpdated', handler)
   }, [])
 
-  // ✅ Sincronizar medalhas com Supabase em tempo real
+  // Sync earned medals from Supabase + real-time listener
   useEffect(() => {
     if (!profile?.id) return
-
     let subscription: any = null
 
     const initSync = async () => {
       try {
-        const medals = await supabaseClient.getUserEarnedMedals(profile.id)
-        if (medals.length > 0) {
-          console.log('✅ Badges synced from Supabase:', medals)
-        }
+        await supabaseClient.getUserEarnedMedals(profile.id)
       } catch (error) {
         console.error('Error syncing badges from Supabase:', error)
       }
 
-      // Setup real-time listener
       subscription = supabase
         .channel(`badges-changes-${profile.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'user_earned_badges',
-            filter: `user_id=eq.${profile.id}`
-          },
-          async () => {
-            try {
-              await supabaseClient.getUserEarnedMedals(profile.id)
-              console.log('🔄 Badges real-time update triggered')
-            } catch (error) {
-              console.error('Error updating badges:', error)
-            }
-          }
-        )
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'user_earned_badges',
+          filter: `user_id=eq.${profile.id}`,
+        }, () => {
+          setEarnedBadgeIds(getEarnedBadges())
+        })
         .subscribe()
     }
 
     initSync()
-
-    return () => {
-      if (subscription) subscription.unsubscribe()
-    }
+    return () => { if (subscription) subscription.unsubscribe() }
   }, [profile?.id])
 
-  // ✅ Listener para atualizar quando pontos mudam
+  // Listener: update points display
   useEffect(() => {
-    const handlePointsUpdated = () => {
-      setCurrentPoints(parseInt(localStorage.getItem('user_points') || '0', 10))
-    }
-    window.addEventListener('pointsUpdated', handlePointsUpdated)
-    return () => window.removeEventListener('pointsUpdated', handlePointsUpdated)
+    const handler = () => setEarnedBadgeIds(getEarnedBadges())
+    window.addEventListener('pointsUpdated', handler)
+    return () => window.removeEventListener('pointsUpdated', handler)
   }, [])
 
-  // Handle medal click to show detail modal
+  // Load filters from localStorage on mount
+  useEffect(() => {
+    setRarityFilter(localStorage.getItem('medals-filter-rarity') || 'all')
+    setStatusFilter((localStorage.getItem('medals-filter-status') || 'all') as 'all' | 'earned' | 'locked')
+    setSortBy((localStorage.getItem('medals-sort-by') || 'name') as 'name' | 'date')
+  }, [])
+
+  // Save filters to localStorage
+  useEffect(() => {
+    localStorage.setItem('medals-filter-rarity', rarityFilter)
+    localStorage.setItem('medals-filter-status', statusFilter)
+    localStorage.setItem('medals-sort-by', sortBy)
+  }, [rarityFilter, statusFilter, sortBy])
+
   const handleMedalClick = (badge: any, earned: boolean) => {
-    const medal: Medal = {
+    setSelectedMedal({
       id: badge.id,
       name: badge.name,
       icon: badge.icon,
@@ -157,63 +129,8 @@ export function BadgesSection() {
       rarity: badge.rarity,
       isEarned: earned,
       unlockDate: earned ? new Date().toLocaleDateString('pt-BR') : undefined,
-    }
-    setSelectedMedal(medal)
+    })
     setShowDetailModal(true)
-  }
-
-  // Save filters to localStorage
-  useEffect(() => {
-    localStorage.setItem('medals-filter-rarity', rarityFilter)
-    localStorage.setItem('medals-filter-status', statusFilter)
-    localStorage.setItem('medals-sort-by', sortBy)
-  }, [rarityFilter, statusFilter, sortBy])
-
-  // Load filters from localStorage on mount
-  useEffect(() => {
-    const savedRarity = localStorage.getItem('medals-filter-rarity') || 'all'
-    const savedStatus = (localStorage.getItem('medals-filter-status') || 'all') as 'all' | 'earned' | 'locked'
-    const savedSort = (localStorage.getItem('medals-sort-by') || 'name') as 'name' | 'date'
-    setRarityFilter(savedRarity)
-    setStatusFilter(savedStatus)
-    setSortBy(savedSort)
-  }, [])
-
-  // ✅ Agrupar medalhas por CATEGORIA REAL
-  const medalsByCategory = {
-    'org_iniciante': badges.filter(b => b.badge_id?.includes('org_')),
-    'saude': badges.filter(b => b.badge_id?.includes('saude_')),
-    'ie_': badges.filter(b => b.badge_id?.includes('ie_')),
-    'com_': badges.filter(b => b.badge_id?.includes('com_')),
-    'rot_': badges.filter(b => b.badge_id?.includes('rot_')),
-    'lead_': badges.filter(b => b.badge_id?.includes('lead_')),
-    'inov_': badges.filter(b => b.badge_id?.includes('inov_')),
-  }
-
-  // ✅ Separar medalhas globais
-  const globalMedals = badges.filter(b => b.category === 'Global')
-
-  // ✅ Mapear categorias com ícones e nomes
-  const categories = [
-    { key: 'org_iniciante', name: 'Rotina & Organização', icon: '📚', badges: medalsByCategory['org_iniciante'] },
-    { key: 'saude', name: 'Corpo & Saúde', icon: '💪', badges: medalsByCategory['saude'] },
-    { key: 'ie_', name: 'Mindfulness & Emoções', icon: '🧘', badges: medalsByCategory['ie_'] },
-    { key: 'com_', name: 'Relacionamentos & Comunicação', icon: '💬', badges: medalsByCategory['com_'] },
-    { key: 'rot_', name: 'Autoestima & Autocuidado', icon: '💎', badges: medalsByCategory['rot_'] },
-    { key: 'lead_', name: 'Carreira e Desenvolvimento Profissional', icon: '💼', badges: medalsByCategory['lead_'] },
-    { key: 'inov_', name: 'Digital Detox', icon: '📱', badges: medalsByCategory['inov_'] },
-  ]
-
-  // Show loading state while badges/levels are loading
-  if (isLoadingBadges) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-zayia-purple"></div>
-          <p className="text-zayia-violet-gray mt-4">Carregando medalhas...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -235,33 +152,26 @@ export function BadgesSection() {
         </p>
       </div>
 
-      {/* Filters and Sort */}
+      {/* Filters */}
       <div className="zayia-card p-4 bg-zayia-lilac/10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Rarity Filter */}
           <div>
-            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">
-              Raridade
-            </label>
+            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">Raridade</label>
             <select
               value={rarityFilter}
               onChange={(e) => setRarityFilter(e.target.value)}
               className="w-full px-3 py-2 border border-zayia-lilac/30 rounded-lg text-sm bg-white text-zayia-deep-violet focus:outline-none focus:border-zayia-purple"
             >
               <option value="all">Todas</option>
-              <option value="comum">Comum</option>
-              <option value="incomum">Incomum</option>
-              <option value="raro">Raro</option>
-              <option value="épico">Épico</option>
-              <option value="lendária">Lendária</option>
+              <option value="common">Comum</option>
+              <option value="uncommon">Incomum</option>
+              <option value="rare">Raro</option>
+              <option value="epic">Épico</option>
+              <option value="legendary">Lendária</option>
             </select>
           </div>
-
-          {/* Status Filter */}
           <div>
-            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">
-              Status
-            </label>
+            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">Status</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'all' | 'earned' | 'locked')}
@@ -272,12 +182,8 @@ export function BadgesSection() {
               <option value="locked">Bloqueadas</option>
             </select>
           </div>
-
-          {/* Sort By */}
           <div>
-            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">
-              Ordenar
-            </label>
+            <label className="text-xs font-semibold text-zayia-violet-gray block mb-2">Ordenar</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as 'name' | 'date')}
@@ -287,15 +193,9 @@ export function BadgesSection() {
               <option value="date">Data Desbloqueio</option>
             </select>
           </div>
-
-          {/* Clear Filters */}
           <div className="flex items-end">
             <button
-              onClick={() => {
-                setRarityFilter('all')
-                setStatusFilter('all')
-                setSortBy('name')
-              }}
+              onClick={() => { setRarityFilter('all'); setStatusFilter('all'); setSortBy('name') }}
               className="w-full px-3 py-2 bg-zayia-soft-purple/20 hover:bg-zayia-soft-purple/30 text-zayia-purple font-semibold rounded-lg transition text-sm"
             >
               Limpar Filtros
@@ -308,81 +208,70 @@ export function BadgesSection() {
       <div className="zayia-card p-6 text-center bg-gradient-to-r from-zayia-lilac/30 to-zayia-lavender/30">
         <Gift className="w-12 h-12 text-zayia-orchid mx-auto mb-3" />
         <div className="text-3xl font-bold zayia-gradient-text mb-2">
-          {(profile?.points || 0).toLocaleString()}
+          {currentPoints.toLocaleString()}
         </div>
         <div className="text-sm text-zayia-violet-gray">Pontos Totais Acumulados</div>
       </div>
 
-      {/* ===== CARROSSEL: TODOS OS NÍVEIS ===== */}
+      {/* ===== CARROSSEL: NÍVEIS (10) ===== */}
       <MedalCarousel
-        medals={levels.map(level => ({
-          id: `level-${level.level_number}`,
+        medals={LEVELS.map(level => ({
+          id: `level-${level.level}`,
           name: level.name,
           icon: level.icon,
-          requirement: level.level_number,
-          points: level.points_required,
-          levelNumber: level.level_number,
-          isEarned: currentPoints >= level.points_required,
+          requirement: level.level,
+          points: level.pointsRequired,
+          levelNumber: level.level,
+          isEarned: currentPoints >= level.pointsRequired,
         }))}
         categoryName="Todos os Níveis"
         categoryIcon="👑"
         onMedalClick={(medal) => handleMedalClick(medal, medal.isEarned)}
       />
 
-      {/* ===== SEÇÃO: MEDALHAS POR CATEGORIA ===== */}
+      {/* ===== MEDALHAS POR CATEGORIA (7 × 4 = 28) ===== */}
       <div>
         <h2 className="text-xl font-bold text-zayia-deep-violet mb-6">
           🎨 Medalhas por Categoria
         </h2>
-
-        {categories.map(({ key, name, icon, badges }) => {
-          const sortedMedals = badges.sort((a: any, b: any) => (a.requirement || 0) - (b.requirement || 0))
-
-          return sortedMedals.length > 0 ? (
-            <MedalCarousel
-              key={key}
-              medals={sortedMedals.map((medal: any) => ({
-                id: medal.id,
-                name: medal.name,
-                icon: medal.icon,
-                requirement: medal.requirement || 0,
-                points: medal.points || 50,
-                isEarned: earnedBadgeIds.includes(medal.id),
-              }))}
-              categoryName={name}
-              categoryIcon={icon}
-              onMedalClick={(medal) => {
-                const badge = badges.find(b => b.id === medal.id)
-                if (badge) {
-                  handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
-                }
-              }}
-            />
-          ) : null
-        })}
+        {categories.map(({ key, name, icon, badges }) => (
+          <MedalCarousel
+            key={key}
+            medals={badges.map(medal => ({
+              id: medal.id,
+              name: medal.name,
+              icon: medal.icon,
+              requirement: medal.requirement,
+              points: medal.points,
+              isEarned: earnedBadgeIds.includes(medal.id),
+            }))}
+            categoryName={name}
+            categoryIcon={icon}
+            onMedalClick={(medal) => {
+              const badge = badges.find(b => b.id === medal.id)
+              if (badge) handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
+            }}
+          />
+        ))}
       </div>
 
-      {/* ===== SEÇÃO: MEDALHAS ESPECIAIS (GLOBAIS) - CARROSSEL ===== */}
-      {globalMedals.length > 0 && (
-        <MedalCarousel
-          medals={globalMedals.map((medal: any) => ({
-            id: medal.id,
-            name: medal.name,
-            icon: medal.icon,
-            requirement: medal.requirement || 0,
-            points: medal.points || 50,
-            isEarned: earnedBadgeIds.includes(medal.id),
-          }))}
-          categoryName="Medalhas Especiais"
-          categoryIcon="🦋"
-          onMedalClick={(medal) => {
-            const badge = globalMedals.find(b => b.id === medal.id)
-            if (badge) {
-              handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
-            }
-          }}
-        />
-      )}
+      {/* ===== MEDALHAS GLOBAIS (5) ===== */}
+      <MedalCarousel
+        medals={globalMedals.map(medal => ({
+          id: medal.id,
+          name: medal.name,
+          icon: medal.icon,
+          requirement: medal.requirement,
+          points: medal.points,
+          isEarned: earnedBadgeIds.includes(medal.id),
+        }))}
+        categoryName="Medalhas Especiais"
+        categoryIcon="🦋"
+        onMedalClick={(medal) => {
+          const badge = globalMedals.find(b => b.id === medal.id)
+          if (badge) handleMedalClick(badge, earnedBadgeIds.includes(medal.id))
+        }}
+      />
 
       {/* Motivação */}
       <div className="zayia-card p-6 bg-gradient-to-r from-zayia-cream to-zayia-lilac/20">
