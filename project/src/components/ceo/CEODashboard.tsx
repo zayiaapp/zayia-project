@@ -72,7 +72,7 @@ function formatRelativeTime(isoString: string): string {
 
 export function CEODashboard() {
   const { profile, signOut } = useAuth()
-  const [activeSection, setActiveSection] = useState('dashboard')
+  const [activeSection, setActiveSection] = useState('dashboard2')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [metrics, setMetrics] = useState({
     totalUsers: 0,
@@ -144,7 +144,7 @@ export function CEODashboard() {
   }
 
   const sections = [
-    { id: 'dashboard2', label: 'Dashboard 2.0', icon: TrendingUp },
+    { id: 'dashboard2', label: 'Dashboard', icon: TrendingUp },
     { id: 'guerreiras', label: 'Guerreiras', icon: Award },
     { id: 'quizz', label: 'Quizz', icon: Brain },
     { id: 'community', label: 'Comunidade', icon: UserCheck },

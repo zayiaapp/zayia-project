@@ -208,7 +208,7 @@ export function Dashboard2Section() {
       {/* Header */}
       <div className="zayia-card p-6">
         <h2 className="text-2xl font-bold zayia-gradient-text mb-2">
-          📊 Dashboard 2.0 - Visão Estratégica
+          📊 Dashboard
         </h2>
         <p className="text-zayia-violet-gray">
           Métricas essenciais para tomada de decisão executiva
