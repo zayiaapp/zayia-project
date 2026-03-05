@@ -4,8 +4,14 @@ import { supabaseClient } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
 import { Gift, Sparkles, Lock } from 'lucide-react'
 import { getEarnedBadges } from '../../../lib/badges-storage'
+import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { MedalCarousel } from './badges/MedalCarousel'
 import { MedalDetailModal } from '../modals/MedalDetailModal'
+
+// Map badge_id → 3D React component (from admin AwardsSection visual)
+const BADGE_ICON_MAP = Object.fromEntries(BADGES.map(b => [b.id, b.icon]))
+// Map level_number → 3D React component
+const LEVEL_ICON_MAP = Object.fromEntries(LEVELS.map(l => [l.level, l.icon]))
 
 interface Medal {
   id: string
@@ -43,8 +49,17 @@ export function BadgesSection() {
           supabaseClient.getAllBadges(),
           supabaseClient.getAllLevels()
         ])
-        setBadges(badgesData)
-        setLevels(levelsData)
+        // Enrich with 3D icon components (same visuals as admin AwardsSection)
+        const enrichedBadges = badgesData.map((b: any) => ({
+          ...b,
+          icon: BADGE_ICON_MAP[b.badge_id] ?? b.icon,
+        }))
+        const enrichedLevels = levelsData.map((l: any) => ({
+          ...l,
+          icon: LEVEL_ICON_MAP[l.level_number] ?? l.icon,
+        }))
+        setBadges(enrichedBadges)
+        setLevels(enrichedLevels)
       } catch (error) {
         console.error('❌ Error loading badges and levels:', error)
         // Fallback: show empty state
