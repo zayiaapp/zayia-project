@@ -13,9 +13,8 @@ import {
   Calendar,
   Briefcase
 } from 'lucide-react'
+import { ChallengeCategory, supabaseClient } from '../../lib/supabase-client'
 import { CategoriesList, ChallengesListByCategory } from './challenges-section'
-import { type ChallengeCategory } from '../../lib/challenges-data-mock'
-import { supabaseClient } from '../../lib/supabase-client'
 
 // Helper function to map icon components
 const getIconComponentForCategory = (categoryId: string): React.ComponentType<any> => {
@@ -35,11 +34,15 @@ const getIconComponentForCategory = (categoryId: string): React.ComponentType<an
 function toUiCategory(cat: any): ChallengeCategory {
   return {
     id: cat.id,
+    name: cat.name || cat.label || '',
     label: cat.name || cat.label || '',
     icon: cat.icon || '📌',
     color: cat.color || 'from-gray-400 to-gray-600',
     description: cat.description,
     area: cat.area,
+    is_active: cat.is_active ?? true,
+    created_at: cat.created_at || new Date().toISOString(),
+    updated_at: cat.updated_at || new Date().toISOString(),
     easyCount: 0,
     hardCount: 0,
     completionRate: 0,

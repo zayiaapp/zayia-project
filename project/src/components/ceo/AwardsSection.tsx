@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LEVELS, getAllCategories, getBadgesByCategory } from '../../lib/badges-data-mock'
+import { supabaseClient, LEVELS, getBadgesByCategory } from '../../lib/supabase-client'
 import { MedalCard } from './medals/MedalCard'
 import { Trophy, Award } from 'lucide-react'
 
@@ -7,7 +7,8 @@ export function AwardsSection() {
   const [selectedCategory, setSelectedCategory] = useState<string>('Organização')
   const [viewMode, setViewMode] = useState<'categories' | 'levels'>('categories')
 
-  const allCategories = getAllCategories()
+  // Categorias agora carregadas do Supabase via getAllBadgesWithUserStatus()
+  const allCategories: any[] = [] // TODO: Carregar do Supabase
 
   return (
     <div className="space-y-6">

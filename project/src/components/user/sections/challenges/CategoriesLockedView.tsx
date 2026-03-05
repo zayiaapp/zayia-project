@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Lock } from 'lucide-react'
-import { ChallengeCategory } from '../../../../lib/challenges-data-mock'
+import { ChallengeCategory } from '../../../../lib/supabase-client'
 
 interface CategoriesLockedViewProps {
   activeCategory: ChallengeCategory

@@ -1,8 +1,14 @@
 import { Trash2 } from 'lucide-react'
 import { CommunityMessage } from '../../../../lib/supabase-client'
-import { MessageReaction } from '../../../../lib/community-data-mock'
 import { ReactionButtons } from './ReactionButtons'
 import { ReportButton } from './ReportButton'
+
+// MessageReaction type (previously from community-data-mock)
+interface MessageReaction {
+  emoji: string
+  count: number
+  userReacted?: boolean
+}
 
 // Formatar tempo relativo (ex: "há 5 minutos")
 function formatTimeAgo(date: string): string {

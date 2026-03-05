@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import type React from 'react'
 
 export interface Profile {
   id: string
@@ -104,6 +105,10 @@ export interface ChallengeCategory {
   is_active: boolean
   created_at: string
   updated_at: string
+  // UI display properties
+  easyCount?: number
+  hardCount?: number
+  completionRate?: number
 }
 
 export interface Challenge {
@@ -118,6 +123,9 @@ export interface Challenge {
   is_active: boolean
   created_at: string
   updated_at: string
+  // UI display aliases
+  points?: number
+  duration?: number
 }
 
 export interface ChallengeCompletion {
@@ -141,6 +149,7 @@ export interface Badge {
   name: string
   description?: string
   icon_name?: string
+  icon?: string | React.ComponentType<any>
   category?: string
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
   requirement: number
@@ -311,6 +320,110 @@ export interface PrizePayment {
   updated_at: string
 }
 
+// Ranking types (for RankingSection)
+export interface RankingUser {
+  id: string
+  name: string
+  email: string
+  points: number
+  avatar_url: string
+  level: number
+  streak: number
+  completed_today: number
+  badges_count: number
+  completed_challenges: number
+  firstChallengeTime: string
+  last_activity: string
+  weekly_growth: number
+  monthly_growth: number
+  favorite_category: string
+  total_sessions: number
+  join_date: string
+  position: number
+  previousPosition: number
+  positionChange: 'up' | 'down' | 'same'
+  recent_badges: string[]
+  zone: 'prize' | 'neutral'
+  isPrizeWinner: boolean
+  prizePosition?: 1 | 2 | 3
+  prizeAmount?: number
+  prizeStatus?: 'pending' | 'paid' | 'cancelled'
+  isCurrentUser?: boolean
+}
+
+export interface RankingConfig {
+  top3: boolean
+  top5: boolean
+  top10: boolean
+  monthlyRanking: boolean
+  prizeDistribution: boolean
+}
+
+export const defaultRankingConfig: RankingConfig = {
+  top3: true,
+  top5: true,
+  top10: true,
+  monthlyRanking: true,
+  prizeDistribution: true
+}
+
+// Level configuration
+export const LEVELS = [
+  { level: 0, name: 'Iniciante', pointsRequired: 0, bonusPoints: 0, color: '#9CA3AF', icon: '🌱', description: 'Começando a jornada' },
+  { level: 1, name: 'Aprendiz', pointsRequired: 100, bonusPoints: 50, color: '#10B981', icon: '🌿', description: 'Aprendendo os primeiros passos' },
+  { level: 2, name: 'Praticante', pointsRequired: 250, bonusPoints: 75, color: '#14B8A6', icon: '🍃', description: 'Praticando com dedicação' },
+  { level: 3, name: 'Dedicada', pointsRequired: 400, bonusPoints: 100, color: '#F59E0B', icon: '🌾', description: 'Dedicada ao crescimento' },
+  { level: 4, name: 'Mestra', pointsRequired: 550, bonusPoints: 150, color: '#EF4444', icon: '⚔️', description: 'Dominando as habilidades' },
+  { level: 5, name: 'Guerreira', pointsRequired: 700, bonusPoints: 200, color: '#DC2626', icon: '🗡️', description: 'Guerreira da transformação' },
+  { level: 6, name: 'Rainha', pointsRequired: 850, bonusPoints: 300, color: '#8B5CF6', icon: '👑', description: 'Rainha do seu destino' },
+  { level: 7, name: 'Deusa', pointsRequired: 1000, bonusPoints: 400, color: '#6366F1', icon: '⭐', description: 'Divina em sua essência' },
+  { level: 8, name: 'Titã', pointsRequired: 1200, bonusPoints: 500, color: '#3B82F6', icon: '🌟', description: 'Titânica em sua força' },
+  { level: 9, name: 'Suprema', pointsRequired: 1500, bonusPoints: 500, color: '#EC4899', icon: '✨', description: 'Suprema transformação' }
+]
+
+// Badge icons mapping
+export const BADGE_ICON_MAP: Record<string, string> = {
+  'global_ovo': '🥚',
+  'global_lagarta': '🐛',
+  'global_casulo': '🛡️',
+  'global_borboleta_pequena': '🦋',
+  'global_borboleta_media': '🦋',
+  'global_borboleta_grande': '🦋',
+  'global_borboleta_radiante': '✨🦋'
+}
+
+// Level icons mapping
+export const LEVEL_ICON_MAP: Record<number, string> = {
+  0: '🌱',
+  1: '🌿',
+  2: '🍃',
+  3: '🌾',
+  4: '⚔️',
+  5: '🗡️',
+  6: '👑',
+  7: '⭐',
+  8: '🌟',
+  9: '✨'
+}
+
+// Badge points mapping (replaces BADGES array from mock data)
+export const BADGE_POINTS_MAP: Record<string, number> = {
+  'global_ovo': 0,
+  'global_lagarta': 10,
+  'global_crisalida': 20,
+  'global_borboleta_emergente': 50,
+  'global_borboleta_radiante': 100,
+  'level_1': 50,
+  'level_2': 75,
+  'level_3': 100,
+  'level_4': 150,
+  'level_5': 200,
+  'level_6': 300,
+  'level_7': 400,
+  'level_8': 500,
+  'level_9': 500
+}
+
 export interface ActivityLogEntry {
   id: string
   user_id: string
@@ -347,6 +460,40 @@ export class SupabaseClient {
     } catch (error) {
       console.error('Error fetching profiles:', error)
       return []
+    }
+  }
+
+  async getCategoryProgressForUser(userId: string): Promise<Record<string, { facil: number; dificil: number }>> {
+    try {
+      // Fetch all challenge completions for this user
+      const { data, error } = await supabase
+        .from('challenge_completions')
+        .select('category_id, difficulty')
+        .eq('user_id', userId)
+
+      if (error) {
+        console.warn(`Could not fetch category progress for user ${userId}:`, error)
+        return {}
+      }
+
+      // Aggregate by category and difficulty
+      const progress: Record<string, { facil: number; dificil: number }> = {}
+      if (data && Array.isArray(data)) {
+        for (const row of data) {
+          if (!progress[row.category_id]) {
+            progress[row.category_id] = { facil: 0, dificil: 0 }
+          }
+          if (row.difficulty === 'facil') {
+            progress[row.category_id].facil++
+          } else if (row.difficulty === 'dificil') {
+            progress[row.category_id].dificil++
+          }
+        }
+      }
+      return progress
+    } catch (error) {
+      console.error(`Error fetching category progress for user ${userId}:`, error)
+      return {}
     }
   }
 
@@ -2876,7 +3023,19 @@ export class SupabaseClient {
     totalBonus: number
   }> {
     try {
-      const { LEVELS } = await import('./badges-data-mock')
+      // Level progression data (no longer loaded from badges-data-mock)
+      const LEVELS = [
+        { level: 0, name: 'Iniciante', pointsRequired: 0, bonusPoints: 0 },
+        { level: 1, name: 'Aprendiz', pointsRequired: 100, bonusPoints: 50 },
+        { level: 2, name: 'Praticante', pointsRequired: 150, bonusPoints: 50 },
+        { level: 3, name: 'Veterana', pointsRequired: 200, bonusPoints: 100 },
+        { level: 4, name: 'Mestra', pointsRequired: 250, bonusPoints: 100 },
+        { level: 5, name: 'Guardiã', pointsRequired: 300, bonusPoints: 150 },
+        { level: 6, name: 'Lendária', pointsRequired: 400, bonusPoints: 200 },
+        { level: 7, name: 'Divina', pointsRequired: 500, bonusPoints: 250 },
+        { level: 8, name: 'Ascendida', pointsRequired: 600, bonusPoints: 300 },
+        { level: 9, name: 'Suprema', pointsRequired: 800, bonusPoints: 500 }
+      ]
 
       let newLevel = currentLevel
       let totalBonus = 0
@@ -3005,9 +3164,15 @@ export class SupabaseClient {
     newGlobalMedals: string[]
   }> {
     try {
-      const { BADGES } = await import('./badges-data-mock')
+      // Global medal milestones (no longer loaded from badges-data-mock)
+      const globalMedalCriteria = [
+        { medalId: 'global_ovo', name: 'Ovo', requirement: 1 },
+        { medalId: 'global_lagarta', name: 'Lagarta', requirement: 20 },
+        { medalId: 'global_crisalida', name: 'Crisálida', requirement: 50 },
+        { medalId: 'global_borboleta_emergente', name: 'Borboleta Emergente', requirement: 100 },
+        { medalId: 'global_borboleta_radiante', name: 'Borboleta Radiante', requirement: 840 }
+      ]
 
-      const globalMedals = BADGES.filter(b => b.category === 'Global')
       const newUnlocks: string[] = []
 
       // Get total challenge completions for medal unlock criteria
@@ -3019,60 +3184,40 @@ export class SupabaseClient {
       const completionCount = totalChallengesCompleted || 0
 
       // Check each global medal requirement
-      for (const medal of globalMedals) {
+      for (const medalCriteria of globalMedalCriteria) {
         // Skip if already earned
-        if (earnedMedalIds.includes(medal.id)) {
+        if (earnedMedalIds.includes(medalCriteria.medalId)) {
           continue
         }
 
-        let shouldUnlock = false
-        const medalRequirement = medal.requirement || 0
-
-        // Check requirement type based on medal ID
-        if (medal.id === 'global_ovo') {
-          // Unlock first medal after 1 challenge completed
-          shouldUnlock = completionCount >= 1
-        } else if (medal.id === 'global_lagarta') {
-          // 20 total challenges completed
-          shouldUnlock = completionCount >= 20
-        } else if (medal.id === 'global_crisalida') {
-          // 50 total challenges completed
-          shouldUnlock = completionCount >= 50
-        } else if (medal.id === 'global_borboleta_emergente') {
-          // 100 total challenges completed
-          shouldUnlock = completionCount >= 100
-        } else if (medal.id === 'global_borboleta_radiante') {
-          // 840 total challenges completed (legendary)
-          shouldUnlock = completionCount >= 840
-        }
+        // Check if user meets the challenge completion requirement
+        const shouldUnlock = completionCount >= medalCriteria.requirement
 
         if (shouldUnlock) {
           // Add to user_earned_badges
           const { error } = await supabase.from('user_earned_badges').insert({
             user_id: userId,
-            badge_id: medal.id,
+            badge_id: medalCriteria.medalId,
             earned_at: new Date().toISOString()
           })
 
           if (!error) {
-            newUnlocks.push(medal.id)
+            newUnlocks.push(medalCriteria.medalId)
             console.log(
-              `🌟 Global medal unlocked: ${medal.name} (${medal.id})`
+              `🌟 Global medal unlocked: ${medalCriteria.name} (${medalCriteria.medalId})`
             )
 
             // Dispatch global medal unlock event
             window.dispatchEvent(
               new CustomEvent('globalMedalUnlocked', {
                 detail: {
-                  medalId: medal.id,
-                  medalName: medal.name,
-                  medalIcon: medal.icon,
-                  points: medal.points
+                  medalId: medalCriteria.medalId,
+                  medalName: medalCriteria.name
                 }
               })
             )
           } else {
-            console.error(`Error unlocking global medal ${medal.id}:`, error)
+            console.error(`Error unlocking global medal ${medalCriteria.medalId}:`, error)
           }
         }
       }
@@ -3876,6 +4021,25 @@ export class SupabaseClient {
     }
   }
 
+}
+
+// Helper functions exported from supabase-client
+export function getBadgesByCategory(category: string, badges?: Badge[]): Badge[] {
+  if (!badges) return []
+  return badges.filter(b => b.category === category)
+}
+
+export function getDaysLeftInMonth(): number {
+  const now = new Date()
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  return daysInMonth - now.getDate()
+}
+
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value)
 }
 
 export const supabaseClient = new SupabaseClient()

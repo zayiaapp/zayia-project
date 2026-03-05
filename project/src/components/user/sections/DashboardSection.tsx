@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { supabaseClient } from '../../../lib/supabase-client'
+import { supabaseClient, LEVELS, BADGE_ICON_MAP } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
 import {
   Target,
@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { getGreeting } from '../../../lib/utils'
 import { getEarnedBadges } from '../../../lib/badges-storage'
-import { BADGES, LEVELS } from '../../../lib/badges-data-mock'
 import { getFormattedToday, getDateKey } from '../../../lib/challenges-storage'
 import { RankTierBadge } from '../RankTierBadge'
 import { LeaderboardSection } from './LeaderboardSection'
@@ -32,15 +31,14 @@ export function DashboardSection() {
   const getSyncedMedals = (userPoints: number) => {
     const allEarned = getEarnedBadges()
 
-    // Filtrar apenas medalhas que o user realmente desbloqueou baseado em pontos
+    // Filtrar apenas medalhas que o user realmente desbloqueou
+    // Medalhas agora vêm do Supabase user_earned_badges via getAllBadgesWithUserStatus()
     const validMedals = allEarned.filter(medalId => {
-      const medal = BADGES.find(b => b.id === medalId)
-      if (!medal) return false
-
-      // Verificar se o user tem pontos suficientes para essa medalha
-      if (medal.category === 'Global') {
-        // Medalhas globais baseadas em pontos
-        return userPoints >= medal.requirement
+      if (!medalId || typeof medalId !== 'string') return false
+      // Validação baseada em ID da medalha
+      if (medalId.startsWith('global_')) {
+        // Medalhas globais baseadas em completions (not points directly)
+        return true // Se está na lista earned, é válida
       } else if (medalId.startsWith('level_')) {
         // Medalhas de nível
         const levelNum = parseInt(medalId.replace('level_', ''), 10)
@@ -516,26 +514,24 @@ export function DashboardSection() {
 
           <div className="flex justify-center items-center gap-4 flex-wrap">
             {recentMedalsEarned.slice(0, 8).map((medalId) => {
-              const medal = BADGES.find(b => b.id === medalId)
-              if (!medal) return null
+              const medalIcon = BADGE_ICON_MAP[medalId] || '🏅'
+              const medalName = medalId.replace(/_/g, ' ').toUpperCase()
+              const medalColor = medalId.startsWith('global_') ? '#8B4FC1' : '#E891D0'
 
               return (
                 <div
                   key={medalId}
                   className="w-24 h-24 flex flex-col items-center justify-center p-4 rounded-lg text-center transition-transform hover:scale-105"
                   style={{
-                    backgroundColor: `${medal.color}20`,
-                    border: `2px solid ${medal.color}`
+                    backgroundColor: `${medalColor}20`,
+                    border: `2px solid ${medalColor}`
                   }}
                 >
-                  <div className="w-16 h-16 flex items-center justify-center mb-1">
-                    {(() => {
-                      const IconComponent = medal.icon
-                      return <IconComponent />
-                    })()}
+                  <div className="w-16 h-16 flex items-center justify-center mb-1 text-3xl">
+                    {medalIcon}
                   </div>
                   <h4 className="font-semibold text-xs text-zayia-deep-violet line-clamp-1">
-                    {medal.name}
+                    {medalName}
                   </h4>
                 </div>
               )

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
-import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { supabaseClient } from '../../../lib/supabase-client'
 import { CategoryCard } from './CategoryCard'
 import { CategoryForm } from './CategoryForm'
@@ -15,11 +15,15 @@ interface CategoriesListProps {
 function toUiCategory(cat: any, easyCounts: Record<string, number>, hardCounts: Record<string, number>): ChallengeCategory {
   return {
     id: cat.id,
+    name: cat.name || cat.label || '',
     label: cat.name || cat.label || '',
     icon: cat.icon || '📌',
     color: cat.color || 'from-gray-400 to-gray-600',
     description: cat.description,
     area: cat.area,
+    is_active: cat.is_active ?? true,
+    created_at: cat.created_at || new Date().toISOString(),
+    updated_at: cat.updated_at || new Date().toISOString(),
     easyCount: easyCounts[cat.id] ?? 0,
     hardCount: hardCounts[cat.id] ?? 0,
     completionRate: 0,
@@ -104,8 +108,8 @@ export const CategoriesList: React.FC<CategoriesListProps> = ({
     await reloadCategories()
   }
 
-  const getChallengeCounts = (categoryId: string) => {
-    return (easyCounts[categoryId] ?? 0) + (hardCounts[categoryId] ?? 0)
+  const getChallengeCounts = (category_id: string) => {
+    return (easyCounts[category_id] ?? 0) + (hardCounts[category_id] ?? 0)
   }
 
   if (isLoading) {

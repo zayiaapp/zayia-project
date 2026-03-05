@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { FC } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { supabaseClient } from '../../../lib/supabase-client'
+import { supabaseClient, BADGE_ICON_MAP, LEVEL_ICON_MAP } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
 import { Gift, Sparkles } from 'lucide-react'
-import { BADGE_ICON_MAP, LEVEL_ICON_MAP } from '../../../lib/badges-data-mock'
+// Icon maps agora importados de supabase-client
 import { MedalCarousel } from './badges/MedalCarousel'
 import { MedalDetailModal } from '../modals/MedalDetailModal'
 
 interface Medal {
   id: string
   name: string
-  icon: FC
+  icon: string | FC
   description?: string
   requirement?: number
   points?: number
@@ -123,7 +123,7 @@ export function BadgesSection() {
   const enrichBadge = (b: any): Medal => ({
     id: b.badge_id,
     name: b.name,
-    icon: BADGE_ICON_MAP[b.badge_id] || (() => null),
+    icon: BADGE_ICON_MAP[b.badge_id] || '🏅',
     description: b.description,
     requirement: b.requirement,
     points: b.points,
@@ -135,7 +135,7 @@ export function BadgesSection() {
   const enrichLevel = (l: any): Medal => ({
     id: `level-${l.level_number}`,
     name: l.name,
-    icon: LEVEL_ICON_MAP[l.level_number] || (() => null),
+    icon: LEVEL_ICON_MAP[l.level_number] || '⭐',
     requirement: l.level_number,
     points: l.points_required,
     levelNumber: l.level_number,

@@ -122,6 +122,7 @@ export function GuerreirasSection() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState<string | null>(null)
   const [showToggleModal, setShowToggleModal] = useState<{ guerreira: Guerreira, action: 'activate' | 'deactivate' } | null>(null)
+  const [error, setError] = useState('')
 
   // Dados do formulário de nova guerreira
   const [newGuerreira, setNewGuerreira] = useState({
@@ -154,23 +155,28 @@ export function GuerreirasSection() {
           const profiles = await supabaseClient.getProfiles()
 
           // Filtrar apenas usuárias COM subscription ativa
-          const guerreirasData = profiles
+          const filtered = profiles
             .filter(p =>
               p.role === 'user' &&
               p.subscription_status === 'active'
             )
-            .map(enrichGuerreiraData)
+
+          const guerreirasData = await Promise.all(
+            filtered.map(enrichGuerreiraData)
+          )
 
           setGuerreiras(guerreirasData)
 
           // Setup real-time listener
           unsubscribe = setupRealtimeListener(guerreirasData)
         } else {
-          setGuerreiras(generateMockGuerreiras())
+          setGuerreiras([])
+          setError('Nenhuma guerreira encontrada')
         }
       } catch (error) {
         console.error('Error loading guerreiras:', error)
-        setGuerreiras(generateMockGuerreiras())
+        setGuerreiras([])
+        setError(`Erro ao carregar guerreiras: ${error instanceof Error ? error.message : 'Unknown error'}`)
       } finally {
         setLoading(false)
       }
@@ -224,22 +230,24 @@ export function GuerreirasSection() {
                 newProfile.role === 'user' &&
                 newProfile.subscription_status === 'active'
               ) {
-                setGuerreiras(prev => {
-                  // Verificar se já existe na lista
-                  const exists = prev.some(g => g.id === newProfile.id)
+                // Enriquecer dados ANTES do setState
+                enrichGuerreiraData(newProfile).then(enriched => {
+                  setGuerreiras(prev => {
+                    // Verificar se já existe na lista
+                    const exists = prev.some(g => g.id === newProfile.id)
 
-                  if (!exists) {
-                    // Nova usuária! Adicionar à lista
-                    console.log('✨ Nova guerreira adicionada:', newProfile.full_name)
-                    const enriched = enrichGuerreiraData(newProfile)
-                    return [...prev, enriched]
-                  } else {
-                    // Usuária já existe - atualizar dados
-                    console.log('🔄 Guerreira atualizada:', newProfile.full_name)
-                    return prev.map(g =>
-                      g.id === newProfile.id ? enrichGuerreiraData(newProfile) : g
-                    )
-                  }
+                    if (!exists) {
+                      // Nova usuária! Adicionar à lista
+                      console.log('✨ Nova guerreira adicionada:', newProfile.full_name)
+                      return [...prev, enriched]
+                    } else {
+                      // Usuária já existe - atualizar dados
+                      console.log('🔄 Guerreira atualizada:', newProfile.full_name)
+                      return prev.map(g =>
+                        g.id === newProfile.id ? enriched : g
+                      )
+                    }
+                  })
                 })
               } else if (newProfile.subscription_status === 'cancelled') {
                 // Subscription foi cancelada - remover da lista
@@ -270,19 +278,18 @@ export function GuerreirasSection() {
   }
 
   // Enriquecer dados da guerreira com informações calculadas
-  const enrichGuerreiraData = (profile: Profile): Guerreira => {
+  const enrichGuerreiraData = async (profile: Profile): Promise<Guerreira> => {
     const points = profile.points || 0
     const level = calculateLevel(points)
     const badges = generateBadgesForProfile(profile)
-    const categoryProgress = generateCategoryProgress(profile)
+    const categoryProgress = await supabaseClient.getCategoryProgressForUser(profile.id)
 
     return {
       ...profile,
       level,
       badges_earned: badges,
-      category_progress: categoryProgress,
-      cpf: generateCPF(),
-      address: generateAddress()
+      category_progress: categoryProgress as any
+      // CPF and address come from Supabase, not generated
     }
   }
 
@@ -313,228 +320,9 @@ export function GuerreirasSection() {
     return badges
   }
 
-  // Gerar progresso por categoria
-  const generateCategoryProgress = (profile: Profile) => {
-    const completedChallenges = profile.completed_challenges || 0
-    const baseProgress = Math.floor(completedChallenges / 7) // Dividir entre 7 categorias
+  // Get real category progress from Supabase (via enrichGuerreiraData)
+  // No longer generating random progress - all data comes from database
 
-    return {
-      autoestima: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      rotina: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      mindfulness: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      corpo_saude: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      relacionamentos: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      carreira: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      },
-      digital_detox: { 
-        completed: Math.min(120, baseProgress + Math.floor(Math.random() * 20)), 
-        total: 120, 
-        percentage: 0 
-      }
-    }
-  }
-
-  // Gerar dados mock para demonstração
-  const generateMockGuerreiras = (): Guerreira[] => {
-    const mockData = [
-      {
-        id: 'guerreira-1',
-        email: 'ana.costa@email.com',
-        full_name: 'Ana Costa Silva',
-        role: 'user' as const,
-        created_at: '2024-01-10T08:30:00Z',
-        updated_at: '2024-01-20T14:22:00Z',
-        avatar_url: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        phone: '(11) 98765-4321',
-        birth_date: '1985-08-22',
-        location: 'São Paulo, SP',
-        profession: 'Psicóloga',
-        education: 'Pós-graduação em Terapia Cognitiva',
-        bio: 'Psicóloga especializada em empoderamento feminino. Amo ajudar mulheres a descobrirem seu potencial.',
-        streak: 25,
-        total_sessions: 78,
-        points: 1200,
-        level: 7,
-        completed_challenges: 89,
-        subscription_plan: 'premium' as const,
-        subscription_status: 'active' as const,
-        cpf: '123.456.789-01',
-        address: {
-          street: 'Rua das Flores',
-          number: '123',
-          neighborhood: 'Vila Madalena',
-          city: 'São Paulo',
-          state: 'SP',
-          zipcode: '05432-000'
-        }
-      },
-      {
-        id: 'guerreira-2',
-        email: 'maria.santos@email.com',
-        full_name: 'Maria Santos Oliveira',
-        role: 'user' as const,
-        created_at: '2024-01-05T10:15:00Z',
-        updated_at: '2024-01-20T16:45:00Z',
-        avatar_url: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        phone: '(21) 97654-3210',
-        birth_date: '1992-03-10',
-        location: 'Rio de Janeiro, RJ',
-        profession: 'Designer UX/UI',
-        education: 'Superior Completo - Design',
-        bio: 'Designer apaixonada por criar experiências que transformam vidas.',
-        streak: 45,
-        total_sessions: 156,
-        points: 2850,
-        level: 9,
-        completed_challenges: 234,
-        subscription_plan: 'vip' as const,
-        subscription_status: 'active' as const,
-        cpf: '987.654.321-02',
-        address: {
-          street: 'Avenida Atlântica',
-          number: '456',
-          neighborhood: 'Copacabana',
-          city: 'Rio de Janeiro',
-          state: 'RJ',
-          zipcode: '22070-000'
-        }
-      },
-      {
-        id: 'guerreira-3',
-        email: 'julia.ferreira@email.com',
-        full_name: 'Julia Ferreira Lima',
-        role: 'user' as const,
-        created_at: '2024-01-15T14:20:00Z',
-        updated_at: '2024-01-19T09:30:00Z',
-        avatar_url: 'https://images.pexels.com/photos/3756679/pexels-photo-3756679.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        phone: '(31) 96543-2109',
-        birth_date: '1988-11-05',
-        location: 'Belo Horizonte, MG',
-        profession: 'Engenheira de Software',
-        education: 'Mestrado em Ciência da Computação',
-        bio: 'Engenheira em transição para liderança. Buscando equilibrio entre carreira e vida pessoal.',
-        streak: 12,
-        total_sessions: 34,
-        points: 680,
-        level: 5,
-        completed_challenges: 45,
-        subscription_plan: 'basic' as const,
-        subscription_status: 'active' as const,
-        cpf: '456.789.123-03',
-        address: {
-          street: 'Rua da Liberdade',
-          number: '789',
-          neighborhood: 'Savassi',
-          city: 'Belo Horizonte',
-          state: 'MG',
-          zipcode: '30112-000'
-        }
-      },
-      {
-        id: 'guerreira-4',
-        email: 'beatriz.almeida@email.com',
-        full_name: 'Beatriz Almeida Rocha',
-        role: 'user' as const,
-        created_at: '2024-01-08T11:45:00Z',
-        updated_at: '2024-01-18T20:15:00Z',
-        avatar_url: 'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        phone: '(85) 95432-1098',
-        birth_date: '1995-07-18',
-        location: 'Fortaleza, CE',
-        profession: 'Nutricionista',
-        education: 'Superior Completo - Nutrição',
-        bio: 'Nutricionista focada em saúde feminina e bem-estar integral.',
-        streak: 8,
-        total_sessions: 23,
-        points: 340,
-        level: 3,
-        completed_challenges: 28,
-        subscription_plan: 'basic' as const,
-        subscription_status: 'cancelled' as const,
-        cpf: '789.123.456-04',
-        address: {
-          street: 'Avenida Beira Mar',
-          number: '321',
-          neighborhood: 'Meireles',
-          city: 'Fortaleza',
-          state: 'CE',
-          zipcode: '60165-000'
-        }
-      },
-      {
-        id: 'guerreira-5',
-        email: 'camila.rodrigues@email.com',
-        full_name: 'Camila Rodrigues Mendes',
-        role: 'user' as const,
-        created_at: '2024-01-12T16:00:00Z',
-        updated_at: '2024-01-20T12:30:00Z',
-        avatar_url: 'https://images.pexels.com/photos/1542085/pexels-photo-1542085.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-        phone: '(47) 94321-0987',
-        birth_date: '1990-12-25',
-        location: 'Florianópolis, SC',
-        profession: 'Advogada',
-        education: 'Pós-graduação em Direito Empresarial',
-        bio: 'Advogada empreendedora buscando crescimento pessoal e profissional.',
-        streak: 18,
-        total_sessions: 67,
-        points: 1450,
-        level: 8,
-        completed_challenges: 123,
-        subscription_plan: 'premium' as const,
-        subscription_status: 'active' as const,
-        cpf: '321.654.987-05',
-        address: {
-          street: 'Rua das Rendeiras',
-          number: '654',
-          neighborhood: 'Lagoa da Conceição',
-          city: 'Florianópolis',
-          state: 'SC',
-          zipcode: '88062-000'
-        }
-      }
-    ]
-
-    return mockData.map(enrichGuerreiraData)
-  }
-
-  // Gerar CPF mock
-  const generateCPF = () => {
-    const nums = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10))
-    return `${nums.slice(0, 3).join('')}.${nums.slice(3, 6).join('')}.${nums.slice(6, 9).join('')}-${Math.floor(Math.random() * 90) + 10}`
-  }
-
-  // Gerar endereço mock
-  const generateAddress = () => ({
-    street: 'Rua das Flores',
-    number: Math.floor(Math.random() * 999 + 1).toString(),
-    neighborhood: 'Centro',
-    city: 'São Paulo',
-    state: 'SP',
-    zipcode: '01234-567'
-  })
 
   // Adicionar nova guerreira
   const handleAddGuerreira = async () => {
@@ -572,7 +360,7 @@ export function GuerreirasSection() {
       if (integrationsManager.isSupabaseConfigured()) {
         const created = await supabaseClient.createProfile(guerreiraData as any)
         if (created) {
-          createdGuerreira = enrichGuerreiraData(created)
+          createdGuerreira = await enrichGuerreiraData(created)
         }
       } else {
         // Fallback para mock data
@@ -583,7 +371,7 @@ export function GuerreirasSection() {
           updated_at: new Date().toISOString()
         } as Profile
 
-        createdGuerreira = enrichGuerreiraData(mockGuerreira)
+        createdGuerreira = await enrichGuerreiraData(mockGuerreira)
       }
 
       if (createdGuerreira) {

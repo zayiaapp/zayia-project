@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X, AlertTriangle } from 'lucide-react'
-import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { Toast } from '../../ui/Toast'
 
 interface DeleteCategoryModalProps {

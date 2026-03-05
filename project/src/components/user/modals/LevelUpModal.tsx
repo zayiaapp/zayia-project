@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { LEVELS } from '../../../lib/badges-data-mock'
+import { LEVELS } from '../../../lib/supabase-client'
 
 interface LevelUpModalProps {
   isOpen: boolean

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, Plus, ChevronDown, ChevronUp } from 'lucide-react'
-import { Challenge, ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { supabaseClient } from '../../../lib/supabase-client'
 import { ChallengeCard } from './ChallengeCard'
 import { SearchFilterBar } from './SearchFilterBar'
@@ -32,13 +32,16 @@ const ITEMS_PER_PAGE = 12
 function dbToUi(ch: any): Challenge {
   return {
     id: ch.id,
-    categoryId: ch.category_id,
+    category_id: ch.category_id,
     title: ch.title,
     description: ch.description || '',
-    points: ch.difficulty === 'dificil' ? (ch.points_hard ?? 25) : (ch.points_easy ?? 10),
-    duration: ch.duration_minutes ?? 5,
+    points_easy: ch.points_easy ?? 10,
+    points_hard: ch.points_hard ?? 25,
+    duration_minutes: ch.duration_minutes ?? 5,
     difficulty: (ch.difficulty === 'easy' ? 'facil' : ch.difficulty === 'hard' ? 'dificil' : ch.difficulty) as 'facil' | 'dificil',
-    category: ch.category_id,
+    is_active: ch.is_active ?? true,
+    created_at: ch.created_at || new Date().toISOString(),
+    updated_at: ch.updated_at || new Date().toISOString(),
   }
 }
 
@@ -48,7 +51,7 @@ function uiToDb(data: Partial<Challenge>): any {
   if (data.title !== undefined) out.title = data.title
   if (data.description !== undefined) out.description = data.description
   if (data.difficulty !== undefined) out.difficulty = data.difficulty
-  if (data.categoryId !== undefined) out.category_id = data.categoryId
+  if (data.category_id !== undefined) out.category_id = data.category_id
   if (data.duration !== undefined) out.duration_minutes = data.duration
   if (data.points !== undefined) {
     out.points_easy = data.points
@@ -145,7 +148,7 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
     await supabaseClient.createChallenge({
       title: data.title || '',
       description: data.description || '',
-      category_id: data.categoryId || category.id,
+      category_id: data.category_id || category.id,
       difficulty: data.difficulty || 'facil',
       points_easy: data.points || 10,
       points_hard: data.points || 25,
@@ -182,7 +185,7 @@ export const ChallengesListByCategory: React.FC<ChallengesListByCategoryProps> =
     await supabaseClient.createChallenge({
       title: `${challenge.title} (cópia)`,
       description: challenge.description,
-      category_id: challenge.categoryId || category.id,
+      category_id: challenge.category_id || category.id,
       difficulty: challenge.difficulty,
       points_easy: challenge.difficulty === 'facil' ? challenge.points : 10,
       points_hard: challenge.difficulty === 'dificil' ? challenge.points : 25,

@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { SmilePlus } from 'lucide-react'
-import { MessageReaction } from '../../../../lib/community-data-mock'
+
+// MessageReaction type (previously from community-data-mock)
+interface MessageReaction {
+  emoji: string
+  count: number
+  userReacted?: boolean
+}
 
 const EMOJI_OPTIONS = ['😍', '🔥', '💪', '🙌', '❤️']
 

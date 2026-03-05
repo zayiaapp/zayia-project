@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { Toast } from '../../ui/Toast'
 
 interface CategoryFormProps {

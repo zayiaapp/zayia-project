@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Edit, Trash2, Copy, Check } from 'lucide-react'
-import { Challenge } from '../../../lib/challenges-data-mock'
+import { Challenge } from '../../../lib/supabase-client' 
 
 interface ChallengeCardProps {
   challenge: Challenge

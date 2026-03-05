@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { Challenge, ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { Toast } from '../../ui/Toast'
 
 interface ChallengeFormProps {
@@ -27,7 +27,7 @@ export const ChallengeForm: React.FC<ChallengeFormProps> = ({
   const [formData, setFormData] = useState<Partial<Challenge>>({
     title: '',
     description: '',
-    categoryId: defaultCategoryId || '',
+    category_id: defaultCategoryId || '',
     difficulty: 'facil',
     duration: 5,
   })
@@ -41,7 +41,7 @@ export const ChallengeForm: React.FC<ChallengeFormProps> = ({
       setFormData({
         title: '',
         description: '',
-        categoryId: defaultCategoryId || '',
+        category_id: defaultCategoryId || '',
         difficulty: 'facil',
         duration: 5,
       })
@@ -63,7 +63,7 @@ export const ChallengeForm: React.FC<ChallengeFormProps> = ({
       return
     }
 
-    if (!formData.categoryId) {
+    if (!formData.category_id) {
       setToastMessage('❌ Categoria é obrigatória')
       setShowToast(true)
       return
@@ -113,9 +113,9 @@ export const ChallengeForm: React.FC<ChallengeFormProps> = ({
                 Categoria
               </label>
               <select
-                value={formData.categoryId || ''}
+                value={formData.category_id || ''}
                 onChange={e =>
-                  setFormData({ ...formData, categoryId: e.target.value })
+                  setFormData({ ...formData, category_id: e.target.value })
                 }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               >

@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { ChallengeCategory, Badge, BADGE_POINTS_MAP, BADGE_ICON_MAP } from '../../../lib/supabase-client'
 import { CategorySelectionModal } from './challenges/CategorySelectionModal'
 import { DailyChallengesView } from './challenges/DailyChallengesView'
 import { CategoriesLockedView } from './challenges/CategoriesLockedView'
 import { PopUpMedalUnlocked } from '../modals/PopUpMedalUnlocked'
 import { LevelUpModal } from '../modals/LevelUpModal'
 import { checkAndUnlockMedalsAsync } from '../../../lib/medals-unlock'
-import { BADGES, type Badge } from '../../../lib/badges-data-mock'
 import { supabaseClient } from '../../../lib/supabase-client'
 
 export function ChallengesSection() {
@@ -112,8 +111,8 @@ export function ChallengesSection() {
         let medalPointsAdded = 0
         if (allNewMedals.length > 0) {
           for (const medalId of allNewMedals) {
-            const medalObj = BADGES.find(b => b.id === medalId)
-            if (medalObj?.points) medalPointsAdded += medalObj.points
+            const medalPoints = BADGE_POINTS_MAP[medalId] || 0
+            if (medalPoints) medalPointsAdded += medalPoints
             await supabaseClient.awardBadgeByKey(user.id, medalId)
           }
         }
@@ -172,8 +171,16 @@ export function ChallengesSection() {
         window.dispatchEvent(new Event('dailyProgressUpdated'))
         if (allNewMedals.length > 0) {
           window.dispatchEvent(new Event('medalsUpdated'))
-          const medalObj = BADGES.find(b => b.id === allNewMedals[0])
-          if (medalObj) setUnlockedMedalPopup(medalObj)
+          // Create minimal badge object for display
+          const medalId = allNewMedals[0]
+          const medalObj = {
+            id: medalId,
+            name: medalId.replace(/_/g, ' ').toUpperCase(),
+            icon: BADGE_ICON_MAP[medalId] || '🏅',
+            category: medalId.startsWith('global_') ? 'Global' : 'Categoria',
+            points: BADGE_POINTS_MAP[medalId] || 0
+          }
+          setUnlockedMedalPopup(medalObj as any)
         }
       } catch (error) {
         console.error('❌ Error processing challenge completion:', error)
@@ -226,7 +233,7 @@ export function ChallengesSection() {
       {/* Pop-up para medalha desbloqueada */}
       <PopUpMedalUnlocked
         isOpen={!!unlockedMedalPopup}
-        medal={unlockedMedalPopup}
+        medal={unlockedMedalPopup as any}
         onClose={() => setUnlockedMedalPopup(null)}
         onViewMedal={handleViewMedal}
       />

@@ -1,6 +1,21 @@
 import React from 'react'
-import type { Badge } from '../../../lib/badges-data-mock'
-import { getRarityColor } from '../../../lib/badges-data-mock'
+import type { Badge } from '../../../lib/supabase-client'
+
+// Função para obter cor de raridade baseado em nome/tipo
+function getRarityColor(rarity?: string): string {
+  switch (rarity?.toLowerCase()) {
+    case 'comum':
+      return 'text-gray-500'
+    case 'raro':
+      return 'text-blue-500'
+    case 'épico':
+      return 'text-purple-500'
+    case 'lendário':
+      return 'text-yellow-500'
+    default:
+      return 'text-gray-400'
+  }
+}
 
 interface MedalCardProps {
   badge: Badge

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { supabaseClient } from '../../../lib/supabase-client'
+import { supabaseClient, RankingUser, defaultRankingConfig, LEVELS } from '../../../lib/supabase-client'
 import { supabase } from '../../../lib/supabase'
 import {
   Trophy,
@@ -15,14 +15,35 @@ import {
   Sparkles
 } from 'lucide-react'
 import { LoadingSpinner } from '../../ui/LoadingSpinner'
-import {
-  RankingUser,
-  defaultRankingConfig,
-  formatCurrency,
-  getPrizeMedal,
-  getPrizeAmount
-} from '../../../lib/ranking-data-mock'
-import { LEVELS } from '../../../lib/badges-data-mock'
+// Ranking data agora vem de Supabase via supabaseClient.getUserRankingByPoints()
+// Tipos: RankingUser agora definido em supabase-client.ts
+import { Badge } from '../../../lib/supabase-client'
+
+// Helper functions (previously from ranking-data-mock)
+const getPrizeMedal = (position: number): string => {
+  switch (position) {
+    case 1: return '🥇'
+    case 2: return '🥈'
+    case 3: return '🥉'
+    default: return ''
+  }
+}
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(value)
+}
+
+const getPrizeAmount = (position: number): number => {
+  switch (position) {
+    case 1: return 500
+    case 2: return 300
+    case 3: return 150
+    default: return 0
+  }
+}
 
 export function RankingSection() {
   const { profile } = useAuth()
@@ -174,7 +195,7 @@ export function RankingSection() {
             Você está em {users[currentUserIndex].position}º lugar!
           </p>
           <p className="text-sm font-bold text-green-600">
-            Prêmio garantido: {formatCurrency(getPrizeAmount(users[currentUserIndex].position, config))}
+            Prêmio garantido: {formatCurrency(getPrizeAmount(users[currentUserIndex].position))}
           </p>
         </div>
       )}
@@ -223,7 +244,7 @@ export function RankingSection() {
                 <div>
                   <div className="text-sm font-bold text-green-700">Prêmio Garantido</div>
                   <div className="text-lg font-bold text-green-600">
-                    {formatCurrency(getPrizeAmount(users[currentUserIndex].position, config))}
+                    {formatCurrency(getPrizeAmount(users[currentUserIndex].position))}
                   </div>
                 </div>
                 <CheckCircle className="w-6 h-6 text-green-600" />

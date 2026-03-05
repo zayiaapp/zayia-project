@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { supabaseClient, type Profile } from '../../lib/supabase-client'
+import { supabaseClient, type Profile, MonthlyWinner, PrizePayment, RankingConfig, defaultRankingConfig, getDaysLeftInMonth, formatCurrency } from '../../lib/supabase-client'
 import {
   Trophy,
   Calendar,
@@ -23,14 +23,8 @@ import {
   AlertCircle,
   Flag
 } from 'lucide-react'
-import {
-  MonthlyWinner,
-  PrizePayment,
-  RankingConfig,
-  defaultRankingConfig,
-  formatCurrency,
-  getDaysLeftInMonth,
-} from '../../lib/ranking-data-mock'
+// Ranking data agora carregado do Supabase
+// MonthlyWinner, PrizePayment, RankingConfig tipos via supabase-client
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { AnalyticsSection } from './AnalyticsSection'
 
@@ -60,9 +54,9 @@ export function PrizeManagementSection({
 }: PrizeManagementSectionProps) {
   const [activeTab, setActiveTab] = useState<'current' | 'history' | 'manage' | 'analytics'>('current')
   const [loading, setLoading] = useState(false)
-  const [monthlyWinners, setMonthlyWinners] = useState<MonthlyWinner[]>([])
-  const [config, setConfig] = useState<RankingConfig>(defaultRankingConfig)
-  const [payments, setPayments] = useState<PrizePayment[]>([])
+  const [monthlyWinners, setMonthlyWinners] = useState<any[]>([])
+  const [config, setConfig] = useState<any>(defaultRankingConfig)
+  const [payments, setPayments] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [editingConfig, setEditingConfig] = useState(false)
@@ -77,7 +71,7 @@ export function PrizeManagementSection({
   const [statusChanges, setStatusChanges] = useState<Record<string, string>>({})
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
-  const [monthlyWinnersState, setMonthlyWinnersState] = useState<MonthlyWinner[]>([])
+  const [monthlyWinnersState, setMonthlyWinnersState] = useState<any[]>([])
   const [prizeConfig, setPrizeConfig] = useState({
     firstPlace: 500,
     secondPlace: 300,
@@ -128,7 +122,7 @@ export function PrizeManagementSection({
       if (winners.length > 0) {
         const w = (i: number) => winners[i]?.ranking
         const p = (i: number) => winners[i]?.prize
-        const mapped: MonthlyWinner = {
+        const mapped: any = {
           id: `${month}-${year}`,
           month,
           year,
@@ -159,7 +153,7 @@ export function PrizeManagementSection({
 
       // Load prize payments from Supabase
       const dbPayments = await supabaseClient.getPrizePayments(month, year)
-      const mappedPayments: PrizePayment[] = dbPayments.map((p: any) => ({
+      const mappedPayments: any[] = dbPayments.map((p: any) => ({
         id: p.id,
         winnerId: p.user_id,
         position: p.position,

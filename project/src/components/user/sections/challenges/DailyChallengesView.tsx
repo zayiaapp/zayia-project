@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { ChallengeCategory } from '../../../../lib/challenges-data-mock'
+import { ChallengeCategory, supabaseClient } from '../../../../lib/supabase-client'
 import { ChallengeCardDaily } from './ChallengeCardDaily'
 import { compressImage, validateImageFile } from '../../../../lib/photo-compression'
-import { supabaseClient } from '../../../../lib/supabase-client'
 
 interface DailyChallenge {
   id: string

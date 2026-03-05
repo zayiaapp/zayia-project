@@ -1,6 +1,6 @@
 import React from 'react'
 import { Edit, Trash2, ChevronRight } from 'lucide-react'
-import { ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { ChallengeCategory } from '../../../lib/supabase-client' 
 
 interface CategoryCardProps {
   category: ChallengeCategory

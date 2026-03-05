@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X, AlertTriangle } from 'lucide-react'
-import { Challenge, ChallengeCategory } from '../../../lib/challenges-data-mock'
+import { Challenge, ChallengeCategory } from '../../../lib/supabase-client'
 import { Toast } from '../../ui/Toast'
 
 interface BulkEditModalProps {
@@ -142,11 +142,11 @@ export const BulkEditModal: React.FC<BulkEditModalProps> = ({
                 Mover para Categoria
               </label>
               <select
-                value={updates.categoryId || ''}
+                value={updates.category_id || ''}
                 onChange={e =>
                   setUpdates({
                     ...updates,
-                    categoryId: e.target.value || undefined,
+                    category_id: e.target.value || undefined,
                   })
                 }
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
