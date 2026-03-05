@@ -277,15 +277,21 @@ export function PrizeManagementSection({
     alert('✅ Prêmio marcado como PAGO e salvo no banco de dados!')
   }
 
-  const handleStatusChange = (userId: string, newStatus: string) => {
-    // Atualizar estado local do objeto statusChanges
-    setStatusChanges({
-      ...statusChanges,
-      [userId]: newStatus
-    })
+  const handleStatusChange = async (userId: string, newStatus: string) => {
+    setStatusChanges({ ...statusChanges, [userId]: newStatus })
 
-    console.log(`Status de ${userId} mudou para ${newStatus} e foi salvo no histórico`)
-    // TODO: Integrar com Supabase para salvar status de pagamento
+    if (newStatus === 'paid') {
+      const payment = payments.find(p => p.winnerId === userId)
+      if (payment?.id) {
+        try {
+          await supabaseClient.markPrizeAsPaid(payment.id)
+          console.log(`✅ Prize payment marked as paid: ${payment.id}`)
+          loadData()
+        } catch (error) {
+          console.error('❌ Error marking prize as paid:', error)
+        }
+      }
+    }
   }
 
   const getStatusColor = (status: string) => {

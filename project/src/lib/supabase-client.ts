@@ -350,6 +350,24 @@ export class SupabaseClient {
     }
   }
 
+  async searchUsers(query: string): Promise<Profile[]> {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, points, level, subscription_plan, subscription_status, created_at, avatar_url')
+        .eq('role', 'user')
+        .ilike('full_name', `%${query}%`)
+        .order('points', { ascending: false })
+        .limit(50)
+
+      if (error) throw error
+      return (data || []) as Profile[]
+    } catch (error) {
+      console.error('❌ searchUsers error:', error)
+      return []
+    }
+  }
+
   async getProfile(id: string): Promise<Profile | null> {
     try {
       const { data, error } = await supabase
@@ -3725,6 +3743,23 @@ export class SupabaseClient {
     } catch (error) {
       console.error('❌ Error saving prize payment:', error)
       return { success: false, data: null }
+    }
+  }
+
+  async markPrizeAsPaid(paymentId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('prize_payments')
+        .update({
+          status: 'paid',
+          payment_date: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', paymentId)
+      if (error) throw error
+    } catch (error) {
+      console.error('❌ markPrizeAsPaid error:', error)
+      throw error
     }
   }
 

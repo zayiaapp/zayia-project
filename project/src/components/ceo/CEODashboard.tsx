@@ -167,9 +167,50 @@ export function CEODashboard() {
     if (!confirm('Finalizar mês? Isso vai salvar o ranking e criar prêmios pendentes!')) {
       return
     }
-    // Simular finalize
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    alert('Mês finalizado! Prêmios criados como PENDENTES')
+
+    const { data: topUsers, error: fetchError } = await supabase
+      .from('profiles')
+      .select('id, full_name, points')
+      .eq('role', 'user')
+      .order('points', { ascending: false })
+      .limit(3)
+
+    if (fetchError || !topUsers?.length) {
+      alert('Nenhuma usuária encontrada para finalizar mês')
+      return
+    }
+
+    const currentMonth = new Date().getMonth() + 1
+    const currentYear = new Date().getFullYear()
+
+    const { error: rankError } = await supabase.from('monthly_rankings').insert(
+      topUsers.map((user, index) => ({
+        user_id: user.id,
+        month: currentMonth,
+        year: currentYear,
+        position: index + 1,
+        points: user.points || 0,
+      }))
+    )
+
+    if (rankError) {
+      alert('Erro ao finalizar mês: ' + rankError.message)
+      return
+    }
+
+    const prizes = [500, 300, 100]
+    await supabase.from('prize_payments').insert(
+      topUsers.map((user, index) => ({
+        user_id: user.id,
+        amount: prizes[index] || 0,
+        status: 'pending',
+        month: currentMonth,
+        year: currentYear,
+        position: index + 1,
+      }))
+    )
+
+    alert('Mês finalizado! Prêmios criados como PENDENTES.')
     window.location.reload()
   }
 
