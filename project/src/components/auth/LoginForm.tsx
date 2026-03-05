@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { Eye, EyeOff, Mail, Lock, Sparkles, User } from 'lucide-react'
+import { ForgotPasswordForm } from './ForgotPasswordForm'
 
 interface LoginFormProps {
   onToggleForm: () => void
@@ -13,7 +14,8 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+
   const { signIn, quickCEOLogin, quickUserLogin } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +44,14 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
     setError('')
     await quickUserLogin()
     setLoading(false)
+  }
+
+  if (showForgotPassword) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
+      </div>
+    )
   }
 
   return (
@@ -97,6 +107,13 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => setShowForgotPassword(true)}
+            className="text-sm text-zayia-soft-purple hover:text-zayia-deep-violet underline mt-1"
+          >
+            Esqueci minha senha
+          </button>
         </div>
 
         {error && (
